@@ -1,0 +1,18 @@
+# Archivos de entorno y contraseñas
+.env
+*.env
+config.local.php
+
+# Almacenamiento temporal, logs y subidas de usuarios
+storage/logs/*
+storage/framework/*
+storage/uploads/*
+
+# Librerías y dependencias
+vendor/
+node_modules/
+
+# Archivos del sistema y editor
+.DS_Store
+Thumbs.db
+.vscode/
