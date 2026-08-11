@@ -65,10 +65,9 @@ $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
             <?php foreach($paymethods as $pm):
               $pm_name = strtolower($pm->name);
               $is_pm = strpos($pm_name,"pago movil")!==false || strpos($pm_name,"pago_movil")!==false;
-              $needs_capture = strpos($pm_name,"pago movil")!==false || strpos($pm_name,"pago_movil")!==false || strpos($pm_name,"transferencia")!==false || strpos($pm_name,"zelle")!==false || strpos($pm_name,"binance")!==false;
             ?>
             <label class="form-check mb-1">
-              <input class="form-check-input payment-method" type="radio" name="order_paymethod" value="<?php echo $pm->id; ?>" data-name="<?php echo htmlspecialchars($pm->name); ?>" data-pm="<?php echo $is_pm?1:0; ?>" data-capture="<?php echo $needs_capture?1:0; ?>" <?php echo $pm->id==1?'checked':''; ?>>
+              <input class="form-check-input payment-method" type="radio" name="order_paymethod" value="<?php echo $pm->id; ?>" data-name="<?php echo htmlspecialchars($pm->name); ?>" data-pm="<?php echo $is_pm?1:0; ?>" <?php echo $pm->id==1?'checked':''; ?>>
               <span class="form-check-label"><?php echo htmlspecialchars($pm->name); ?></span>
             </label>
             <?php endforeach; ?>
@@ -79,11 +78,6 @@ $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
             Teléfono: <span id="pm_phone"><?php echo htmlspecialchars($pm_phone); ?></span><br>
             Titular: <span id="pm_titular"><?php echo htmlspecialchars($pm_titular); ?></span><br>
             <strong>💰 Monto a pagar: <span id="pm_amount">$0.00</span></strong>
-         </div>
-         <div class="mb-3 d-none" id="capture_container">
-            <label class="form-label fw-bold">🧾 Capture de pago</label>
-            <input type="file" id="order_capture" class="form-control" accept="image/*">
-            <div class="form-hint">Paga el monto indicado arriba y sube el capture. Se enviará junto al pedido por WhatsApp.</div>
          </div>
          <div class="mb-0 bg-light rounded-3 p-3">
             <div class="d-flex justify-content-between mb-1">
@@ -337,7 +331,6 @@ function updateCheckoutUI() {
   const t = computeTotals(getCartItems(), delivery, deliveryPrice);
   const paySel = $(".payment-method:checked");
   const isPM = paySel.data("pm") == 1;
-  const needsCapture = paySel.data("capture") == 1;
 
   $("#ck_subtotal").text(fmt(t.subtotal));
   $("#ck_delivery").text(delivery ? fmt(t.delivery) : "Comer aquí / Recoger");
@@ -349,12 +342,6 @@ function updateCheckoutUI() {
     $("#pm_box").removeClass("d-none");
   } else {
     $("#pm_box").addClass("d-none");
-  }
-  if(needsCapture){
-    $("#capture_container").removeClass("d-none");
-  } else {
-    $("#capture_container").addClass("d-none");
-    $("#order_capture").val("");
   }
 }
 
@@ -434,7 +421,7 @@ $(document).ready(function() {
   }
 
   // Confirm Order
-  $("#btn_confirm_order").click(function() {
+  $("#btn_confirm_order").click(async function() {
     const name = $("#order_name").val().trim();
     const phone = $("#order_phone").val().trim();
     let address = $("#order_address").val().trim();
@@ -442,20 +429,19 @@ $(document).ready(function() {
     const zoneSel = $("#order_zone").val();
     const paymethodId = $(".payment-method:checked").val();
     const paymethodName = $(".payment-method:checked").data("name");
-    const needsCapture = $(".payment-method:checked").data("capture") == 1;
     const isPM = $(".payment-method:checked").data("pm") == 1;
 
     if (name === "" || phone === "") {
-      alert("Por favor completa tu nombre y teléfono.");
+      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor completa tu nombre y teléfono.", confirmButtonColor: "#e67e22" });
       return;
     }
     if (isPickup) { address = "Recoger en sucursal"; }
     else if (address === "") {
-      alert("Por favor escribe tu dirección de entrega.");
+      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor escribe tu dirección de entrega.", confirmButtonColor: "#e67e22" });
       return;
     }
     if (!isPickup && zoneSel === "0") {
-      alert("Por favor selecciona tu zona de entrega (o marca que pasarás a recoger).");
+      Swal.fire({ icon: "warning", title: "Zona de entrega", text: "Por favor selecciona tu zona de entrega (o marca que pasarás a recoger).", confirmButtonColor: "#e67e22" });
       return;
     }
 
@@ -465,82 +451,52 @@ $(document).ready(function() {
     const zoneName = delivery ? zoneOpt.text() : "Recoger en sucursal";
     const items = getCartItems();
     const t = computeTotals(items, delivery, deliveryPrice);
-    const captureInput = $("#order_capture")[0];
-    const hasCapture = captureInput && captureInput.files.length > 0;
-
-    if (needsCapture && !hasCapture) {
-      alert("Para pagar con " + paymethodName + " debes subir el capture de pago.");
-      return;
-    }
-    if (hasCapture && !captureInput.files[0].type.match(/^image\//)) {
-      alert("El capture debe ser una imagen.");
-      return;
-    }
 
     const btn = $(this);
     btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm me-2"></span> Enviando...');
 
-    const proceed = function(captureFile) {
-      $.post("./?action=cart&opt=buy", {
-        name: name,
-        phone: phone,
-        address: address,
-        paymethod_id: paymethodId,
-        delivery_zone_id: delivery ? zoneSel : "",
-        capture: captureFile || ""
-      }, function(res) {
-        clearCart();
+    $.post("./?action=cart&opt=buy", {
+      name: name,
+      phone: phone,
+      address: address,
+      paymethod_id: paymethodId,
+      delivery_zone_id: delivery ? zoneSel : ""
+    }, function(res) {
+      clearCart();
 
-        const whatsappNum = "<?php echo $whatsapp_number; ?>";
-        let msg = "*🍕 NUEVA ORDEN - GENTE LO NUESTRO*%0A%0A";
-        msg += "*👤 Cliente:* " + name + "%0A";
-        msg += "*📞 Teléfono:* " + phone + "%0A";
-        if(delivery){
-          msg += "*📍 Dirección:* " + address + "%0A";
-          msg += "*🚚 Zona (Delivery):* " + zoneName + "%0A";
-          msg += "*💰 Delivery:* " + fmt(t.delivery) + "%0A";
-        } else {
-          msg += "*📍 Entrega:* Recoger en sucursal%0A";
-        }
-        msg += "*💳 Pagará con:* " + paymethodName + "%0A%0A";
-        msg += "*🍕 Productos:*%0A" + itemsWhatsAppText(items, delivery);
-        msg += "%0A*------------------------------*%0A";
-        msg += "*💰 SUBTOTAL (US$): " + fmt(t.subtotal) + "*%0A";
-        msg += "*💵 TOTAL (US$): " + fmt(t.total) + "*%0A";
-        msg += "*💵 TOTAL (Bs): " + (bcvRate > 0 ? fmtBs(t.total * bcvRate) : "a confirmar") + "*%0A";
-        msg += "*------------------------------*%0A";
-        if(captureFile){
-          msg += "_🧾 Capture de pago:_ " + SITE_BASE + "/core/uploads/captures/" + captureFile + "%0A";
-        }
-        msg += isPM ? "_Cliente pagó el monto indicado. Verifica el capture antes de confirmar._" : "_El cliente confirmará el pago._";
+      const whatsappNum = "<?php echo $whatsapp_number; ?>";
+      let msg = "*🍕 NUEVA ORDEN - GENTE LO NUESTRO*%0A%0A";
+      msg += "*👤 Cliente:* " + name + "%0A";
+      msg += "*📞 Teléfono:* " + phone + "%0A";
+      if(delivery){
+        msg += "*📍 Dirección:* " + address + "%0A";
+        msg += "*🚚 Zona (Delivery):* " + zoneName + "%0A";
+        msg += "*💰 Delivery:* " + fmt(t.delivery) + "%0A";
+      } else {
+        msg += "*📍 Entrega:* Recoger en sucursal%0A";
+      }
+      msg += "*💳 Pagará con:* " + paymethodName + "%0A%0A";
+      msg += "*🍕 Productos:*%0A" + itemsWhatsAppText(items, delivery);
+      msg += "%0A*------------------------------*%0A";
+      msg += "*💰 SUBTOTAL (US$): " + fmt(t.subtotal) + "*%0A";
+      msg += "*💵 TOTAL (US$): " + fmt(t.total) + "*%0A";
+      msg += "*💵 TOTAL (Bs): " + (bcvRate > 0 ? fmtBs(t.total * bcvRate) : "a confirmar") + "*%0A";
+      msg += "*------------------------------*%0A";
+      msg += isPM ? "_El cliente pagó/pagará el monto indicado. Solicita el capture de pago por este chat antes de confirmar._" : "_El cliente confirmará el pago._";
 
-        window.open("https://api.whatsapp.com/send?phone=" + whatsappNum + "&text=" + msg, '_blank');
-        $("#modal-checkout").modal("hide");
-        alert("¡Excelente! Tu pedido ha sido enviado por WhatsApp.");
-        location.reload();
-      }).fail(function() {
-        btn.prop("disabled", false).html('CONFIRMAR Y PEDIR POR WHATSAPP <i class="bi bi-whatsapp ms-2"></i>');
-        alert("Ocurrió un error al registrar tu pedido. Intenta de nuevo.");
-      });
-    };
-
-    if (hasCapture) {
-      let fd = new FormData();
-      fd.append("capture", captureInput.files[0]);
-      $.ajax({
-        url: "./?action=cart&opt=uploadcapture",
-        type: "POST",
-        data: fd,
-        processData: false,
-        contentType: false
-      }).done(function(res) {
-        let file = "";
-        try { file = JSON.parse(res).file || ""; } catch(e) {}
-        proceed(file);
-      }).fail(function() { proceed(""); });
-    } else {
-      proceed("");
-    }
+      window.open("https://api.whatsapp.com/send?phone=" + whatsappNum + "&text=" + msg, '_blank');
+      $("#modal-checkout").modal("hide");
+      Swal.fire({
+        icon: "success",
+        title: "¡Pedido enviado!",
+        html: "Tu pedido ha sido enviado por WhatsApp. Te confirmaremos pronto. 🍕",
+        confirmButtonText: "¡Genial!",
+        confirmButtonColor: "#25D366"
+      }).then(function(){ location.reload(); });
+    }).fail(function() {
+      btn.prop("disabled", false).html('CONFIRMAR Y PEDIR POR WHATSAPP <i class="bi bi-whatsapp ms-2"></i>');
+      Swal.fire({ icon: "error", title: "Error", text: "Ocurrió un error al registrar tu pedido. Intenta de nuevo.", confirmButtonColor: "#d63939" });
+    });
   });
 
   // Auto-refresh BCV rate every 10 minutes

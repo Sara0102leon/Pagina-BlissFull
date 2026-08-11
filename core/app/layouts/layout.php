@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="assets/css/style.css">
     
     <script src="assets/jquery/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
       :root {
         --tblr-font-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
@@ -131,8 +132,13 @@
         $(document).ready(function() {
           const urlParams = new URLSearchParams(window.location.search);
           if (urlParams.get('msg') === 'order_success') {
-             // SweetAlert or similar could be used here, but for now standard Bootstrap/JS
-             alert("¡Pedido registrado exitosamente! Tu WhatsApp se ha abierto para enviar el detalle.");
+             Swal.fire({
+               icon: "success",
+               title: "¡Pedido registrado!",
+               html: "Tu WhatsApp se ha abierto para enviar el detalle. 🍕",
+               confirmButtonText: "Perfecto",
+               confirmButtonColor: "#25D366"
+             });
           }
         });
         </script>

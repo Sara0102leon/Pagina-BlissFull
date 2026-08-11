@@ -54,16 +54,17 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
               <td><?php echo $b->created_at; ?></td>
               <td>
                 <?php if($b->status_id==3):?>
-                  <span class="badge bg-danger"><i class="bi bi-x-lg me-1"></i>Cancelado (no editable)</span>
+                  <span class="badge bg-danger"><i class="bi bi-x-lg me-1"></i>Cancelado</span>
                 <?php elseif($b->status_id!=5):?>
-                  <?php $is_pickup = strpos(strtolower($b->getClient()->address), "sucursal") !== false; ?>
+                  <?php $is_pickup = ($b->delivery_zone_id=="" || strpos(strtolower($b->getClient()->address), "sucursal") !== false); ?>
+                  <?php $st = intval($b->status_id); ?>
                   <div class="btn-list flex-nowrap">
-                    <a href="./?action=sells&opt=status&id=<?php echo $b->id;?>&status=2" class="btn btn-info btn-sm" title="Pagado"><i class="bi bi-currency-dollar"></i></a>
+                    <button type="button" class="btn btn-info btn-sm btn-status-change <?php echo $st>=2?'disabled opacity-50':''; ?>" data-id="<?php echo $b->id;?>" data-status="2" title="Pagado" <?php echo $st>=2?'disabled':''; ?>><i class="bi bi-currency-dollar"></i></button>
                     <?php if(!$is_pickup): ?>
-                    <a href="./?action=sells&opt=status&id=<?php echo $b->id;?>&status=4" class="btn btn-success btn-sm" title="Enviado"><i class="bi bi-truck"></i></a>
+                    <button type="button" class="btn btn-success btn-sm btn-status-change <?php echo $st!=2?'disabled opacity-50':''; ?>" data-id="<?php echo $b->id;?>" data-status="4" title="Enviado (requiere marcarlo como pagado antes)" <?php echo $st!=2?'disabled':''; ?>><i class="bi bi-truck"></i></button>
                     <?php endif; ?>
-                    <a href="./?action=sells&opt=status&id=<?php echo $b->id;?>&status=5" class="btn btn-primary btn-sm" title="Finalizado"><i class="bi bi-check-lg"></i></a>
-                    <a href="./?action=sells&opt=status&id=<?php echo $b->id;?>&status=3" class="btn btn-danger btn-sm" title="Cancelar (no se puede deshacer)" onclick="return confirm('¿Seguro que quieres CANCELAR este pedido? No podrás cambiar su estado después.');"><i class="bi bi-x-lg"></i></a>
+                    <button type="button" class="btn btn-primary btn-sm btn-status-change <?php echo ($st!=2 && $st!=4)?'disabled opacity-50':''; ?>" data-id="<?php echo $b->id;?>" data-status="5" title="Finalizado (requiere pagado)" <?php echo ($st!=2 && $st!=4)?'disabled':''; ?>><i class="bi bi-check-lg"></i></button>
+                    <button type="button" class="btn btn-danger btn-sm btn-status-change <?php echo $st>=2?'disabled opacity-50':''; ?>" data-id="<?php echo $b->id;?>" data-status="3" title="Cancelar (solo si aún no ha pagado)" <?php echo $st>=2?'disabled':''; ?>><i class="bi bi-x-lg"></i></button>
                   </div>
                 <?php else:?>
                   <i class="bi bi-check-lg text-success"></i>
@@ -81,6 +82,47 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
     </div>
   </div>
 </div>
+<script>
+$(function(){
+  var STATUS_CONF = {
+    2: { title: "¿Marcar como PAGADO?", icon: "success", color: "#2f9e44", confirmText: "Sí, marcar pagado", doneText: "Pedido marcado como pagado" },
+    4: { title: "¿Marcar como ENVIADO?", icon: "question", color: "#2f9e44", confirmText: "Sí, marcar enviado", doneText: "Pedido marcado como enviado" },
+    5: { title: "¿Marcar como FINALIZADO?", icon: "success", color: "#2f9e44", confirmText: "Sí, finalizar", doneText: "Pedido finalizado" },
+    3: { title: "¿CANCELAR este pedido?", icon: "warning", color: "#d63939", confirmText: "Sí, cancelar", doneText: "Pedido cancelado" }
+  };
+  $(document).on("click", ".btn-status-change", function(){
+    var $btn = $(this);
+    var id = $btn.data("id");
+    var status = $btn.data("status");
+    var cfg = STATUS_CONF[status] || { title: "¿Cambiar estado?", icon: "question", color: "#2f9e44", confirmText: "Sí", doneText: "Estado actualizado" };
+    Swal.fire({
+      title: cfg.title,
+      html: status == 3
+        ? "El pedido <b>#"+id+"</b> quedará <b>cancelado</b> y <b>NO podrás cambiar su estado después</b>."
+        : "Se actualizará el estado del pedido <b>#"+id+"</b>.",
+      icon: cfg.icon,
+      showCancelButton: true,
+      confirmButtonText: cfg.confirmText,
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: cfg.color,
+      cancelButtonColor: "#2c3b41",
+      reverseButtons: true
+    }).then(function(result){
+      if(!result.isConfirmed) return;
+      $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm"></span>');
+      $.get("./?action=sells&opt=status&id=" + id + "&status=" + status)
+        .done(function(){
+          Swal.fire({ icon: "success", title: cfg.doneText, toast: true, position: "top-end", timer: 2500, showConfirmButton: false });
+          setTimeout(function(){ location.reload(); }, 900);
+        })
+        .fail(function(){
+          $btn.prop("disabled", false).html('<i class="bi bi-exclamation-triangle"></i>');
+          Swal.fire({ icon: "error", title: "Error", text: "No se pudo cambiar el estado. Intenta de nuevo.", confirmButtonColor: "#d63939" });
+        });
+    });
+  });
+});
+</script>
 
 <?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="open"):?>
 <?php

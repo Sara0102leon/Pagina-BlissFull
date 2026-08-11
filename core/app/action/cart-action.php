@@ -93,31 +93,11 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="clear"){
 		Core::redir("./?view=cart&opt=all");
 	}
 }
-else if(isset($_GET["opt"]) && $_GET["opt"]=="uploadcapture"){
-	$dir = "core/uploads/captures/";
-	if(!file_exists($dir)){ @mkdir($dir, 0777, true); }
-	if(isset($_FILES["capture"]) && $_FILES["capture"]["error"]==0){
-		$name = $_FILES["capture"]["name"];
-		$ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-		$allowed = array("jpg","jpeg","png","gif","webp","bmp");
-		if(in_array($ext, $allowed)){
-			$fname = "capture_".time()."_".rand(100,999).".".$ext;
-			if(move_uploaded_file($_FILES["capture"]["tmp_name"], $dir.$fname)){
-				echo json_encode(array("ok"=>true,"file"=>$fname));
-				exit;
-			}
-		}
-		echo json_encode(array("ok"=>false,"error"=>"Archivo no válido"));
-		exit;
-	}
-	echo json_encode(array("ok"=>false,"error"=>"Sin archivo"));
-	exit;
-}
 else if(isset($_GET["opt"]) && $_GET["opt"]=="buy"){
 	if(!empty($_POST) && isset($_SESSION["cart"]) && count($_SESSION["cart"])>0){
 		$client = null;
 		$phone = $_POST["phone"];
-		$sql = "select * from client where phone=\"$phone\" limit 1";
+		$sql = "select * from client where phone=\"$phone\" order by id desc limit 1";
 		$query = Executor::doit($sql);
 		$client = Model::one($query[0],new ClientData());
 
@@ -130,10 +110,12 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="buy"){
 			$client->password = "";
 			$client->add();
 			
-			$sql_find = "select * from client where phone=\"$phone\" order by created_at desc limit 1";
+			$sql_find = "select * from client where phone=\"$phone\" order by id desc limit 1";
 			$query_find = Executor::doit($sql_find);
 			$client = Model::one($query_find[0],new ClientData());
 		}else{
+			$client->name = $_POST["name"];
+			$client->lastname = "";
 			$client->address = $_POST["address"];
 			$client->update();
 		}

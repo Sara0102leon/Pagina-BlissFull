@@ -34,7 +34,7 @@ class Core {
 	}
 
 	public static function alert($txt){
-		echo "<script>alert('".$txt."');</script>";
+		echo "<script>if(typeof Swal!=='undefined'){Swal.fire({icon:'info',title:'Aviso',text:'".$txt."',confirmButtonColor:'#e67e22'});}else{alert('".$txt."');}</script>";
 	}
 
 	public static function includeJS(){
