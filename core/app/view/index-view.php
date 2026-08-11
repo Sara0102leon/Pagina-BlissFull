@@ -495,8 +495,13 @@ $(document).ready(function() {
         let msg = "*🍕 NUEVA ORDEN - GENTE LO NUESTRO*%0A%0A";
         msg += "*👤 Cliente:* " + name + "%0A";
         msg += "*📞 Teléfono:* " + phone + "%0A";
-        msg += "*📍 Entrega:* " + (delivery ? zoneName : "Recoger en sucursal") + "%0A";
-        if(delivery){ msg += "*🚚 Delivery:* " + fmt(t.delivery) + "%0A"; }
+        if(delivery){
+          msg += "*📍 Dirección:* " + address + "%0A";
+          msg += "*🚚 Zona (Delivery):* " + zoneName + "%0A";
+          msg += "*💰 Delivery:* " + fmt(t.delivery) + "%0A";
+        } else {
+          msg += "*📍 Entrega:* Recoger en sucursal%0A";
+        }
         msg += "*💳 Pagará con:* " + paymethodName + "%0A%0A";
         msg += "*🍕 Productos:*%0A" + itemsWhatsAppText(items, delivery);
         msg += "%0A*------------------------------*%0A";

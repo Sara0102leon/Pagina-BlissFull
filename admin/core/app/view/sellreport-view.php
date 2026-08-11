@@ -1,6 +1,68 @@
 <?php
 if(!isset($_SESSION["user_id"])){ Core::redir("./");}
 
+if(isset($_GET["opt"]) && $_GET["opt"]=="excel"){
+    $buys = array();
+    if(isset($_GET["start_at"]) && isset($_GET["finish_at"]) && $_GET["start_at"]!="" && $_GET["finish_at"]!=""){
+        $buys = BuyData::getByRange($_GET["start_at"]." 00:00:00", $_GET["finish_at"]." 23:59:59");
+    } else {
+        $buys = BuyData::getAll();
+    }
+    $coin = ConfigurationData::getByPreffix("general_coin")->val;
+    $sum_total = 0;
+    $rows = "";
+    foreach($buys as $b){
+        $total = $b->getTotal();
+        $sum_total += $total;
+        $rows .= "<tr>";
+        $rows .= "<td>#".$b->id."</td>";
+        $rows .= "<td>".htmlspecialchars($b->getClient()->getFullname())."</td>";
+        $rows .= "<td>".number_format($total,2)."</td>";
+        $rows .= "<td>".number_format(0,2)."</td>";
+        $rows .= "<td>".number_format($total,2)."</td>";
+        $rows .= "<td>".htmlspecialchars($b->getPaymethod()->name)."</td>";
+        $rows .= "<td>".htmlspecialchars($b->getStatus()->name)."</td>";
+        $rows .= "<td>".$b->created_at."</td>";
+        $rows .= "</tr>";
+    }
+    $range_txt = (@$_GET["start_at"]!="" && @$_GET["finish_at"]!="") ? $_GET["start_at"]." a ".$_GET["finish_at"] : "TODO EL HISTORIAL";
+    header("Content-Type: application/vnd.ms-excel; charset=utf-8");
+    header("Content-Disposition: attachment; filename=reporte_ventas_".date("Ymd_His").".xls");
+    echo "\xEF\xBB\xBF";
+?>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
+<head>
+<meta charset="utf-8">
+<title>Reporte de Ventas</title>
+</head>
+<body>
+<table border="1">
+  <tr>
+    <td colspan="8" style="font-weight:bold; font-size:14px;">REPORTE DE VENTAS - <?php echo $range_txt; ?></td>
+  </tr>
+  <tr>
+    <th>ID</th>
+    <th>Cliente</th>
+    <th>SubTotal</th>
+    <th>Descuento</th>
+    <th>Total</th>
+    <th>Metodo</th>
+    <th>Estado</th>
+    <th>Fecha</th>
+  </tr>
+  <?php echo $rows; ?>
+  <tr style="font-weight:bold; background-color:#DDEBF7;">
+    <td colspan="4">TOTAL (<?php echo count($buys); ?> ventas)</td>
+    <td><?php echo number_format($sum_total,2); ?></td>
+    <td colspan="3"></td>
+  </tr>
+</table>
+</body>
+</html>
+<?php
+    exit;
+}
+
 $buys = array();
 if(isset($_GET["start_at"]) && isset($_GET["finish_at"]) && $_GET["start_at"]!="" && $_GET["finish_at"]!=""){
     $buys = BuyData::getByRange($_GET["start_at"]." 00:00:00", $_GET["finish_at"]." 23:59:59");
@@ -8,6 +70,8 @@ if(isset($_GET["start_at"]) && isset($_GET["finish_at"]) && $_GET["start_at"]!="
     $buys = BuyData::getAll();
 }
 $coin = ConfigurationData::getByPreffix("general_coin")->val;
+$sum_total = 0;
+foreach($buys as $b){ $sum_total += $b->getTotal(); }
 ?>
 <div class="page-header d-print-none">
   <div class="container-xl">
@@ -37,6 +101,11 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
               <button type="submit" class="btn btn-primary w-100">
                 <i class="bi bi-funnel me-1"></i> Generar Reporte
               </button>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <a href="./?view=sellreport&opt=excel&start_at=<?php echo isset($_GET["start_at"])?$_GET["start_at"]:""; ?>&finish_at=<?php echo isset($_GET["finish_at"])?$_GET["finish_at"]:""; ?>" class="btn btn-success w-100">
+                <i class="bi bi-file-earmark-excel me-1"></i> Exportar a Excel
+              </a>
             </div>
           </div>
         </form>
@@ -152,6 +221,16 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
             </tr>
             <?php endforeach; ?>
           </tbody>
+          <tfoot>
+            <tr class="fw-bold table-active">
+              <td>TOTAL (<?php echo count($buys); ?> ventas)</td>
+              <td></td>
+              <td><?php echo $coin; ?> <?php echo number_format($sum_total, 2); ?></td>
+              <td></td>
+              <td><?php echo $coin; ?> <?php echo number_format($sum_total, 2); ?></td>
+              <td colspan="4"></td>
+            </tr>
+          </tfoot>
         </table>
         <?php else: ?>
         <div class="empty py-5">
