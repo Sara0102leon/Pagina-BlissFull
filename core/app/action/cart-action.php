@@ -1,27 +1,54 @@
 <?php
 if(isset($_GET["opt"]) && $_GET["opt"]=="add"){
+	$extras = array();
+	if(isset($_POST["extras"]) && $_POST["extras"]!=""){
+		$dec = json_decode($_POST["extras"], true);
+		if(is_array($dec)){ $extras = $dec; }
+	}
+	$key = $_POST["product_id"].":".md5(json_encode($extras));
 	if(!isset($_SESSION["cart"])){
-		$_SESSION["cart"] = array( array("product_id"=>$_POST["product_id"],"q"=>1 ));
+		$_SESSION["cart"] = array( array("key"=>$key,"product_id"=>$_POST["product_id"],"q"=>1,"extras"=>$extras) );
 	}else{
 		$products = $_SESSION["cart"];
 		$found = false;
 		foreach($products as $index => $p){
-			if($p["product_id"] == $_POST["product_id"]){
+			if($p["key"] == $key){
 				$products[$index]["q"]++;
 				$found = true;
 				break;
 			}
 		}
 		if(!$found){
-			array_push($products, array("product_id"=>$_POST["product_id"],"q"=>1));
+			array_push($products, array("key"=>$key,"product_id"=>$_POST["product_id"],"q"=>1,"extras"=>$extras));
 		}
 		$_SESSION["cart"]=$products;
 	}
-	// Return updated cart view if it was an AJAX call
 	if(isset($_GET["ajax"])){
 		View::load("cart-side");
 	}else{
 		Core::redir("./");
+	}
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="dec"){
+	if(isset($_SESSION["cart"])){
+		$cart = $_SESSION["cart"];
+		$newcart = array();
+		foreach($cart as $c){
+			if($c["key"]==$_REQUEST["key"]){
+				$c["q"]--;
+				if($c["q"] > 0){
+					array_push($newcart, $c);
+				}
+			}else{
+				array_push($newcart, $c);
+			}
+		}
+		$_SESSION["cart"] = $newcart;
+	}
+	if(isset($_GET["ajax"])){
+		View::load("cart-side");
+	}else{
+		Core::redir("./?view=cart&opt=all");
 	}
 }
 else if(isset($_GET["opt"]) && $_GET["opt"]=="del"){
@@ -29,7 +56,7 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="del"){
 		$cart = $_SESSION["cart"];
 		$newcart = array();
 		foreach($cart as $c){
-			if($c["product_id"]!=$_POST["product_id"]){
+			if($c["key"]!=$_REQUEST["key"]){
 				array_push($newcart, $c);
 			}
 		}
@@ -45,8 +72,8 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="edit"){
 	if(isset($_SESSION["cart"])){
 		$cart = $_SESSION["cart"];
 		foreach($cart as $index => $c){
-			if($c["product_id"]==$_POST["product_id"]){
-				$cart[$index]["q"] = $_POST["q"];
+			if($c["key"]==$_REQUEST["key"]){
+				$cart[$index]["q"] = $_REQUEST["q"];
 				break;
 			}
 		}
@@ -65,6 +92,26 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="clear"){
 	}else{
 		Core::redir("./?view=cart&opt=all");
 	}
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="uploadcapture"){
+	$dir = "core/uploads/captures/";
+	if(!file_exists($dir)){ @mkdir($dir, 0777, true); }
+	if(isset($_FILES["capture"]) && $_FILES["capture"]["error"]==0){
+		$name = $_FILES["capture"]["name"];
+		$ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+		$allowed = array("jpg","jpeg","png","gif","webp","bmp");
+		if(in_array($ext, $allowed)){
+			$fname = "capture_".time()."_".rand(100,999).".".$ext;
+			if(move_uploaded_file($_FILES["capture"]["tmp_name"], $dir.$fname)){
+				echo json_encode(array("ok"=>true,"file"=>$fname));
+				exit;
+			}
+		}
+		echo json_encode(array("ok"=>false,"error"=>"Archivo no válido"));
+		exit;
+	}
+	echo json_encode(array("ok"=>false,"error"=>"Sin archivo"));
+	exit;
 }
 else if(isset($_GET["opt"]) && $_GET["opt"]=="buy"){
 	if(!empty($_POST) && isset($_SESSION["cart"]) && count($_SESSION["cart"])>0){
@@ -86,6 +133,9 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="buy"){
 			$sql_find = "select * from client where phone=\"$phone\" order by created_at desc limit 1";
 			$query_find = Executor::doit($sql_find);
 			$client = Model::one($query_find[0],new ClientData());
+		}else{
+			$client->address = $_POST["address"];
+			$client->update();
 		}
 
 		$buy = new BuyData();
@@ -94,7 +144,9 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="buy"){
 		for($i=0;$i<11;$i++){ $code .= $alphabeth[rand(0,strlen($alphabeth)-1)]; }
 		$buy->code = $code;
 		$buy->client_id = $client->id;
-		$buy->paymethod_id= 1;
+		$buy->paymethod_id= isset($_POST["paymethod_id"])?$_POST["paymethod_id"]:1;
+		$buy->delivery_zone_id = isset($_POST["delivery_zone_id"])?$_POST["delivery_zone_id"]:"";
+		$buy->capture = isset($_POST["capture"])?$_POST["capture"]:"";
 		$buy->status_id= 1;
 		$b = $buy->add();
 
@@ -103,6 +155,13 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="buy"){
 			$p->buy_id = $b[1];
 			$p->product_id = $c["product_id"];
 			$p->q = $c["q"];
+			if(isset($c["extras"]) && count($c["extras"])>0){
+				$clean = array();
+				foreach($c["extras"] as $e){
+					$clean[] = array("name"=>$e["name"],"price"=>floatval($e["price"]));
+				}
+				$p->extras = json_encode($clean);
+			}
 			$p->add();
 		}
 		unset($_SESSION["cart"]);

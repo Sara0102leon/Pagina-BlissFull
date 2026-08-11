@@ -53,12 +53,17 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
               <td><?php echo $b->getStatus()->name; ?></td>
               <td><?php echo $b->created_at; ?></td>
               <td>
-                <?php if($b->status_id!=5):?>
+                <?php if($b->status_id==3):?>
+                  <span class="badge bg-danger"><i class="bi bi-x-lg me-1"></i>Cancelado (no editable)</span>
+                <?php elseif($b->status_id!=5):?>
+                  <?php $is_pickup = strpos(strtolower($b->getClient()->address), "sucursal") !== false; ?>
                   <div class="btn-list flex-nowrap">
                     <a href="./?action=sells&opt=status&id=<?php echo $b->id;?>&status=2" class="btn btn-info btn-sm" title="Pagado"><i class="bi bi-currency-dollar"></i></a>
+                    <?php if(!$is_pickup): ?>
                     <a href="./?action=sells&opt=status&id=<?php echo $b->id;?>&status=4" class="btn btn-success btn-sm" title="Enviado"><i class="bi bi-truck"></i></a>
+                    <?php endif; ?>
                     <a href="./?action=sells&opt=status&id=<?php echo $b->id;?>&status=5" class="btn btn-primary btn-sm" title="Finalizado"><i class="bi bi-check-lg"></i></a>
-                    <a href="./?action=sells&opt=status&id=<?php echo $b->id;?>&status=3" class="btn btn-danger btn-sm" title="Cancelado"><i class="bi bi-x-lg"></i></a>
+                    <a href="./?action=sells&opt=status&id=<?php echo $b->id;?>&status=3" class="btn btn-danger btn-sm" title="Cancelar (no se puede deshacer)" onclick="return confirm('¿Seguro que quieres CANCELAR este pedido? No podrás cambiar su estado después.');"><i class="bi bi-x-lg"></i></a>
                   </div>
                 <?php else:?>
                   <i class="bi bi-check-lg text-success"></i>
@@ -104,7 +109,15 @@ $ivatxt = ConfigurationData::getByPreffix("general_iva_txt")->val;
       </div>
       <div class="card-body">
         <p><strong>Cliente:</strong> <?php echo $client->getFullname(); ?><br>
-        <strong>Metodo de pago:</strong> <?php echo $paymethod->name; ?></p>
+        <strong>Teléfono:</strong> <?php echo $client->phone; ?><br>
+        <strong>Dirección:</strong> <?php echo $client->address ? $client->address : "Recoger en sucursal"; ?><br>
+        <strong>Metodo de pago:</strong> <?php echo $paymethod->name; ?><br>
+        <?php $zone = $buy->getDeliveryZone(); if($zone): ?>
+        <strong>Zona de Delivery:</strong> <?php echo htmlspecialchars($zone->name); ?> ($ <?php echo number_format($zone->price,2,".",","); ?>)<br>
+        <?php endif; ?>
+        <?php if($buy->capture): ?>
+        <strong>Capture de pago:</strong> <a href="../core/uploads/captures/<?php echo $buy->capture; ?>" target="_blank">Ver capture</a><br>
+        <?php endif; ?></p>
 
         <?php if(count($products)>0):?>
         <div class="table-responsive">
@@ -114,18 +127,29 @@ $ivatxt = ConfigurationData::getByPreffix("general_iva_txt")->val;
                 <th></th>
                 <th>Codigo</th>
                 <th>Producto</th>
+                <th>Cant.</th>
+                <th>Extras</th>
                 <th>Total</th>
               </tr>
             </thead>
             <tbody>
               <?php foreach($products as $p):
                 $px = $p->getProduct();
+                $line_extras = $p->getExtrasArray();
+                $line_extra_txt = "";
+                if(count($line_extras)>0){
+                  $parts = array();
+                  foreach($line_extras as $e){ $parts[] = $e["name"]." (+$".number_format($e["price"],2,".",",").")"; }
+                  $line_extra_txt = implode(", ", $parts);
+                }
               ?>
               <tr>
                 <td><a target="_blank" href="../index.php?view=producto&product_id=<?php echo $px->id; ?>">Ver</a></td>
                 <td><?php echo $px->code; ?></td>
                 <td><?php echo $px->name; ?></td>
-                <td><?php echo $coin; ?> <?php echo number_format($px->price*$p->q,2,".",","); ?></td>
+                <td><?php echo $p->q; ?></td>
+                <td><?php echo $line_extra_txt!="" ? $line_extra_txt : "-"; ?></td>
+                <td><?php echo $coin; ?> <?php echo number_format(($px->price+$p->getExtrasTotal())*$p->q,2,".",","); ?></td>
               </tr>
               <?php endforeach; ?>
             </tbody>
@@ -138,6 +162,11 @@ $ivatxt = ConfigurationData::getByPreffix("general_iva_txt")->val;
               <tr>
                 <td>Subtotal</td><td><?php echo $coin; ?> <?php echo number_format($buy->getTotal()-($buy->getTotal()*($iva/100)),2,".",","); ?></td>
               </tr>
+              <?php if($zone): ?>
+              <tr>
+                <td>Delivery (<?php echo htmlspecialchars($zone->name); ?>)</td><td><?php echo $coin; ?> <?php echo number_format($zone->price,2,".",","); ?></td>
+              </tr>
+              <?php endif; ?>
               <tr>
                 <td><?php echo $ivatxt; ?></td><td><?php echo $coin; ?> <?php echo number_format($buy->getTotal()*($iva/100),2,".",","); ?></td>
               </tr>
@@ -161,6 +190,31 @@ if(isset($_GET["start_at"]) && isset($_GET["finish_at"]) && $_GET["start_at"]!="
 }else{
   $buys = BuyData::getAll();
 }
+
+// group by month and sum totals with daily BCV rate
+function bcv_rate_for_date($date){
+  $sql = "select rate from bcv_history where rate_date='$date' limit 1";
+  $q = Executor::doit($sql);
+  $r = Model::one($q[0], new StatusData());
+  if($r && $r->rate){ return floatval($r->rate); }
+  return 0;
+}
+
+$monthly = array();
+$grand_bs = 0;
+$grand_usd = 0;
+foreach($buys as $b){
+  $d = date("Y-m", strtotime($b->created_at));
+  if(!isset($monthly[$d])){ $monthly[$d] = array("bs"=>0,"usd"=>0,"count"=>0); }
+  $total = $b->getTotal();
+  $rate = bcv_rate_for_date(date("Y-m-d", strtotime($b->created_at)));
+  $monthly[$d]["usd"] += $total;
+  $monthly[$d]["count"]++;
+  $grand_usd += $total;
+  if($rate>0){ $monthly[$d]["bs"] += $total*$rate; $grand_bs += $total*$rate; }
+}
+krsort($monthly);
+$coin = ConfigurationData::getByPreffix("general_coin")->val;
 ?>
 <div class="page-header d-print-none">
   <div class="container-xl">
@@ -188,8 +242,52 @@ if(isset($_GET["start_at"]) && isset($_GET["finish_at"]) && $_GET["start_at"]!="
             <div class="col-md-2">
               <button type="submit" class="btn btn-primary w-100">Generar</button>
             </div>
+            <div class="col-md-3">
+              <a href="./?view=sells&opt=excel&start_at=<?php echo @$_GET["start_at"];?>&finish_at=<?php echo @$_GET["finish_at"];?>" class="btn btn-success w-100"><i class="bi bi-file-earmark-excel me-1"></i> Exportar a Excel</a>
+            </div>
           </div>
         </form>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-status-top bg-success"></div>
+      <div class="card-header">
+        <h3 class="card-title">Resumen Mensual (con tasa BCV del día de la venta)</h3>
+      </div>
+      <div class="card-body">
+        <?php if(count($monthly)>0):?>
+        <div class="table-responsive">
+          <table class="table card-table table-vcenter text-nowrap datatable">
+            <thead>
+              <tr>
+                <th>Mes</th>
+                <th>Pedidos</th>
+                <th>Total US$</th>
+                <th>Total Bs</th>
+              </tr>
+            </thead>
+            <tbody>
+            <?php foreach($monthly as $m => $data): ?>
+              <tr>
+                <td class="fw-bold"><?php echo date("F Y", strtotime($m."-01")); ?></td>
+                <td><?php echo $data["count"]; ?></td>
+                <td><?php echo "$ ".number_format($data["usd"],2,".",","); ?></td>
+                <td><?php echo $data["bs"]>0 ? "Bs ".number_format($data["bs"],2,".",",") : "-"; ?></td>
+              </tr>
+            <?php endforeach; ?>
+              <tr class="fw-bold table-active">
+                <td>TOTAL</td>
+                <td><?php echo count($buys); ?></td>
+                <td><?php echo "$ ".number_format($grand_usd,2,".",","); ?></td>
+                <td><?php echo $grand_bs>0 ? "Bs ".number_format($grand_bs,2,".",",") : "-"; ?></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <?php else:?>
+          <p class="alert alert-warning mb-0">No hay operaciones en este rango.</p>
+        <?php endif; ?>
       </div>
     </div>
 
@@ -206,26 +304,46 @@ if(isset($_GET["start_at"]) && isset($_GET["finish_at"]) && $_GET["start_at"]!="
               <tr>
                 <th>Operacion</th>
                 <th>Cliente</th>
-                <th>Total</th>
+                <th>Total US$</th>
+                <th>Total Bs</th>
+                <th>Tasa BCV</th>
                 <th>Metodo de pago</th>
                 <th>Estado</th>
                 <th>Fecha</th>
               </tr>
             </thead>
             <tbody>
-            <?php foreach($buys as $b):
+            <?php 
+            $sum_usd = 0; $sum_bs = 0;
+            foreach($buys as $b):
               $discount = 0;
+              $rate_b = bcv_rate_for_date(date("Y-m-d", strtotime($b->created_at)));
+              $total_usd_row = $b->getTotal()-$discount;
+              $total_bs_row = $rate_b>0 ? $total_usd_row*$rate_b : 0;
+              $sum_usd += $total_usd_row;
+              $sum_bs += $total_bs_row;
               ?>
               <tr>
                 <td>#<?php echo $b->id; ?></td>
                 <td><?php echo $b->getClient()->getFullname(); ?></td>
-                <td><?php echo $coin; ?> <?php echo number_format($b->getTotal()-$discount,2,".",","); ?></td>
+                <td><?php echo "$ ".number_format($total_usd_row,2,".",","); ?></td>
+                <td><?php echo $rate_b>0 ? "Bs ".number_format($total_bs_row,2,".",",") : "-"; ?></td>
+                <td><?php echo $rate_b>0 ? number_format($rate_b,2,".",",") : "-"; ?></td>
                 <td><?php echo $b->getPaymethod()->name; ?></td>
                 <td><?php echo $b->getStatus()->name; ?></td>
                 <td><?php echo $b->created_at; ?></td>
               </tr>
             <?php endforeach; ?>
             </tbody>
+            <tfoot>
+              <tr class="fw-bold table-active">
+                <td>TOTAL (<?php echo count($buys); ?> ventas)</td>
+                <td></td>
+                <td><?php echo "$ ".number_format($sum_usd,2,".",","); ?></td>
+                <td><?php echo $sum_bs>0 ? "Bs ".number_format($sum_bs,2,".",",") : "-"; ?></td>
+                <td colspan="4"></td>
+              </tr>
+            </tfoot>
           </table>
         </div>
         <?php else:?>
@@ -235,4 +353,79 @@ if(isset($_GET["start_at"]) && isset($_GET["finish_at"]) && $_GET["start_at"]!="
     </div>
   </div>
 </div>
+
+<?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="excel"):?>
+<?php
+function bcv_rate_for_date_excel($date){
+  $sql = "select rate from bcv_history where rate_date='$date' limit 1";
+  $q = Executor::doit($sql);
+  $r = Model::one($q[0], new StatusData());
+  if($r && $r->rate){ return floatval($r->rate); }
+  return 0;
+}
+$buys = array();
+if(isset($_GET["start_at"]) && isset($_GET["finish_at"]) && $_GET["start_at"]!="" && $_GET["finish_at"]!=""){
+  $buys = BuyData::getByRange($_GET["start_at"],$_GET["finish_at"]);
+}else{
+  $buys = BuyData::getAll();
+}
+$sum_usd = 0;
+$sum_bs = 0;
+$count = count($buys);
+$rows = "";
+foreach($buys as $b){
+  $rate = bcv_rate_for_date_excel(date("Y-m-d", strtotime($b->created_at)));
+  $tu = $b->getTotal();
+  $tbs = $rate>0 ? $tu*$rate : 0;
+  $sum_usd += $tu;
+  $sum_bs += $tbs;
+  $rows .= "<tr>";
+  $rows .= "<td>#".$b->id."</td>";
+  $rows .= "<td>".htmlspecialchars($b->getClient()->getFullname())."</td>";
+  $rows .= "<td>".number_format($tu,2)."</td>";
+  $rows .= "<td>".number_format($tbs,2)."</td>";
+  $rows .= "<td>".($rate>0 ? number_format($rate,2) : "-")."</td>";
+  $rows .= "<td>".htmlspecialchars($b->getPaymethod()->name)."</td>";
+  $rows .= "<td>".htmlspecialchars($b->getStatus()->name)."</td>";
+  $rows .= "<td>".$b->created_at."</td>";
+  $rows .= "</tr>";
+}
+$range_txt = (@$_GET["start_at"]!="" && @$_GET["finish_at"]!="") ? $_GET["start_at"]." a ".$_GET["finish_at"] : "TODO EL HISTORIAL";
+header("Content-Type: application/vnd.ms-excel; charset=utf-8");
+header("Content-Disposition: attachment; filename=reporte_ventas_".date("Ymd_His").".xls");
+echo "\xEF\xBB\xBF";
+?>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
+<head>
+<meta charset="utf-8">
+<title>Reporte de Ventas</title>
+<style>
+td, th { mso-number-format: "@"; }
+</style>
+</head>
+<body>
+<table border="1">
+  <tr>
+    <td colspan="8" style="font-weight:bold; font-size:14px;">REPORTE DE VENTAS - <?php echo $range_txt; ?></td>
+  </tr>
+  <tr>
+    <th>Operacion</th>
+    <th>Cliente</th>
+    <th>Total US$</th>
+    <th>Total Bs</th>
+    <th>Tasa BCV</th>
+    <th>Metodo de pago</th>
+    <th>Estado</th>
+    <th>Fecha</th>
+  </tr>
+  <?php echo $rows; ?>
+  <tr style="font-weight:bold; background-color:#DDEBF7;">
+    <td colspan="2">TOTAL (<?php echo $count; ?> ventas)</td>
+    <td><?php echo number_format($sum_usd,2); ?></td>
+    <td><?php echo number_format($sum_bs,2); ?></td>
+    <td colspan="4"></td>
+  </tr>
+</table>
+</body>
+</html>
 <?php endif; ?>

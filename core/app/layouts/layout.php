@@ -31,6 +31,11 @@
     </style>
   </head>
   <body>
+    <?php 
+    $bcv_rate_header = 0;
+    $bcv_row = ConfigurationData::getByPreffix("bcv_rate");
+    if($bcv_row && $bcv_row->val){ $bcv_rate_header = floatval($bcv_row->val); }
+    ?>
     <div class="page">
       <!-- Top Navbar -->
       <header class="navbar navbar-expand-md navbar-light d-print-none shadow-sm sticky-top">
@@ -49,25 +54,33 @@
           
           <div class="navbar-nav flex-row order-md-last ms-auto">
             <div class="nav-item me-3">
+              <!-- BCV Rate Badge -->
+              <span class="nav-link px-2 d-none d-md-flex align-items-center gap-1 small fw-bold text-success" title="Dólar BCV">
+                <i class="bi bi-currency-dollar"></i>
+                <span id="bcv_rate_badge"><?php echo number_format($bcv_rate_header,2); ?> Bs</span>
+              </span>
+            </div>            <div class="nav-item me-3">
               <!-- Desktop/Mobile Cart Button -->
               <a href="#" class="nav-link px-2 d-flex align-items-center gap-2" title="Mi Orden" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart">
                 <span class="d-none d-md-inline fw-bold text-primary" id="header-total">
                   <?php 
                   $total_header = 0;
+                  $cart_count_header = 0;
                   if(isset($_SESSION["cart"])){
                     foreach($_SESSION["cart"] as $s){
                       $p = ProductData::getById($s["product_id"]);
                       $total_header += $p->price * $s["q"];
+                      $cart_count_header += $s["q"];
                     }
                   }
                   $coin_symbol = ConfigurationData::getByPreffix("general_coin")?ConfigurationData::getByPreffix("general_coin")->val:"$";
-                  echo $coin_symbol.number_format($total_header,2);
+                  echo $coin_symbol.number_format($total_header,2,".",",");
                   ?>
                 </span>
                 <div class="position-relative">
                   <i class="bi bi-cart3 h2 mb-0"></i>
-                  <?php if(isset($_SESSION["cart"]) && count($_SESSION["cart"])>0): ?>
-                  <span class="badge bg-danger rounded-circle position-absolute top-0 start-100 translate-middle-x" id="global-cart-badge"><?php echo count($_SESSION["cart"]); ?></span>
+                  <?php if($cart_count_header>0): ?>
+                  <span class="badge bg-danger rounded-circle position-absolute top-0 start-100 translate-middle-x" id="global-cart-badge"><?php echo $cart_count_header; ?></span>
                   <?php endif; ?>
                 </div>
               </a>
@@ -93,7 +106,7 @@
           <div>
             <div class="small text-white-50">Total de tu orden:</div>
             <div class="h2 fw-bold text-white mb-0" id="mobile-total-display">
-               <?php echo $coin_symbol.number_format($total_header,2); ?>
+               <?php echo $coin_symbol.number_format($total_header,2,".",","); ?>
             </div>
           </div>
           <button class="btn btn-warning btn-lg rounded-pill fw-bold px-4" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart">
@@ -205,6 +218,45 @@
       .extra-small { font-size: 0.75rem; line-height: 1.2; }
     </style>
     <script src="./dist/js/tabler.min.js" defer></script>
+
+    <!-- Cart Toast Notification -->
+    <div id="cartToast" class="cart-toast d-flex align-items-center gap-2 shadow-lg">
+      <i class="bi bi-check-circle-fill text-success h4 mb-0"></i>
+      <span id="cartToastMsg" class="fw-bold"></span>
+    </div>
+    <style>
+      .cart-toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1060;
+        background: #fff;
+        color: #212529;
+        border-left: 4px solid #2fb344;
+        border-radius: 8px;
+        padding: 10px 16px;
+        font-size: 0.85rem;
+        max-width: 280px;
+        opacity: 0;
+        transform: translateY(20px);
+        pointer-events: none;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+      .cart-toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    </style>
+    <script>
+    let cartToastTimer = null;
+    function showCartToast(msg) {
+      $("#cartToastMsg").text(msg);
+      const el = document.getElementById("cartToast");
+      el.classList.add("show");
+      clearTimeout(cartToastTimer);
+      cartToastTimer = setTimeout(function() { el.classList.remove("show"); }, 2200);
+    }
+    </script>
   </body>
 </html>
 

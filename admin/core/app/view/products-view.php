@@ -173,6 +173,13 @@ $(function(){
             </div>
           </div>
           <div class="mb-3">
+            <label class="form-label">Precio para llevar (Delivery) <span class="text-muted small">(opcional, si es distinto al precio normal)</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><?php echo $coin; ?></span>
+              <input type="text" class="form-control" placeholder="Precio al llevar" name="price_llevar">
+            </div>
+          </div>
+          <div class="mb-3">
             <label class="form-label">Imagen</label>
             <input type="file" class="form-control" name="image">
           </div>
@@ -280,6 +287,13 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
             <div class="input-group">
               <span class="input-group-text"><?php echo $coin; ?></span>
               <input type="text" class="form-control" placeholder="Precio" value="<?php echo $product->price; ?>" required name="price">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Precio para llevar (Delivery) <span class="text-muted small">(opcional, si es distinto al precio normal)</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><?php echo $coin; ?></span>
+              <input type="text" class="form-control" placeholder="Precio al llevar" value="<?php echo $product->price_llevar; ?>" name="price_llevar">
             </div>
           </div>
           <?php if( $product->image!="" && file_exists($url)):?>

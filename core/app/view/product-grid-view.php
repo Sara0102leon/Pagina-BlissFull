@@ -1,6 +1,10 @@
 <?php 
 $coin_symbol = ConfigurationData::getByPreffix("general_coin")?ConfigurationData::getByPreffix("general_coin")->val:"$";
 $img_default = ConfigurationData::getByPreffix("general_img_default")?ConfigurationData::getByPreffix("general_img_default")->val:"assets/img/default.png";
+$bcv_rate = 0;
+$bcv_row = ConfigurationData::getByPreffix("bcv_rate");
+if($bcv_row && $bcv_row->val){ $bcv_rate = floatval($bcv_row->val); }
+$bs_symbol = "Bs";
 
 $cat_id = 0;
 if(isset($_POST["cat_id"]) && $_POST["cat_id"]!=""){
@@ -24,6 +28,10 @@ if($cat_id>0){
   <?php foreach($products as $p):
   $img = "admin/storage/products/".$p->image;
   if($p->image=="" || !file_exists($img)){ $img=$img_default; }
+  $extras = ProductExtraData::getByProductId($p->id);
+  $extras_json = array();
+  foreach($extras as $e){ $extras_json[] = array("name"=>$e->name,"price"=>floatval($e->price)); }
+  $extras_json_str = htmlspecialchars(json_encode($extras_json), ENT_QUOTES);
   ?>
   <div class="col-6 col-sm-4 col-md-3 col-xl-custom-8">
     <div class="card card-stacked shadow-sm h-100 overflow-hidden border-0 product-card">
@@ -35,10 +43,19 @@ if($cat_id>0){
           <p class="text-muted extra-small mb-2 text-truncate-2" style="height: 2.8em;"><?php echo substr(strip_tags($p->description),0,40); ?></p>
           
           <div class="mt-auto pt-2">
-            <div class="h4 fw-bold text-primary mb-2 text-center"><?php echo $coin_symbol.number_format($p->price,2); ?></div>
-            <button type="button" class="btn btn-primary w-100 py-2 rounded-0 shadow-sm fw-bold border-0" onclick="addToCart(<?php echo $p->id; ?>)">
+            <div class="h4 fw-bold text-primary mb-1 text-center"><?php echo $coin_symbol.number_format($p->price,2,".",","); ?></div>
+            <?php if($bcv_rate>0): ?>
+            <div class="small text-muted text-center mb-2">≈ <?php echo $bs_symbol.number_format($p->price*$bcv_rate,2,".",","); ?></div>
+            <?php endif; ?>
+            <?php if(count($extras_json)>0): ?>
+            <button type="button" class="btn btn-primary w-100 py-2 rounded-0 shadow-sm fw-bold border-0" onclick="openExtrasModal(<?php echo $p->id; ?>, '<?php echo addslashes($p->name); ?>', '<?php echo $extras_json_str; ?>')">
               AGREGAR <i class="bi bi-plus-lg ms-1"></i>
             </button>
+            <?php else: ?>
+            <button type="button" class="btn btn-primary w-100 py-2 rounded-0 shadow-sm fw-bold border-0" onclick="addToCart(<?php echo $p->id; ?>, '<?php echo addslashes($p->name); ?>', '[]')">
+              AGREGAR <i class="bi bi-plus-lg ms-1"></i>
+            </button>
+            <?php endif; ?>
           </div>
        </div>
     </div>

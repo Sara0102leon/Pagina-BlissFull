@@ -2,20 +2,40 @@
 class BuyProductData {
 	public static $tablename = "buy_product";
 
-	public $id, $buy_id, $product_id, $q;
+	public $id, $buy_id, $product_id, $q, $extras;
 
 	public function __construct(){
 		$this->id = null;
 		$this->buy_id = "";
 		$this->product_id = "";
 		$this->q = "";
+		$this->extras = "";
 	}
 
 	public function getProduct() { return ProductData::getById($this->product_id);}
 
+	public function getExtrasArray(){
+		if($this->extras && $this->extras!=""){
+			$dec = json_decode($this->extras, true);
+			if(is_array($dec)){ return $dec; }
+		}
+		return array();
+	}
+
+	public function getExtrasTotal(){
+		$total = 0;
+		foreach($this->getExtrasArray() as $e){ $total += floatval($e["price"]); }
+		return $total;
+	}
+
 	public function add(){
-		$sql = "insert into ".self::$tablename." (buy_id,product_id,q) ";
-		$sql .= "value (\"$this->buy_id\",$this->product_id,$this->q)";
+		$extras_sql = "NULL";
+		if($this->extras!=""){
+			$esc = mysqli_real_escape_string(Database::getCon(), $this->extras);
+			$extras_sql = "\"$esc\"";
+		}
+		$sql = "insert into ".self::$tablename." (buy_id,product_id,q,extras) ";
+		$sql .= "value (\"$this->buy_id\",$this->product_id,$this->q,$extras_sql)";
 		return Executor::doit($sql);
 	}
 

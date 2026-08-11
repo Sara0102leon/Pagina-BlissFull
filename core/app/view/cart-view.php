@@ -36,9 +36,15 @@ $total = 0;
                 $p = ProductData::getById($s["product_id"]); 
                 $img = "admin/storage/products/".$p->image;
                 if($p->image=="" || !file_exists($img)){ $img=$img_default; }
-                $subtotal = $p->price*$s["q"];
+                $extras_sum = 0;
+                $extras_txt = array();
+                if(isset($s["extras"]) && count($s["extras"])>0){
+                  foreach($s["extras"] as $e){ $extras_sum += floatval($e["price"]); $extras_txt[] = $e["name"]; }
+                }
+                $unit = $p->price + $extras_sum;
+                $subtotal = $unit*$s["q"];
                 $total += $subtotal;
-                $items_text .= "- ".$s["q"]." x ".htmlspecialchars($p->name)." (".$coin_symbol.number_format($p->price,2).") = ".$coin_symbol.number_format($subtotal,2)."%0A";
+                $items_text .= "- ".$s["q"]." x ".htmlspecialchars($p->name).(count($extras_txt)>0 ? " (+".htmlspecialchars(implode(", ", $extras_txt)).")" : "")." (".$coin_symbol.number_format($unit,2).") = ".$coin_symbol.number_format($subtotal,2)."%0A";
                 ?>
                 <tr>
                   <td class="px-4">
@@ -46,21 +52,24 @@ $total = 0;
                        <span class="avatar avatar-md me-3 rounded shadow-sm" style="background-image: url(<?php echo $img; ?>); background-size: cover;"></span>
                        <div class="flex-fill">
                          <div class="fw-bold h4 mb-0"><?php echo htmlspecialchars($p->name); ?></div>
+                         <?php if(count($extras_txt)>0): ?>
+                         <div class="text-muted small">+ <?php echo htmlspecialchars(implode(", ", $extras_txt)); ?></div>
+                         <?php endif; ?>
                        </div>
                     </div>
                   </td>
                   <td class="text-center" data-label="Cantidad">
                     <form action="./?action=cart&opt=edit" method="post" class="d-inline-block">
-                      <input type="hidden" name="product_id" value="<?php echo $p->id; ?>">
+                      <input type="hidden" name="key" value="<?php echo $s["key"]; ?>">
                       <div class="input-group input-group-sm rounded-pill border overflow-hidden" style="width: 100px;">
                         <input type="number" name="q" value="<?php echo $s["q"]; ?>" class="form-control border-0 text-center fw-bold" onchange="this.form.submit()" min="1">
                       </div>
                     </form>
                   </td>
-                  <td class="text-end text-muted" data-label="Precio"><?php echo $coin_symbol." ".number_format($p->price,2); ?></td>
+                  <td class="text-end text-muted" data-label="Precio"><?php echo $coin_symbol." ".number_format($unit,2); ?></td>
                   <td class="text-end fw-bold text-dark" data-label="Subtotal"><?php echo $coin_symbol." ".number_format($subtotal,2); ?></td>
                   <td class="px-4 text-end">
-                    <a href="./?action=cart&opt=del&product_id=<?php echo $p->id; ?>" class="btn btn-ghost-danger btn-icon rounded-circle" title="Eliminar"><i class="bi bi-trash"></i></a>
+                    <a href="./?action=cart&opt=del&key=<?php echo $s["key"]; ?>" class="btn btn-ghost-danger btn-icon rounded-circle" title="Eliminar"><i class="bi bi-trash"></i></a>
                   </td>
                 </tr>
                 <?php endforeach; ?>

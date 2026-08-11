@@ -73,6 +73,7 @@ create table product (
 	created_at datetime ,
 	order_at datetime ,
 	price float ,
+	price_llevar float ,
 	category_id int ,
 	unit_id int ,
 	/** for SEO **/
@@ -128,7 +129,7 @@ create table paymethod(
 	is_active boolean default 0	
 );
 
-insert into paymethod(short_name,name) value ("bank", "Deposito Bancario"),("deliver", "Pago Contra entrega");
+insert into paymethod(short_name,name,is_active) value ("pago_movil", "Pago Móvil",1),("transferencia", "Transferencia Bancaria",1),("zelle", "Zelle",1),("binance", "Binance / USDT",1),("efectivo", "Efectivo",1),("punto_venta", "Punto de Venta / Tarjeta",1);
 
 
 create table status (
@@ -154,6 +155,8 @@ create table buy (
 	status_id int,
 	created_at datetime,
 	paymethod_id int,
+	delivery_zone_id int,
+	capture varchar(255),
 	foreign key(paymethod_id) references paymethod(id),
 	foreign key(coupon_id) references coupon(id),
 	foreign key(client_id) references client(id),
@@ -165,9 +168,47 @@ create table buy_product(
 	buy_id int,
 	product_id int,
 	q int,
+	extras varchar(500),
 	foreign key(buy_id) references buy(id),
 	foreign key(product_id) references product(id)
 );
+
+create table delivery_zone (
+	id int not null auto_increment primary key,
+	name varchar(200),
+	price decimal(10,2) default 0
+);
+
+create table product_extra (
+	id int not null auto_increment primary key,
+	product_id int,
+	name varchar(200),
+	price decimal(10,2) default 0
+);
+
+insert into delivery_zone (name, price) values
+("Villa Roca 1, 2, 3 / Roca Terra", 1.00),
+("Cabudare", 2.00),
+("Agua Viva / Piedad Norte y Sur / Vista Verde / Trigaleña / Atapaima", 2.50),
+("Barquisimeto - Este hasta Calle 40", 2.00),
+("Barquisimeto - Resto", 3.50);
+
+insert into product_extra (product_id, name, price) values
+(NULL, "Jamón", 3.00),
+(NULL, "Maíz", 3.00),
+(NULL, "Pepperoni", 3.00),
+(NULL, "Tocineta", 3.00),
+(NULL, "Champiñón", 3.00),
+(NULL, "Aceitunas negras", 3.00),
+(NULL, "Pimentón", 3.00),
+(NULL, "Cebolla", 3.00),
+(NULL, "Anchoas", 3.00),
+(NULL, "Piña", 3.00),
+(NULL, "Tomate", 3.00),
+(NULL, "Albahaca", 3.00),
+(NULL, "Salchicha", 3.00),
+(NULL, "Camarones", 3.00),
+(NULL, "Extra de queso", 5.00);
 
 
 create table slide (
@@ -210,3 +251,13 @@ insert into configuration(name,label,kind,val) value ("bank_account","Numero de 
 insert into configuration(name,label,kind,val) value ("bank_card","Numero de Tarjeta",1,"");
 /* for whatsapp */
 insert into configuration(name,label,kind,val) value ("general_whatsapp","Numero de WhatsApp (ej: 521...)",1,"+5215574506232");
+/* datos de pago venezolanos */
+insert into configuration(name,label,kind,val) value ("pago_movil_bank","Pago Móvil - Banco",1,"");
+insert into configuration(name,label,kind,val) value ("pago_movil_ci","Pago Móvil - Cédula",1,"");
+insert into configuration(name,label,kind,val) value ("pago_movil_phone","Pago Móvil - Teléfono",1,"");
+insert into configuration(name,label,kind,val) value ("pago_movil_titular","Pago Móvil - Titular",1,"");
+insert into configuration(name,label,kind,val) value ("zelle_contact","Zelle - Correo/Contacto",1,"");
+insert into configuration(name,label,kind,val) value ("binance_contact","Binance - Contacto/ID",1,"");
+/* tasa BCV */
+insert into configuration(name,label,kind,val) value ("bcv_rate","Tasa BCV (Bs por US$)",1,"36");
+insert into configuration(name,label,kind,val) value ("bcv_rate_updated","Ultima actualizacion BCV",1,"");
