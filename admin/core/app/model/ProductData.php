@@ -2,7 +2,7 @@
 class ProductData {
 	public static $tablename = "product";
 
-	public $id, $short_name, $code, $name, $description, $image, $price, $link, $category_id, $unit_id, $is_public, $in_existence, $is_featured, $created_at;
+	public $id, $short_name, $code, $name, $description, $image, $price, $link, $category_id, $unit_id, $is_public, $in_existence, $is_featured, $is_active, $created_at;
 	public $offer_txt, $order_at, $meta_title, $meta_description, $meta_keywords, $is_offert;
 
 	public function __construct(){
@@ -17,6 +17,7 @@ class ProductData {
 		$this->is_public = "0";
 		$this->in_existence = "0";
 		$this->is_featured = "0";
+		$this->is_active = "1";
 		$this->created_at = "NOW()";
 	}
 
@@ -29,12 +30,12 @@ class ProductData {
 	}
 
 	public static function delById($id){
-		$sql = "delete from ".self::$tablename." where id=$id";
+		$sql = "update ".self::$tablename." set is_active=0 where id=$id";
 		Executor::doit($sql);
 	}
 
 	public function del(){
-		$sql = "delete from ".self::$tablename." where id=$this->id";
+		$sql = "update ".self::$tablename." set is_active=0 where id=$this->id";
 		Executor::doit($sql);
 	}
 
@@ -55,37 +56,37 @@ class ProductData {
 	}
 
 	public static function getAll(){
-		$sql = "select * from ".self::$tablename." order by created_at desc";
+		$sql = "select * from ".self::$tablename." where is_active=1 order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}
 
 	public static function getPublicsByCategoryId($id){
-		$sql = "select * from ".self::$tablename." where category_id=$id and is_public=1 order by created_at desc";
+		$sql = "select * from ".self::$tablename." where category_id=$id and is_public=1 and is_active=1 order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}
 
 	public static function getLike($q){
-		$sql = "select * from ".self::$tablename." where name like '%$q%' or description like '%$q%'";
+		$sql = "select * from ".self::$tablename." where is_active=1 and (name like '%$q%' or description like '%$q%')";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}
 
 	public static function getFeatureds(){
-		$sql = "select * from ".self::$tablename." where is_featured=1 order by created_at desc";
+		$sql = "select * from ".self::$tablename." where is_featured=1 and is_active=1 order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}
 
 	public static function getNews(){
-		$sql = "select * from ".self::$tablename." order by created_at desc";
+		$sql = "select * from ".self::$tablename." where is_active=1 order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}
 
 	public static function getOffers(){
-		$sql = "select * from ".self::$tablename." where is_offert=1 order by created_at desc";
+		$sql = "select * from ".self::$tablename." where is_offert=1 and is_active=1 order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}

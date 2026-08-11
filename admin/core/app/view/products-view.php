@@ -63,7 +63,7 @@ if($user==null){ Core::redir("./");}
                 <div class="btn-list flex-nowrap">
                   <a href="../index.php?view=products&opt=open&id=<?php echo $cat->id; ?>" target="_blank" class="btn btn-default btn-sm"><i class="bi bi-link-45deg"></i></a> 
                   <a href="./?view=products&opt=edit&id=<?php echo $cat->id; ?>" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a> 
-                  <a href="./?action=products&opt=del&id=<?php echo $cat->id; ?>" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a> 
+                  <a href="./?action=products&opt=del&id=<?php echo $cat->id; ?>" class="btn btn-danger btn-sm btn-delete-product" data-name="<?php echo htmlspecialchars($cat->name); ?>"><i class="bi bi-trash"></i></a> 
                 </div>
               </td>
             </tr>
@@ -78,6 +78,54 @@ if($user==null){ Core::redir("./");}
     </div>
   </div>
 </div>
+<script>
+$(function(){
+  $(".btn-delete-product").on("click", function(e){
+    e.preventDefault();
+    var $btn = $(this);
+    var name = $btn.data("name");
+    var href = $btn.attr("href");
+
+    var challenge = Math.random() < 0.5 ? "text" : "math";
+    var expected, title, placeholder;
+    if(challenge === "text"){
+      expected = "ELIMINAR";
+      title = 'Para confirmar escribe la palabra <b>ELIMINAR</b>';
+      placeholder = "ELIMINAR";
+    }else{
+      var a = Math.floor(Math.random()*9)+1;
+      var b = Math.floor(Math.random()*9)+1;
+      var add = Math.random() < 0.5;
+      var x = Math.max(a,b), y = Math.min(a,b);
+      var question = add ? (x + " + " + y) : (x + " - " + y);
+      expected = add ? (x+y) : (x-y);
+      title = 'Para confirmar responde: \u00bfCu\u00e1nto es <b>' + question + '</b>?';
+      placeholder = "Resultado";
+    }
+
+    Swal.fire({
+      title: "\u00bfEliminar producto?",
+      html: 'Se eliminar\u00e1 <b>' + name + '</b> del men\u00fa y del panel.<br><br>' + title,
+      icon: "warning",
+      input: "text",
+      inputPlaceholder: placeholder,
+      showCancelButton: true,
+      confirmButtonText: "Eliminar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#d63939",
+      cancelButtonColor: "#2c3b41",
+      inputValidator: function(value){
+        if(!value) return "Debes responder la verificaci\u00f3n";
+        if(challenge === "text" && value.trim().toUpperCase() !== expected) return "Palabra incorrecta, int\u00e9ntalo de nuevo";
+        if(challenge === "math" && parseInt(value) !== expected) return "Resultado incorrecto, int\u00e9ntalo de nuevo";
+        return null;
+      }
+    }).then(function(result){
+      if(result.isConfirmed){ window.location.href = href; }
+    });
+  });
+});
+</script>
 
 <?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="new"):?>
 <?php $coin = ConfigurationData::getByPreffix("general_coin")->val; ?>

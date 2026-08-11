@@ -10,6 +10,7 @@
     <link href="./dist/css/tabler-vendors.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="assets/bootstrap-icons/bootstrap-icons.css">
     <script src="assets/jquery/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" type="text/css" href="assets/datatables/datatables.min.css">
     <script src="assets/datatables/datatables.min.js"></script>
     <style>
