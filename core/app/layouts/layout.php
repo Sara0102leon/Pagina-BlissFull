@@ -55,6 +55,14 @@
           
           <div class="navbar-nav flex-row order-md-last ms-auto">
             <div class="nav-item me-3">
+              <!-- Sede Selection Badge -->
+              <a href="#" class="nav-link px-2 d-flex align-items-center gap-1 small fw-bold text-muted" id="btn-change-sede" title="Cambiar sede">
+                <i class="bi bi-geo-alt-fill text-success"></i>
+                <span id="header-sede-name" class="d-none d-md-inline">Elegir sede</span>
+                <i class="bi bi-chevron-down extra-small d-none d-md-inline"></i>
+              </a>
+            </div>
+            <div class="nav-item me-3">
               <!-- BCV Rate Badge -->
               <span class="nav-link px-2 d-none d-md-flex align-items-center gap-1 small fw-bold text-success" title="Dólar BCV">
                 <i class="bi bi-currency-dollar"></i>
@@ -130,6 +138,10 @@
         
         <script>
         $(document).ready(function() {
+          $("#btn-change-sede").click(function(e) {
+            e.preventDefault();
+            if(typeof openSedeModal === "function") { openSedeModal(); }
+          });
           const urlParams = new URLSearchParams(window.location.search);
           if (urlParams.get('msg') === 'order_success') {
              Swal.fire({

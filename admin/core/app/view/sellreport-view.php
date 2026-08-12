@@ -17,6 +17,8 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="excel"){
         $rows .= "<tr>";
         $rows .= "<td>#".$b->id."</td>";
         $rows .= "<td>".htmlspecialchars($b->getClient()->getFullname())."</td>";
+        $b_sede_x = $b->getSede();
+        $rows .= "<td>".($b_sede_x ? htmlspecialchars($b_sede_x->name) : "-")."</td>";
         $rows .= "<td>".number_format($total,2)."</td>";
         $rows .= "<td>".number_format(0,2)."</td>";
         $rows .= "<td>".number_format($total,2)."</td>";
@@ -38,11 +40,12 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="excel"){
 <body>
 <table border="1">
   <tr>
-    <td colspan="8" style="font-weight:bold; font-size:14px;">REPORTE DE VENTAS - <?php echo $range_txt; ?></td>
+    <td colspan="9" style="font-weight:bold; font-size:14px;">REPORTE DE VENTAS - <?php echo $range_txt; ?></td>
   </tr>
   <tr>
     <th>ID</th>
     <th>Cliente</th>
+    <th>Sede</th>
     <th>SubTotal</th>
     <th>Descuento</th>
     <th>Total</th>
@@ -177,6 +180,7 @@ foreach($buys as $b){ $sum_total += $b->getTotal(); }
             <tr>
               <th>ID</th>
               <th>Cliente</th>
+              <th>Sede</th>
               <th>SubTotal</th>
               <th>Descuento</th>
               <th>Total</th>
@@ -201,6 +205,7 @@ foreach($buys as $b){ $sum_total += $b->getTotal(); }
             <tr>
               <td data-label="ID">#<?php echo $b->id; ?></td>
               <td data-label="Cliente"><?php echo htmlspecialchars($client->getFullname()); ?></td>
+              <td data-label="Sede"><?php $b_sede = $b->getSede(); echo $b_sede ? htmlspecialchars($b_sede->name) : "-"; ?></td>
               <td data-label="SubTotal"><?php echo $coin; ?> <?php echo number_format($total, 2); ?></td>
               <td data-label="Descuento"><?php echo $coin; ?> <?php echo number_format($discount, 2); ?></td>
               <td data-label="Total" class="fw-bold"><?php echo $coin; ?> <?php echo number_format($total - $discount, 2); ?></td>
@@ -224,6 +229,7 @@ foreach($buys as $b){ $sum_total += $b->getTotal(); }
           <tfoot>
             <tr class="fw-bold table-active">
               <td>TOTAL (<?php echo count($buys); ?> ventas)</td>
+              <td></td>
               <td></td>
               <td><?php echo $coin; ?> <?php echo number_format($sum_total, 2); ?></td>
               <td></td>

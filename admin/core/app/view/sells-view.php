@@ -32,6 +32,7 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
               <th></th>
               <th>Operacion</th>
               <th>Cliente</th>
+              <th>Sede</th>
               <th>Total</th>
               <th>Metodo de pago</th>
               <th>Estado</th>
@@ -48,6 +49,7 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
               <td><a href="./?view=sells&opt=open&id=<?php echo $b->id; ?>" class="btn btn-sm btn-default">Detalles</a></td>
               <td>#<?php echo $b->id; ?></td>
               <td><?php echo $b->getClient()->getFullname(); ?></td>
+              <td><?php $b_sede = $b->getSede(); echo $b_sede ? htmlspecialchars($b_sede->name) : '-'; ?></td>
               <td><?php echo $coin; ?> <?php echo number_format($b->getTotal()-$discount,2,".",","); ?></td>
               <td><?php echo $b->getPaymethod()->name; ?></td>
               <td><?php echo $b->getStatus()->name; ?></td>
@@ -152,6 +154,9 @@ $ivatxt = ConfigurationData::getByPreffix("general_iva_txt")->val;
       <div class="card-body">
         <p><strong>Cliente:</strong> <?php echo $client->getFullname(); ?><br>
         <strong>Teléfono:</strong> <?php echo $client->phone; ?><br>
+        <?php $b_sede2 = $buy->getSede(); if($b_sede2): ?>
+        <strong>Sede:</strong> <?php echo htmlspecialchars($b_sede2->name); ?> (WhatsApp: <?php echo htmlspecialchars($b_sede2->phone); ?>)<br>
+        <?php endif; ?>
         <strong>Dirección:</strong> <?php echo $client->address ? $client->address : "Recoger en sucursal"; ?><br>
         <strong>Metodo de pago:</strong> <?php echo $paymethod->name; ?><br>
         <?php $zone = $buy->getDeliveryZone(); if($zone): ?>

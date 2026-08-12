@@ -15,6 +15,10 @@ $pm_titular = ConfigurationData::getByPreffix("pago_movil_titular")?Configuratio
 $zelle_contact = ConfigurationData::getByPreffix("zelle_contact")?ConfigurationData::getByPreffix("zelle_contact")->val:"";
 $binance_contact = ConfigurationData::getByPreffix("binance_contact")?ConfigurationData::getByPreffix("binance_contact")->val:"";
 $zones = DeliveryZoneData::getAll();
+$sedes = SedeData::getActives();
+$sede_json = array();
+foreach($sedes as $sd){ array_push($sede_json, array("id"=>$sd->id,"name"=>$sd->name,"address"=>$sd->address,"phone"=>$sd->phone)); }
+$sede_json = json_encode($sede_json);
 $base_url = (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"]!="off" ? "https" : "http")."://".$_SERVER["HTTP_HOST"];
 $script_dir = str_replace("\\","/",dirname($_SERVER["SCRIPT_NAME"]));
 if(strpos($script_dir,"/core")!==false){ $script_dir = substr($script_dir,0,strpos($script_dir,"/core")); }
@@ -22,6 +26,45 @@ else if(strpos($script_dir,"/admin")!==false){ $script_dir = substr($script_dir,
 $base_url .= $script_dir;
 $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
 ?>
+
+<!-- Modal Selección de Sede -->
+<div class="modal modal-blur fade" id="modal-sede" tabindex="-1" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header" style="background: linear-gradient(135deg,#e67e22,#d35400); color: white;">
+        <div>
+          <h5 class="modal-title fw-bold"><i class="bi bi-geo-alt-fill me-2"></i>¿Cuál sede te queda más cerca?</h5>
+          <div class="small opacity-75">Elige tu sucursal y tu pedido se enviará directo a su WhatsApp</div>
+        </div>
+      </div>
+      <div class="modal-body p-3">
+        <?php if(count($sedes)>0): ?>
+        <div class="form-hint mb-3">Toca la sede que te queda más cerca y continúa:</div>
+        <div id="sede-list">
+          <?php foreach($sedes as $sd): ?>
+          <label class="sede-option d-block mb-2" data-id="<?php echo $sd->id; ?>" data-name="<?php echo htmlspecialchars($sd->name); ?>" data-phone="<?php echo preg_replace('/\D/','',$sd->phone); ?>">
+            <div class="d-flex align-items-center gap-3 border rounded-3 p-3 shadow-sm sede-card">
+              <div class="sede-check"><i class="bi bi-check-circle-fill h4 mb-0"></i></div>
+              <div class="flex-fill">
+                <div class="fw-bold h6 mb-0"><?php echo htmlspecialchars($sd->name); ?></div>
+                <div class="text-muted small"><?php echo htmlspecialchars($sd->address); ?></div>
+              </div>
+            </div>
+          </label>
+          <?php endforeach; ?>
+        </div>
+        <?php else: ?>
+          <p class="alert alert-warning mb-0">No hay sedes disponibles por ahora.</p>
+        <?php endif; ?>
+      </div>
+      <div class="modal-footer d-flex flex-column gap-2 border-0">
+        <button type="button" id="btn_confirm_sede" class="btn btn-primary w-100 py-3 rounded-pill fw-bold" <?php echo count($sedes)==0?'disabled':''; ?>>
+          CONTINUAR A ESTA SEDE <i class="bi bi-arrow-right ms-2"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Modal Checkout -->
 <div class="modal modal-blur fade" id="modal-checkout" tabindex="-1" role="dialog" aria-hidden="true">
@@ -32,6 +75,10 @@ $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+         <button type="button" class="btn btn-light border w-100 mb-3 d-flex align-items-center justify-content-between text-start" id="btn_checkout_sede">
+           <span><i class="bi bi-geo-alt-fill me-2 text-success"></i><span class="fw-bold" id="checkout_sede_name">Elegir tu sede</span></span>
+           <span class="small text-muted">Cambiar ▾</span>
+         </button>
          <div class="mb-3">
             <label class="form-label fw-bold">Tu Nombre</label>
             <input type="text" id="order_name" class="form-control" placeholder="¿Cómo te llamamos?">
@@ -201,6 +248,7 @@ $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
 const COIN = "$";
 const BS_SYMBOL = "Bs";
 const SITE_BASE = "<?php echo $base_url; ?>";
+const SEDES = <?php echo $sede_json; ?>;
 let currentCatId = "";
 let currentSearch = "";
 let pendingExtrasPid = null;
@@ -210,6 +258,35 @@ let pendingExtras = [];
 function fmt(n){ return COIN + n.toFixed(2); }
 function fmtBs(n){ return BS_SYMBOL + " " + n.toFixed(2); }
 function fmtComma(n){ return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+
+// ===== Sede Selection =====
+function getSelectedSede() {
+  const sid = localStorage.getItem("blissfull_sede_id");
+  if (!sid) return null;
+  let found = null;
+  SEDES.forEach(function(s){ if (String(s.id) === String(sid)) { found = s; } });
+  return found;
+}
+
+function setSedeUI() {
+  const sede = getSelectedSede();
+  const headerEl = document.getElementById("header-sede-name");
+  const checkoutEl = document.getElementById("checkout_sede_name");
+  const label = sede ? sede.name : "Elegir tu sede";
+  if (headerEl) { headerEl.textContent = label; }
+  if (checkoutEl) { checkoutEl.textContent = label; }
+}
+
+function selectSedeCard(id) {
+  $(".sede-option").removeClass("selected");
+  $(".sede-option[data-id='" + id + "']").addClass("selected");
+}
+
+function openSedeModal() {
+  const sede = getSelectedSede();
+  if (sede) { selectSedeCard(sede.id); }
+  $("#modal-sede").modal("show");
+}
 
 function updateGrid() {
   $.post("./?action=cart&opt=search", { q: currentSearch, cat_id: currentCatId }, function(data) {
@@ -358,6 +435,27 @@ function itemsWhatsAppText(items, delivery) {
 }
 
 $(document).ready(function() {
+  // Sede Selection Events
+  $(".sede-option").click(function() {
+    selectSedeCard($(this).data("id"));
+  });
+  $("#btn_confirm_sede").click(function() {
+    const sel = $(".sede-option.selected");
+    if (sel.length === 0) {
+      Swal.fire({ icon: "warning", title: "Elige una sede", text: "Selecciona la sede que te queda más cerca para continuar.", confirmButtonColor: "#e67e22" });
+      return;
+    }
+    localStorage.setItem("blissfull_sede_id", sel.data("id"));
+    setSedeUI();
+    $("#modal-sede").modal("hide");
+  });
+  $("#btn_checkout_sede").click(function() { openSedeModal(); });
+
+  setSedeUI();
+  if (!getSelectedSede()) {
+    setTimeout(function() { openSedeModal(); }, 600);
+  }
+
   // Category AJAX Toggle
   $(".btn-category-ajax").click(function() {
     $(".btn-category-ajax").removeClass("active");
@@ -422,6 +520,11 @@ $(document).ready(function() {
 
   // Confirm Order
   $("#btn_confirm_order").click(async function() {
+    const sede = getSelectedSede();
+    if (!sede) {
+      Swal.fire({ icon: "warning", title: "Elige tu sede", text: "Primero selecciona la sede que te queda más cerca, así tu pedido llega al WhatsApp correcto.", confirmButtonColor: "#e67e22" }).then(function(){ openSedeModal(); });
+      return;
+    }
     const name = $("#order_name").val().trim();
     const phone = $("#order_phone").val().trim();
     let address = $("#order_address").val().trim();
@@ -459,13 +562,15 @@ $(document).ready(function() {
       name: name,
       phone: phone,
       address: address,
+      sede_id: sede.id,
       paymethod_id: paymethodId,
       delivery_zone_id: delivery ? zoneSel : ""
     }, function(res) {
       clearCart();
 
-      const whatsappNum = "<?php echo $whatsapp_number; ?>";
+      const whatsappNum = sede.phone ? String(sede.phone).replace(/\D/g, "") : "<?php echo $whatsapp_number; ?>";
       let msg = "*🍕 NUEVA ORDEN - GENTE LO NUESTRO*%0A%0A";
+      msg += "*📌 Sede:* " + sede.name + "%0A";
       msg += "*👤 Cliente:* " + name + "%0A";
       msg += "*📞 Teléfono:* " + phone + "%0A";
       if(delivery){
@@ -527,4 +632,10 @@ $(document).ready(function() {
   border-color: var(--primary-color);
   box-shadow: 0 4px 10px rgba(230, 126, 34, 0.3);
 }
+.sede-option { cursor: pointer; }
+.sede-card { transition: 0.2s; background: #fff; }
+.sede-option:hover .sede-card { border-color: #2fb344; }
+.sede-check { color: #ced4da; }
+.sede-option.selected .sede-card { border-color: #2fb344; background: #f2fbf5; box-shadow: 0 4px 12px rgba(47, 179, 68, 0.2); }
+.sede-option.selected .sede-check { color: #2fb344; }
 </style>
