@@ -92,11 +92,11 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
 <script>
 $(function(){
   var EL_LV = [
-    { max: 2400,    color: "#2fb344", txt: "Esperando pago" },
+    { max: 1800,    color: "#2fb344", txt: "Esperando pago" },
     { max: 3600,    color: "#fd7e14", txt: "Riesgo de no pagar" },
     { max: 9999999, color: "#d63939", txt: "Posible pedido falso" }
   ];
-  var serverMs = Date.parse("<?php echo date('c'); ?>");
+  var serverMs = Date.parse("<?php echo date('Y-m-d H:i:s'); ?>".replace(" ", "T"));
   var startClient = Date.now();
 
   function fmtDur(sec){
