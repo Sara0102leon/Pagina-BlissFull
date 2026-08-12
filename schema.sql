@@ -156,11 +156,13 @@ create table buy (
 	created_at datetime,
 	paymethod_id int,
 	delivery_zone_id int,
+	sede_id int,
 	capture varchar(255),
 	foreign key(paymethod_id) references paymethod(id),
 	foreign key(coupon_id) references coupon(id),
 	foreign key(client_id) references client(id),
-	foreign key(status_id) references status(id)
+	foreign key(status_id) references status(id),
+	foreign key(sede_id) references sede(id)
 );
 
 create table buy_product(
@@ -185,6 +187,20 @@ create table product_extra (
 	name varchar(200),
 	price decimal(10,2) default 0
 );
+
+create table sede (
+	id int not null auto_increment primary key,
+	name varchar(200) not null,
+	address varchar(500),
+	phone varchar(20) not null,
+	is_active boolean default 1,
+	created_at datetime default current_timestamp
+);
+
+insert into sede (name, address, phone) values
+("Blissfull Villa Roca", "Villa Roca (sucursal principal)", "+584120000001"),
+("Blissfull Cabudare", "Cabudare (sucursal)", "+584120000002"),
+("Blissfull Agua Viva", "Agua Viva (sucursal)", "+584120000003");
 
 insert into delivery_zone (name, price) values
 ("Villa Roca 1, 2, 3 / Roca Terra", 1.00),

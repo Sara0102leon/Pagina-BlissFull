@@ -15,6 +15,7 @@ if($user==null){ Core::redir("./");}
         <div class="btn-list">
           <a href="./?view=settings&opt=payment" class="btn btn-default">Metodos de Pago</a>
           <a href="./?view=settings&opt=zones" class="btn btn-default">Zonas de Delivery</a>
+          <a href="./?view=settings&opt=sedes" class="btn btn-default">Sedes</a>
           <a href="./?view=settings&opt=units" class="btn btn-default">Unidades</a>
           <a href="./?view=settings&opt=ingredients" class="btn btn-default">Ingredientes</a>
           <a href="./?view=settings&opt=password" class="btn btn-default">Cambiar Contraseña</a>
@@ -265,6 +266,96 @@ $settings = ConfigurationData::getAll();
         </div>
         <?php else:?>
           <p class="alert alert-warning mb-0">No hay zonas registradas.</p>
+        <?php endif;?>
+      </div>
+    </div>
+  </div>
+</div>
+
+<?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="sedes"):?>
+<?php $sedes = SedeData::getAll(); ?>
+<div class="page-header d-print-none">
+  <div class="container-xl">
+    <div class="row g-2 align-items-center">
+      <div class="col">
+        <h2 class="page-title">Sedes</h2>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="page-body">
+  <div class="container-xl">
+    <div class="card mb-3">
+      <div class="card-status-top bg-success"></div>
+      <div class="card-header">
+        <h3 class="card-title">Agregar Sede</h3>
+      </div>
+      <form method="post" action="./?action=settings&opt=addsede">
+        <div class="card-body">
+          <div class="row g-2">
+            <div class="col-md-4">
+              <input type="text" name="name" class="form-control" placeholder="Nombre de la sede" required>
+            </div>
+            <div class="col-md-4">
+              <input type="text" name="address" class="form-control" placeholder="Dirección / Referencia">
+            </div>
+            <div class="col-md-3">
+              <input type="text" name="phone" class="form-control" placeholder="WhatsApp (+58412...)" required>
+            </div>
+            <div class="col-md-1">
+              <button type="submit" class="btn btn-success w-100">Agregar</button>
+            </div>
+          </div>
+          <p class="text-muted small mb-0 mt-2">El WhatsApp de la sede se usa en el envío del pedido. Ej: +584121234567</p>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <div class="card-status-top bg-primary"></div>
+      <div class="card-header">
+        <h3 class="card-title">Sedes Registradas</h3>
+      </div>
+      <div class="card-body">
+        <?php if(count($sedes)>0):?>
+        <div class="table-responsive">
+          <table class="table card-table table-vcenter">
+            <thead>
+              <tr>
+                <th>Sede</th>
+                <th>WhatsApp</th>
+                <th>Activa</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+            <?php foreach($sedes as $sd):?>
+              <tr>
+                <td>
+                  <form method="post" action="./?action=settings&opt=updsede" class="d-flex gap-2 align-items-center flex-wrap">
+                    <input type="hidden" name="id" value="<?php echo $sd->id; ?>">
+                    <input type="text" name="name" class="form-control" value="<?php echo htmlspecialchars($sd->name); ?>" required style="min-width:180px;">
+                    <input type="text" name="address" class="form-control" value="<?php echo htmlspecialchars($sd->address); ?>" placeholder="Dirección" style="min-width:180px;">
+                </td>
+                <td>
+                  <input type="text" name="phone" class="form-control" value="<?php echo htmlspecialchars($sd->phone); ?>" required style="min-width:140px;">
+                </td>
+                <td>
+                  <label class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" name="is_active" <?php if($sd->is_active){ echo "checked";} ?>>
+                  </label>
+                </td>
+                <td class="text-end text-nowrap">
+                  <button type="submit" class="btn btn-warning btn-sm"><i class="bi bi-check-lg"></i> Guardar</button>
+                  </form>
+                  <a href="./?action=settings&opt=delsede&id=<?php echo $sd->id; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Eliminar esta sede?');"><i class="bi bi-trash"></i></a>
+                </td>
+              </tr>
+            <?php endforeach;?>
+            </tbody>
+          </table>
+        </div>
+        <?php else:?>
+          <p class="alert alert-warning mb-0">No hay sedes registradas.</p>
         <?php endif;?>
       </div>
     </div>

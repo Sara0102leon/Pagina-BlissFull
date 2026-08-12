@@ -2,7 +2,7 @@
 class BuyData {
 	public static $tablename = "buy";
 
-	public $id, $k, $code, $coupon_id, $client_id, $created_at, $paymethod_id, $delivery_zone_id, $capture, $status_id, $name, $c;
+	public $id, $k, $code, $coupon_id, $client_id, $created_at, $paymethod_id, $delivery_zone_id, $sede_id, $capture, $status_id, $name, $c;
 
 	public function __construct(){
 		$this->id = null;
@@ -13,6 +13,7 @@ class BuyData {
 		$this->created_at = "NOW()";
 		$this->paymethod_id = "";
 		$this->delivery_zone_id = "";
+		$this->sede_id = "";
 		$this->capture = "";
 		$this->status_id = "";
 	}
@@ -21,11 +22,13 @@ class BuyData {
 	public function getClient(){ return ClientData::getById($this->client_id);}
 	public function getPaymethod(){ return PaymethodData::getById($this->paymethod_id);}
 	public function getDeliveryZone(){ return $this->delivery_zone_id ? DeliveryZoneData::getById($this->delivery_zone_id) : null; }
+	public function getSede(){ return $this->sede_id ? SedeData::getById($this->sede_id) : null; }
 
 	public function add(){
 		$zone_sql = $this->delivery_zone_id!="" ? $this->delivery_zone_id : "NULL";
-		$sql = "insert into ".self::$tablename." (k,code,coupon_id,client_id,created_at,paymethod_id,delivery_zone_id,capture,status_id) ";
-		$sql .= "value (\"$this->k\",\"$this->code\",$this->coupon_id,\"$this->client_id\",$this->created_at,$this->paymethod_id,$zone_sql," . ($this->capture!="" ? "\"$this->capture\"" : "NULL") . ",$this->status_id)";
+		$sede_sql = $this->sede_id!="" ? $this->sede_id : "NULL";
+		$sql = "insert into ".self::$tablename." (k,code,coupon_id,client_id,created_at,paymethod_id,delivery_zone_id,sede_id,capture,status_id) ";
+		$sql .= "value (\"$this->k\",\"$this->code\",$this->coupon_id,\"$this->client_id\",$this->created_at,$this->paymethod_id,$zone_sql,$sede_sql," . ($this->capture!="" ? "\"$this->capture\"" : "NULL") . ",$this->status_id)";
 		return Executor::doit($sql);
 	}
 

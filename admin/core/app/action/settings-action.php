@@ -80,6 +80,32 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="updingredient"){
 	}
 	Core::redir("./?view=settings&opt=ingredients");
 }
+else if(isset($_GET["opt"]) && $_GET["opt"]=="addsede"){
+	if(isset($_POST["name"]) && $_POST["name"]!="" && isset($_POST["phone"]) && $_POST["phone"]!=""){
+		$s = new SedeData();
+		$s->name = $_POST["name"];
+		$s->address = isset($_POST["address"]) ? $_POST["address"] : "";
+		$s->phone = $_POST["phone"];
+		$s->is_active = isset($_POST["is_active"]) ? "1" : "0";
+		$s->add();
+	}
+	Core::redir("./?view=settings&opt=sedes");
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="updsede"){
+	if(isset($_POST["id"]) && isset($_POST["name"]) && $_POST["name"]!="" && isset($_POST["phone"]) && $_POST["phone"]!=""){
+		$s = SedeData::getById($_POST["id"]);
+		$s->name = $_POST["name"];
+		$s->address = isset($_POST["address"]) ? $_POST["address"] : "";
+		$s->phone = $_POST["phone"];
+		$s->is_active = isset($_POST["is_active"]) ? "1" : "0";
+		$s->update();
+	}
+	Core::redir("./?view=settings&opt=sedes");
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="delsede"){
+	SedeData::delById($_GET["id"]);
+	Core::redir("./?view=settings&opt=sedes");
+}
 else if(isset($_GET["opt"]) && $_GET["opt"]=="changepass"){
 	if(count($_POST)>0){
 		$user = UserData::getById($_SESSION["user_id"]);

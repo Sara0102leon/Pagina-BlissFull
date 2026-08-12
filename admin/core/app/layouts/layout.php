@@ -75,6 +75,12 @@
                         </a>
                       </div>
                       <div class="col-6">
+                        <a href="./?view=settings&opt=sedes" class="d-flex flex-column flex-center text-center text-secondary py-3 px-2 link-hoverable">
+                          <i class="bi bi-shop text-success mb-2" style="font-size: 2rem;"></i>
+                          <span class="h5">Sedes</span>
+                        </a>
+                      </div>
+                      <div class="col-6">
                         <a href="./?view=settings&opt=units" class="d-flex flex-column flex-center text-center text-secondary py-3 px-2 link-hoverable">
                           <i class="bi bi-rulers text-purple mb-2" style="font-size: 2rem;"></i>
                           <span class="h5">Unidades</span>
@@ -200,6 +206,7 @@
                   <div class="dropdown-menu">
                     <a class="dropdown-item" href="./?view=users&opt=all">Usuarios</a>
                     <a class="dropdown-item" href="./?view=settings&opt=all">Ajustes</a>
+                    <a class="dropdown-item" href="./?view=settings&opt=sedes">Sedes</a>
                     <a class="dropdown-item" href="./?view=settings&opt=payment">Metodos de Pago</a>
                     <a class="dropdown-item" href="./?view=settings&opt=units">Unidades</a>
                     <a class="dropdown-item" href="./?view=settings&opt=ingredients">Ingredientes</a>
