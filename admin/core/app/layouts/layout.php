@@ -109,6 +109,22 @@
                 </div>
               </div>
             </div>
+            <div class="nav-item dropdown me-2" id="notif-wrap">
+              <a href="#" class="nav-link px-2 position-relative" data-bs-toggle="dropdown" aria-label="Notificaciones" title="Pedidos pendientes de pago">
+                <i class="bi bi-bell" style="font-size: 1.4rem;"></i>
+                <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" style="font-size: 0.65rem;">0</span>
+              </a>
+              <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow dropdown-menu-card shadow">
+                <div class="dropdown-header d-flex align-items-center border-bottom">
+                  <span class="fw-bold h5 mb-0"><i class="bi bi-bell-fill text-danger me-1"></i> Pedidos pendientes de pago</span>
+                </div>
+                <div id="notif-list" class="list-group list-group-flush overflow-auto" style="max-height: 65vh;"></div>
+                <div class="dropdown-header border-top d-flex justify-content-between">
+                  <span class="small text-muted" id="notif-updated"></span>
+                  <a href="./?view=sells&opt=all" class="small fw-bold link-primary">Ver todas las ventas <i class="bi bi-arrow-right"></i></a>
+                </div>
+              </div>
+            </div>
             <?php $u = UserData::getById($_SESSION["user_id"]); ?>
             <div class="nav-item dropdown ps-3">
               <a href="#" class="nav-link d-flex lh-1 p-0 px-2" data-bs-toggle="dropdown">
@@ -221,12 +237,91 @@
       </div>
     </div>
     
+    <style>
+      @keyframes notifFlash{ 0%,100%{ transform: translate(-50%,-50%) scale(1); } 50%{ transform: translate(-50%,-50%) scale(1.6); } }
+      #notif-badge.anim-flash{ animation: notifFlash 0.5s ease-in-out 2; }
+      .notif-item{ border-left: 4px solid #dee2e6; }
+      .notif-item:hover{ border-left-width: 4px; }
+    </style>
     <script src="./dist/libs/apexcharts/dist/apexcharts.min.js" defer></script>
     <script src="./dist/js/tabler.min.js" defer></script>
     <script type="text/javascript">
       $(document).ready(function(){
         $(".datatable").DataTable();
+        initNotifications();
       });
+
+      function initNotifications(){
+        var lastCount = -1;
+        var LEVEL = {
+          recent:   { label: "Reci\u00e9n llegado",        color: "#2fb344" },
+          wait:     { label: "Sin pagar",                 color: "#f59f00" },
+          risk:     { label: "Riesgo de no pagar",        color: "#fd7e14" },
+          critical: { label: "Posible pedido falso",      color: "#d63939" }
+        };
+
+        function fmtDur(sec){
+          sec = Math.max(0, parseInt(sec) || 0);
+          var h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
+          if(h > 0){ return h + "h " + String(m).padStart(2,"0") + "m"; }
+          return String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0");
+        }
+
+        function renderOrders(orders){
+          if(!orders || !orders.length){
+            $("#notif-list").html('<div class="text-center py-4 text-muted small"><i class="bi bi-check-circle text-success d-block h3 mb-1"></i>No hay pedidos pendientes de pago</div>');
+            return;
+          }
+          var html = "";
+          orders.forEach(function(o){
+            var lvl = LEVEL[o.level] || LEVEL.wait;
+            var zone = o.pickup ? "Recoger en sucursal" : (o.zone ? o.zone : "Delivery");
+            html += '<a class="list-group-item list-group-item-action notif-item" href="./?view=sells&opt=open&id=' + o.id + '">';
+            html += '<div class="d-flex align-items-start">';
+            html += '<div class="flex-fill">';
+            html += '<div class="fw-bold small">#' + o.id + ' \u00b7 ' + o.client + '</div>';
+            html += '<div class="small text-muted">' + o.paymethod + ' \u00b7 ' + zone + ' \u00b7 $' + Number(o.total).toFixed(2) + (o.phone ? ' \u00b7 ' + o.phone : '') + '</div>';
+            html += '</div>';
+            html += '<span class="ms-2 badge rounded-pill text-white" style="background:' + lvl.color + '; min-width:64px;" data-elapsed="' + o.elapsed + '">' + fmtDur(o.elapsed) + '</span>';
+            html += '</div>';
+            html += '<div class="small mt-1" style="color:' + lvl.color + ';"><i class="bi bi-clock-history me-1"></i>' + lvl.label + ' \u00b7 desde ' + o.created_at + '</div>';
+            html += '</a>';
+          });
+          $("#notif-list").html(html);
+          $("#notif-updated").text("Actualizado: " + new Date().toLocaleTimeString());
+        }
+
+        function flashBell(){
+          var $b = $("#notif-badge");
+          $b.addClass("anim-flash");
+          setTimeout(function(){ $b.removeClass("anim-flash"); }, 1100);
+        }
+
+        function loadNotifications(){
+          $.getJSON("./?action=notifications&opt=json", function(res){
+            if(!res || !res.ok){ return; }
+            var count = res.count || 0;
+            if(count > 0){
+              $("#notif-badge").removeClass("d-none").text(count > 99 ? "99+" : count);
+            } else {
+              $("#notif-badge").addClass("d-none").text("0");
+            }
+            if(lastCount >= 0 && count > lastCount){ flashBell(); }
+            lastCount = count;
+            renderOrders(res.orders || []);
+          }).fail(function(){});
+        }
+
+        setInterval(function(){
+          $("#notif-list [data-elapsed]").each(function(){
+            var s = (parseInt($(this).data("elapsed")) || 0) + 1;
+            $(this).data("elapsed", s).text(fmtDur(s));
+          });
+        }, 1000);
+
+        loadNotifications();
+        setInterval(loadNotifications, 20000);
+      }
     </script>
   </body>
 </html>

@@ -50,7 +50,14 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
               <td><?php echo $b->getClient()->getFullname(); ?></td>
               <td><?php echo $coin; ?> <?php echo number_format($b->getTotal()-$discount,2,".",","); ?></td>
               <td><?php echo $b->getPaymethod()->name; ?></td>
-              <td><?php echo $b->getStatus()->name; ?></td>
+              <td>
+                <?php if($b->status_id==1):?>
+                  <span class="badge text-white order-elapsed" data-created="<?php echo date("Y-m-d H:i:s", strtotime($b->created_at)); ?>" style="background:#f59f00;">--:--</span>
+                  <div class="small text-muted">Pendiente de pago</div>
+                <?php else:?>
+                  <?php echo $b->getStatus()->name; ?>
+                <?php endif;?>
+              </td>
               <td><?php echo $b->created_at; ?></td>
               <td>
                 <?php if($b->status_id==3):?>
@@ -82,6 +89,40 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
     </div>
   </div>
 </div>
+<script>
+$(function(){
+  var EL_LV = [
+    { max: 600,     color: "#2fb344", txt: "Recientemente" },
+    { max: 1800,    color: "#f59f00", txt: "Sin pagar" },
+    { max: 3600,    color: "#fd7e14", txt: "Riesgo de no pagar" },
+    { max: 9999999, color: "#d63939", txt: "Posible pedido falso" }
+  ];
+  var serverMs = Date.parse("<?php echo date('c'); ?>");
+  var startClient = Date.now();
+
+  function fmtDur(sec){
+    sec = Math.max(0, sec);
+    var h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
+    if(h > 0){ return h + "h " + String(m).padStart(2,"0") + "m"; }
+    return String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0");
+  }
+
+  function tick(){
+    var currentMs = serverMs + (Date.now() - startClient);
+    $(".order-elapsed").each(function(){
+      var created = Date.parse($(this).data("created").replace(" ", "T"));
+      var sec = Math.floor((currentMs - created) / 1000);
+      if(sec < 0){ sec = 0; }
+      var lv = EL_LV[0];
+      for(var i = 0; i < EL_LV.length; i++){ if(sec <= EL_LV[i].max){ lv = EL_LV[i]; break; } }
+      $(this).css("background", lv.color).text(fmtDur(sec)).attr("title", lv.txt + " \u00b7 " + sec + " segundos");
+    });
+  }
+
+  setInterval(tick, 1000);
+  tick();
+});
+</script>
 <script>
 $(function(){
   var STATUS_CONF = {
