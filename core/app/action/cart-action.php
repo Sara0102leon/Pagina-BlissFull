@@ -51,6 +51,23 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="dec"){
 		Core::redir("./?view=cart&opt=all");
 	}
 }
+else if(isset($_GET["opt"]) && $_GET["opt"]=="inc"){
+	if(isset($_SESSION["cart"])){
+		$cart = $_SESSION["cart"];
+		foreach($cart as $index => $c){
+			if($c["key"]==$_REQUEST["key"]){
+				$cart[$index]["q"]++;
+				break;
+			}
+		}
+		$_SESSION["cart"] = $cart;
+	}
+	if(isset($_GET["ajax"])){
+		View::load("cart-side");
+	}else{
+		Core::redir("./?view=cart&opt=all");
+	}
+}
 else if(isset($_GET["opt"]) && $_GET["opt"]=="del"){
 	if(isset($_SESSION["cart"])){
 		$cart = $_SESSION["cart"];
