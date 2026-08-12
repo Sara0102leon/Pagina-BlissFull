@@ -75,6 +75,18 @@
                         </a>
                       </div>
                       <div class="col-6">
+                        <a href="./?view=settings&opt=units" class="d-flex flex-column flex-center text-center text-secondary py-3 px-2 link-hoverable">
+                          <i class="bi bi-rulers text-purple mb-2" style="font-size: 2rem;"></i>
+                          <span class="h5">Unidades</span>
+                        </a>
+                      </div>
+                      <div class="col-6">
+                        <a href="./?view=settings&opt=ingredients" class="d-flex flex-column flex-center text-center text-secondary py-3 px-2 link-hoverable">
+                          <i class="bi bi-egg-fried text-orange mb-2" style="font-size: 2rem;"></i>
+                          <span class="h5">Ingredientes</span>
+                        </a>
+                      </div>
+                      <div class="col-6">
                         <a href="./?view=settings&opt=payment" class="d-flex flex-column flex-center text-center text-secondary py-3 px-2 link-hoverable">
                           <i class="bi bi-credit-card text-info mb-2" style="font-size: 2rem;"></i>
                           <span class="h5">Pagos</span>
@@ -173,6 +185,8 @@
                     <a class="dropdown-item" href="./?view=users&opt=all">Usuarios</a>
                     <a class="dropdown-item" href="./?view=settings&opt=all">Ajustes</a>
                     <a class="dropdown-item" href="./?view=settings&opt=payment">Metodos de Pago</a>
+                    <a class="dropdown-item" href="./?view=settings&opt=units">Unidades</a>
+                    <a class="dropdown-item" href="./?view=settings&opt=ingredients">Ingredientes</a>
                   </div>
                 </li>
                 <?php else: ?>

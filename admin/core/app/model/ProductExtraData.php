@@ -18,6 +18,12 @@ class ProductExtraData {
 		Executor::doit($sql);
 	}
 
+	public function update(){
+		$product_id = ($this->product_id === "" || $this->product_id === null) ? "NULL" : intval($this->product_id);
+		$sql = "update ".self::$tablename." set name=\"$this->name\",price=\"$this->price\",product_id=$product_id where id=$this->id";
+		Executor::doit($sql);
+	}
+
 	public static function delById($id){
 		$sql = "delete from ".self::$tablename." where id=$id";
 		Executor::doit($sql);

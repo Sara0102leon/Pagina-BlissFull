@@ -44,11 +44,41 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="addextra"){
 		$e->product_id = isset($_POST["product_id"]) ? $_POST["product_id"] : "";
 		$e->add();
 	}
-	Core::redir("./?view=settings&opt=extras");
+	Core::redir("./?view=settings&opt=ingredients");
 }
 else if(isset($_GET["opt"]) && $_GET["opt"]=="delextra"){
 	ProductExtraData::delById($_GET["id"]);
-	Core::redir("./?view=settings&opt=extras");
+	Core::redir("./?view=settings&opt=ingredients");
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="addunit"){
+	if(isset($_POST["name"]) && $_POST["name"]!=""){
+		$u = new UnitData();
+		$u->name = $_POST["name"];
+		$u->add();
+	}
+	Core::redir("./?view=settings&opt=units");
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="updunit"){
+	if(isset($_POST["id"]) && isset($_POST["name"]) && $_POST["name"]!=""){
+		$u = UnitData::getById($_POST["id"]);
+		$u->name = $_POST["name"];
+		$u->update();
+	}
+	Core::redir("./?view=settings&opt=units");
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="delunit"){
+	UnitData::delById($_GET["id"]);
+	Core::redir("./?view=settings&opt=units");
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="updingredient"){
+	if(isset($_POST["id"]) && isset($_POST["name"]) && $_POST["name"]!=""){
+		$e = ProductExtraData::getById($_POST["id"]);
+		$e->name = $_POST["name"];
+		$e->price = floatval($_POST["price"]);
+		$e->product_id = isset($_POST["product_id"]) ? $_POST["product_id"] : "";
+		$e->update();
+	}
+	Core::redir("./?view=settings&opt=ingredients");
 }
 else if(isset($_GET["opt"]) && $_GET["opt"]=="changepass"){
 	if(count($_POST)>0){

@@ -15,7 +15,8 @@ if($user==null){ Core::redir("./");}
         <div class="btn-list">
           <a href="./?view=settings&opt=payment" class="btn btn-default">Metodos de Pago</a>
           <a href="./?view=settings&opt=zones" class="btn btn-default">Zonas de Delivery</a>
-          <a href="./?view=settings&opt=extras" class="btn btn-default">Extras</a>
+          <a href="./?view=settings&opt=units" class="btn btn-default">Unidades</a>
+          <a href="./?view=settings&opt=ingredients" class="btn btn-default">Ingredientes</a>
           <a href="./?view=settings&opt=password" class="btn btn-default">Cambiar Contraseña</a>
         </div>
       </div>
@@ -270,16 +271,13 @@ $settings = ConfigurationData::getAll();
   </div>
 </div>
 
-<?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="extras"):?>
-<?php
-$extras = ProductExtraData::getAll();
-$products = ProductData::getAll();
-?>
+<?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="units"):?>
+<?php $units = UnitData::getAll(); ?>
 <div class="page-header d-print-none">
   <div class="container-xl">
     <div class="row g-2 align-items-center">
       <div class="col">
-        <h2 class="page-title">Extras de Productos</h2>
+        <h2 class="page-title">Unidades</h2>
       </div>
     </div>
   </div>
@@ -289,13 +287,89 @@ $products = ProductData::getAll();
     <div class="card mb-3">
       <div class="card-status-top bg-success"></div>
       <div class="card-header">
-        <h3 class="card-title">Agregar Extra</h3>
+        <h3 class="card-title">Agregar Unidad</h3>
+      </div>
+      <form method="post" action="./?action=settings&opt=addunit">
+        <div class="card-body">
+          <div class="row g-2">
+            <div class="col-md-8">
+              <input type="text" name="name" class="form-control" placeholder="Nombre de la unidad" required>
+            </div>
+            <div class="col-md-4">
+              <button type="submit" class="btn btn-success w-100">Agregar</button>
+            </div>
+          </div>
+          <p class="text-muted small mb-0 mt-2">Ej: Unidad, Media unidad, Pedazo, Docena, Kg...</p>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <div class="card-status-top bg-primary"></div>
+      <div class="card-header">
+        <h3 class="card-title">Unidades Registradas</h3>
+      </div>
+      <div class="card-body">
+        <?php if(count($units)>0):?>
+        <div class="table-responsive">
+          <table class="table card-table table-vcenter">
+            <thead>
+              <tr>
+                <th>Unidad</th>
+                <th class="w-1"></th>
+              </tr>
+            </thead>
+            <tbody>
+            <?php foreach($units as $u):?>
+              <tr>
+                <td>
+                  <form method="post" action="./?action=settings&opt=updunit" class="d-flex gap-2">
+                    <input type="hidden" name="id" value="<?php echo $u->id; ?>">
+                    <input type="text" name="name" class="form-control" value="<?php echo htmlspecialchars($u->name); ?>" required>
+                    <button type="submit" class="btn btn-warning btn-sm text-nowrap"><i class="bi bi-check-lg"></i> Guardar</button>
+                  </form>
+                </td>
+                <td class="text-end">
+                  <a href="./?action=settings&opt=delunit&id=<?php echo $u->id; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Eliminar esta unidad?');"><i class="bi bi-trash"></i></a>
+                </td>
+              </tr>
+            <?php endforeach;?>
+            </tbody>
+          </table>
+        </div>
+        <?php else:?>
+          <p class="alert alert-warning mb-0">No hay unidades registradas.</p>
+        <?php endif;?>
+      </div>
+    </div>
+  </div>
+</div>
+
+<?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="ingredients" || isset($_GET["opt"]) && $_GET["opt"]=="extras"):?>
+<?php
+$extras = ProductExtraData::getAll();
+$products = ProductData::getAll();
+?>
+<div class="page-header d-print-none">
+  <div class="container-xl">
+    <div class="row g-2 align-items-center">
+      <div class="col">
+        <h2 class="page-title">Ingredientes</h2>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="page-body">
+  <div class="container-xl">
+    <div class="card mb-3">
+      <div class="card-status-top bg-success"></div>
+      <div class="card-header">
+        <h3 class="card-title">Agregar Ingrediente</h3>
       </div>
       <form method="post" action="./?action=settings&opt=addextra">
         <div class="card-body">
           <div class="row g-2">
             <div class="col-md-3">
-              <input type="text" name="name" class="form-control" placeholder="Nombre del extra" required>
+              <input type="text" name="name" class="form-control" placeholder="Nombre del ingrediente" required>
             </div>
             <div class="col-md-3">
               <div class="input-group">
@@ -315,14 +389,14 @@ $products = ProductData::getAll();
               <button type="submit" class="btn btn-success w-100">Agregar</button>
             </div>
           </div>
-          <p class="text-muted small mb-0 mt-2">Ej: Jamón (3$), Extra de queso (5$). Si dejas "Aplica a TODOS" el extra se ofrece en todos los productos.</p>
+          <p class="text-muted small mb-0 mt-2">Ej: Jamón (3$), Extra de queso (5$). Si dejas "Aplica a TODOS" el ingrediente se ofrece en todos los productos.</p>
         </div>
       </form>
     </div>
     <div class="card">
       <div class="card-status-top bg-primary"></div>
       <div class="card-header">
-        <h3 class="card-title">Extras Registrados</h3>
+        <h3 class="card-title">Ingredientes Registrados</h3>
       </div>
       <div class="card-body">
         <?php if(count($extras)>0):?>
@@ -330,7 +404,7 @@ $products = ProductData::getAll();
           <table class="table card-table table-vcenter">
             <thead>
               <tr>
-                <th>Extra</th>
+                <th>Ingrediente</th>
                 <th>Precio</th>
                 <th>Aplica a</th>
                 <th></th>
@@ -339,11 +413,29 @@ $products = ProductData::getAll();
             <tbody>
             <?php foreach($extras as $e):?>
               <tr>
-                <td><?php echo htmlspecialchars($e->name); ?></td>
-                <td>$ <?php echo number_format($e->price,2,".",","); ?></td>
-                <td><?php echo $e->product_id ? htmlspecialchars(ProductData::getById($e->product_id)->name) : "Todos los productos"; ?></td>
-                <td class="text-end">
-                  <a href="./?action=settings&opt=delextra&id=<?php echo $e->id; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Eliminar este extra?');"><i class="bi bi-trash"></i></a>
+                <td>
+                  <form method="post" action="./?action=settings&opt=updingredient" class="d-flex gap-2 align-items-center">
+                    <input type="hidden" name="id" value="<?php echo $e->id; ?>">
+                    <input type="text" name="name" class="form-control" value="<?php echo htmlspecialchars($e->name); ?>" required>
+                </td>
+                <td>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="text" name="price" class="form-control" value="<?php echo $e->price; ?>" required style="min-width:90px;">
+                  </div>
+                </td>
+                <td>
+                  <select name="product_id" class="form-select">
+                    <option value="">-- TODOS --</option>
+                    <?php foreach($products as $pr):?>
+                    <option value="<?php echo $pr->id; ?>" <?php if($e->product_id==$pr->id){ echo "selected";} ?>><?php echo htmlspecialchars($pr->name); ?></option>
+                    <?php endforeach;?>
+                  </select>
+                </td>
+                <td class="text-end text-nowrap">
+                  <button type="submit" class="btn btn-warning btn-sm"><i class="bi bi-check-lg"></i> Guardar</button>
+                  </form>
+                  <a href="./?action=settings&opt=delextra&id=<?php echo $e->id; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Eliminar este ingrediente?');"><i class="bi bi-trash"></i></a>
                 </td>
               </tr>
             <?php endforeach;?>
@@ -351,7 +443,7 @@ $products = ProductData::getAll();
           </table>
         </div>
         <?php else:?>
-          <p class="alert alert-warning mb-0">No hay extras registrados.</p>
+          <p class="alert alert-warning mb-0">No hay ingredientes registrados.</p>
         <?php endif;?>
       </div>
     </div>
