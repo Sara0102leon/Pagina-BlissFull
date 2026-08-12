@@ -116,7 +116,7 @@
               </a>
               <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow dropdown-menu-card shadow">
                 <div class="dropdown-header d-flex align-items-center border-bottom">
-                  <span class="fw-bold h5 mb-0"><i class="bi bi-bell-fill text-danger me-1"></i> Pedidos sin pagar (40+ min)</span>
+                  <span class="fw-bold h5 mb-0"><i class="bi bi-bell-fill text-danger me-1"></i> Pedidos sin pagar (30+ min)</span>
                 </div>
                 <div id="notif-list" class="list-group list-group-flush overflow-auto" style="max-height: 65vh;"></div>
                 <div class="dropdown-header border-top d-flex justify-content-between">
@@ -272,7 +272,7 @@
           }
           var html = "";
           orders.forEach(function(o){
-            var lvl = LEVEL[o.level] || LEVEL.wait;
+            var lvl = LEVEL[o.level] || LEVEL.risk;
             var zone = o.pickup ? "Recoger en sucursal" : (o.zone ? o.zone : "Delivery");
             html += '<a class="list-group-item list-group-item-action notif-item" href="./?view=sells&opt=open&id=' + o.id + '">';
             html += '<div class="d-flex align-items-start">';
@@ -280,9 +280,9 @@
             html += '<div class="fw-bold small">#' + o.id + ' \u00b7 ' + o.client + '</div>';
             html += '<div class="small text-muted">' + o.paymethod + ' \u00b7 ' + zone + ' \u00b7 $' + Number(o.total).toFixed(2) + (o.phone ? ' \u00b7 ' + o.phone : '') + '</div>';
             html += '</div>';
-            html += '<span class="ms-2 badge rounded-pill text-white" style="background:' + lvl.color + '; min-width:64px;" data-elapsed="' + o.elapsed + '">' + fmtDur(o.elapsed) + '</span>';
+            html += '<span class="ms-2 badge rounded-pill text-white" style="background:' + lvl.color + ';">' + lvl.label + '</span>';
             html += '</div>';
-            html += '<div class="small mt-1" style="color:' + lvl.color + ';"><i class="bi bi-clock-history me-1"></i>' + lvl.label + ' \u00b7 desde ' + o.created_at + '</div>';
+            html += '<div class="small mt-1" style="color:' + lvl.color + ';"><i class="bi bi-clock-history me-1"></i>Sin pago desde ' + o.created_at + '</div>';
             html += '</a>';
           });
           $("#notif-list").html(html);
@@ -309,13 +309,6 @@
             renderOrders(res.orders || []);
           }).fail(function(){});
         }
-
-        setInterval(function(){
-          $("#notif-list [data-elapsed]").each(function(){
-            var s = (parseInt($(this).data("elapsed")) || 0) + 1;
-            $(this).data("elapsed", s).text(fmtDur(s));
-          });
-        }, 1000);
 
         loadNotifications();
         setInterval(loadNotifications, 20000);

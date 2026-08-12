@@ -24,6 +24,9 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
       <div class="card-body">
     <?php
     $buys = BuyData::getAll();
+    $pending_map = array();
+    $q_pend = Executor::doit("select id, TIMESTAMPDIFF(MINUTE, created_at, NOW()) as m from buy where status_id=1");
+    foreach(Model::many($q_pend[0], new BuyData()) as $r){ $pending_map[$r->id] = intval($r->m); }
     if(count($buys)>0):?>
       <div class="table-responsive">
         <table class="table card-table table-vcenter text-nowrap datatable">
@@ -52,8 +55,11 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
               <td><?php echo $b->getPaymethod()->name; ?></td>
               <td>
                 <?php if($b->status_id==1):?>
-                  <span class="badge text-white order-elapsed" data-created="<?php echo date("Y-m-d H:i:s", strtotime($b->created_at)); ?>" style="background:#f59f00;">--:--</span>
-                  <div class="small text-muted">Pendiente de pago</div>
+                  <?php if(intval($pending_map[$b->id])>=30):?>
+                    <span class="badge bg-danger" title="30+ minutos sin pago ni señales del cliente"><i class="bi bi-bell-fill me-1"></i>Sin señales de pago</span>
+                  <?php else:?>
+                    <span class="badge bg-secondary">Pendiente</span>
+                  <?php endif;?>
                 <?php else:?>
                   <?php echo $b->getStatus()->name; ?>
                 <?php endif;?>
@@ -89,39 +95,6 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
     </div>
   </div>
 </div>
-<script>
-$(function(){
-  var EL_LV = [
-    { max: 1800,    color: "#2fb344", txt: "Esperando pago" },
-    { max: 3600,    color: "#fd7e14", txt: "Riesgo de no pagar" },
-    { max: 9999999, color: "#d63939", txt: "Posible pedido falso" }
-  ];
-  var serverMs = Date.parse("<?php echo date('Y-m-d H:i:s'); ?>".replace(" ", "T"));
-  var startClient = Date.now();
-
-  function fmtDur(sec){
-    sec = Math.max(0, sec);
-    var h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
-    if(h > 0){ return h + "h " + String(m).padStart(2,"0") + "m"; }
-    return String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0");
-  }
-
-  function tick(){
-    var currentMs = serverMs + (Date.now() - startClient);
-    $(".order-elapsed").each(function(){
-      var created = Date.parse($(this).data("created").replace(" ", "T"));
-      var sec = Math.floor((currentMs - created) / 1000);
-      if(sec < 0){ sec = 0; }
-      var lv = EL_LV[0];
-      for(var i = 0; i < EL_LV.length; i++){ if(sec <= EL_LV[i].max){ lv = EL_LV[i]; break; } }
-      $(this).css("background", lv.color).text(fmtDur(sec)).attr("title", lv.txt + " \u00b7 " + sec + " segundos");
-    });
-  }
-
-  setInterval(tick, 1000);
-  tick();
-});
-</script>
 <script>
 $(function(){
   var STATUS_CONF = {
