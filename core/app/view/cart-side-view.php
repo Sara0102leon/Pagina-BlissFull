@@ -11,7 +11,7 @@ if(isset($_SESSION["cart"])){
   foreach($_SESSION["cart"] as $s){ $total_count += $s["q"]; }
 }
 ?>
-<div class="card border-0 shadow-sm overflow-hidden mb-4">
+<div class="card border-0 shadow-sm overflow-hidden mb-4 cart-side-card">
   <div class="card-header bg-primary text-white py-3">
     <h3 class="card-title fw-bold mb-0"><i class="bi bi-cart3 me-2"></i> Mi Carrito</h3>
   </div>
@@ -54,7 +54,7 @@ if(isset($_SESSION["cart"])){
                   <i class="bi bi-dash-circle"></i>
                 </button>
                 <span class="fw-bold small mx-1"><?php echo $s["q"]; ?></span>
-                <button type="button" class="btn btn-outline-secondary btn-icon btn-sm border-0 p-0" onclick="addToCart(<?php echo $p->id; ?>, '<?php echo addslashes($p->name); ?>', '<?php echo addslashes(json_encode(isset($s["extras"])?$s["extras"]:array())); ?>')" title="Agregar uno más">
+                <button type="button" class="btn btn-outline-secondary btn-icon btn-sm border-0 p-0" onclick="incCart('<?php echo $s["key"]; ?>', '<?php echo addslashes($p->name); ?>')" title="Agregar uno más">
                   <i class="bi bi-plus-circle"></i>
                 </button>
               </div>

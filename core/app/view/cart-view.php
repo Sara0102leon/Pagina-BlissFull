@@ -117,7 +117,7 @@ $total = 0;
                 </div>
 
                 <div class="d-grid">
-                  <button id="btn_whatsapp" class="btn btn-success btn-lg py-3 rounded-pill shadow-sm fw-bold border-0" style="background: #25D366;">
+                  <button id="btn_whatsapp" class="btn btn-success btn-lg py-3 rounded-pill shadow-sm fw-bold border-0" style="background: #ffde64; color: #090205;">
                     <i class="bi bi-whatsapp me-2 h3 mb-0"></i> 
                     <span class="h3 mb-0">CONFIRMAR Y PEDIR</span>
                   </button>
@@ -174,14 +174,14 @@ $total = 0;
               const coin = "<?php echo $coin_symbol; ?>";
               const total = "<?php echo number_format($total, 2); ?>";
               
-              let message = "*🍽️ NUEVA ORDEN REGISTRADA DE TACO MENU*%0A%0A";
-              message += "*👤 Cliente:* " + name + "%0A";
-              message += "*📞 Teléfono:* " + phone + "%0A";
-              message += "*📍 Dirección:* " + address + "%0A%0A";
-              message += "*🌮 Productos:*%0A";
+              let message = "*NUEVA ORDEN REGISTRADA - ALIANZAS BLISSFUL*%0A%0A";
+              message += "*Cliente:* " + name + "%0A";
+              message += "*Teléfono:* " + phone + "%0A";
+              message += "*Dirección:* " + address + "%0A%0A";
+              message += "*Productos:*%0A";
               message += "<?php echo $items_text; ?>";
               message += "%0A*------------------------------*%0A";
-              message += "*💰 TOTAL: " + coin + total + "*%0A";
+              message += "*TOTAL: " + coin + total + "*%0A";
               message += "*------------------------------*%0A%0A";
               message += "_Enviado desde el Menú Digital_";
 

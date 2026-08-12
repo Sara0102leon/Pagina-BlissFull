@@ -1,10 +1,11 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-bs-theme="dark">
   <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
-    <title>Taco Menu - Menú Digital</title>
+    <title>Alianzas Blissful - Menú Digital</title>
+    <link rel="icon" type="image/png" href="fotos%20para%20logos/favicon.png">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,20 +16,31 @@
     <link href="./dist/css/tabler.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="assets/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="assets/css/style.css">
+    <!-- Dark Theme (cargado al final para sobreescribir Tabler/Bootstrap) -->
+    <link rel="stylesheet" href="assets/css/custom-dark.css">
     
     <script src="assets/jquery/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
       :root {
         --tblr-font-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
-        --secondary-color: #c0392b; /* Deep Red */
-        --primary-color: #e67e22; /* Appentizing Orange */
+        --secondary-color: #c67718; /* Dorado Oscuro */
+        --primary-color: #ffde64; /* Dorado Claro */
       }
       body {
         font-family: 'Inter', sans-serif;
         overflow-x: hidden;
       }
       h1,h2,h3, .navbar-brand { font-family: 'Outfit', sans-serif; }
+      .brand-logo {
+        height: 42px;
+        width: auto;
+        max-width: 70vw;
+        object-fit: contain;
+      }
+      @media (max-width: 575.98px) {
+        .brand-logo { height: 34px; }
+      }
     </style>
   </head>
   <body>
@@ -39,17 +51,14 @@
     ?>
     <div class="page">
       <!-- Top Navbar -->
-      <header class="navbar navbar-expand-md navbar-light d-print-none shadow-sm sticky-top">
+      <header class="navbar navbar-expand-md navbar-dark d-print-none shadow-sm sticky-top">
         <div class="container-xl">
           <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu" aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
           <div class="navbar-brand pe-0 pe-md-3">
             <a href="./" class="text-decoration-none d-flex align-items-center">
-              <span class="avatar avatar-sm bg-primary-lt text-primary me-2 rounded">
-                 <i class="bi bi-shop h3 mb-0"></i>
-              </span>
-              <span class="h2 mb-0 fw-bold">TACO <span class="text-primary">MENU</span></span>
+              <img src="fotos%20para%20logos/LOGO%20HORIZONTAL.png" alt="Alianzas Blissful" class="brand-logo">
             </a>
           </div>
           
@@ -101,7 +110,7 @@
       <!-- Offcanvas Cart (Mobile/Desktop Swipe) -->
       <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
         <div class="offcanvas-header bg-primary text-white">
-          <h5 class="offcanvas-title fw-bold" id="offcanvasCartLabel"><i class="bi bi-bag-heart me-2"></i> Mi Orden de Tacos</h5>
+          <h5 class="offcanvas-title fw-bold" id="offcanvasCartLabel"><i class="bi bi-bag-heart me-2"></i> Mi Orden</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body p-0" id="offcanvas-cart-container">
@@ -125,7 +134,7 @@
       </div>
 
       <div class="page-wrapper">
-        <div class="collapse navbar-collapse bg-white border-bottom" id="navbar-menu">
+        <div class="collapse navbar-collapse border-bottom menu-collapse-dark" id="navbar-menu">
           <div class="container-xl py-3">
              <ul class="navbar-nav">
                 <li class="nav-item active"><a class="nav-link" href="./">Inicio</a></li>
@@ -147,17 +156,18 @@
              Swal.fire({
                icon: "success",
                title: "¡Pedido registrado!",
-               html: "Tu WhatsApp se ha abierto para enviar el detalle. 🍕",
+               html: "Tu WhatsApp se ha abierto para enviar el detalle.",
                confirmButtonText: "Perfecto",
-               confirmButtonColor: "#25D366"
+               confirmButtonColor: "#ffde64"
              });
           }
         });
         </script>
+          <footer class="site-footer pt-5 pb-4">
           <div class="container-xl">
             <div class="row">
               <div class="col-md-4 mb-4 mb-md-0">
-                <h3 class="text-white mb-3">Taco Menu</h3>
+                <h3 class="text-white mb-3">Alianzas Blissful</h3>
                 <p class="text-white-50 small">Disfruta de la mejor experiencia gastronómica desde tu celular. Escanea, ordena y disfruta.</p>
                 <div class="d-flex gap-3">
                    <a href="#" class="text-white-50 h4"><i class="bi bi-facebook"></i></a>
@@ -168,7 +178,7 @@
               <div class="col-6 col-md-4">
                 <h4 class="text-white mb-3">Menú</h4>
                 <ul class="list-unstyled text-white-50 small">
-                  <li><a href="#" class="text-reset text-decoration-none">Tacos</a></li>
+                  <li><a href="#" class="text-reset text-decoration-none">Especialidades</a></li>
                   <li><a href="#" class="text-reset text-decoration-none">Bebidas</a></li>
                   <li><a href="#" class="text-reset text-decoration-none">Postres</a></li>
                 </ul>
@@ -184,7 +194,7 @@
             </div>
             <hr class="border-secondary my-4">
             <div class="text-center text-white-50 small">
-              &copy; 2026 Taco Menu Digital. Powered by Antigravity.
+              &copy; 2026 Alianzas Blissful. Powered by Antigravity.
             </div>
           </div>
         </footer>
@@ -194,32 +204,36 @@
     <style>
       .scroll-hide::-webkit-scrollbar { display: none; }
       .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      .navbar-light { background: white !important; }
+      .navbar-dark { background: #090205 !important; border-bottom: 1px solid rgba(146, 34, 53, 0.6) !important; }
+      .navbar-dark .navbar-toggler-icon { filter: invert(1) grayscale(1); }
       .category-pill {
         display: inline-block;
         white-space: nowrap;
         padding: 0.5rem 1.25rem;
         border-radius: 2rem;
-        background: #f1f3f5;
-        color: #495057;
+        background: #270a16;
+        color: #a0a0a0;
         font-weight: 600;
         text-decoration: none;
         transition: 0.2s;
-        border: 1px solid transparent;
+        border: 1px solid rgba(146, 34, 53, 0.6);
       }
       .category-pill.active {
-        background: var(--primary-color);
-        color: white;
+        background: rgba(255, 222, 100, 0.08);
+        color: #ffde64;
+        border-color: #ffde64;
       }
       .category-pill:hover:not(.active) {
-        background: #e9ecef;
+        background: rgba(146, 34, 53, 0.4);
+        color: #ffffff;
       }
       .sticky-bottom-bar {
         position: fixed;
         bottom: 0;
         left: 0;
         width: 100%;
-        background: #e67e22; /* Primary Orange */
+        background: #090205; /* Base Oscura */
+        border-top: 1px solid rgba(146, 34, 53, 0.6);
         z-index: 1040; /* Just below offcanvas */
         padding-bottom: env(safe-area-inset-bottom);
       }
@@ -248,9 +262,10 @@
         bottom: 20px;
         right: 20px;
         z-index: 1060;
-        background: #fff;
-        color: #212529;
-        border-left: 4px solid #2fb344;
+        background: #090205;
+        color: #ffffff;
+        border-left: 4px solid #ffde64;
+        border: 1px solid rgba(146, 34, 53, 0.6);
         border-radius: 8px;
         padding: 10px 16px;
         font-size: 0.85rem;
@@ -259,6 +274,7 @@
         transform: translateY(20px);
         pointer-events: none;
         transition: opacity 0.3s ease, transform 0.3s ease;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
       }
       .cart-toast.show {
         opacity: 1;

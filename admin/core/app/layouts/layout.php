@@ -4,7 +4,7 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
-    <title>.: TacoMenu - Evilnapsis :.</title>
+    <title>.: Alianzas Blissful - Panel Administrativo :.</title>
     <!-- CSS files -->
     <link href="./dist/css/tabler.min.css" rel="stylesheet"/>
     <link href="./dist/css/tabler-vendors.min.css" rel="stylesheet"/>
@@ -34,7 +34,7 @@
           <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
             <a href="./" class="text-decoration-none d-flex align-items-center">
               <i class="bi bi-shield-lock text-primary me-2 h1 mb-0"></i>
-              <span>TACOMENU <span class="text-primary">ADMIN</span></span>
+              <span>ALIANZAS <span class="text-primary">BLISSFUL</span></span>
             </a>
           </h1>
           <div class="navbar-nav flex-row order-md-last">

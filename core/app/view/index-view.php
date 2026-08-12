@@ -31,7 +31,7 @@ $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
 <div class="modal modal-blur fade" id="modal-sede" tabindex="-1" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header" style="background: linear-gradient(135deg,#e67e22,#d35400); color: white;">
+      <div class="modal-header" style="background: linear-gradient(135deg,#922235,#51111f); color: white;">
         <div>
           <h5 class="modal-title fw-bold"><i class="bi bi-geo-alt-fill me-2"></i>¿Cuál sede te queda más cerca?</h5>
           <div class="small opacity-75">Elige tu sucursal y tu pedido se enviará directo a su WhatsApp</div>
@@ -71,7 +71,7 @@ $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content border-0 shadow-lg">
       <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title fw-bold">🛒 Estás a un paso de tu pizza</h5>
+        <h5 class="modal-title fw-bold"><i class="bi bi-cart-check-fill me-2"></i> Estás a un paso de tu pizza</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -120,11 +120,11 @@ $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
             <?php endforeach; ?>
          </div>
          <div id="pm_box" class="alert alert-success py-2 small d-none">
-            <strong>💳 PAGO MÓVIL</strong><br>
+            <strong><i class="bi bi-credit-card-fill me-1"></i> PAGO MÓVIL</strong><br>
             Banco: <span id="pm_bank"><?php echo htmlspecialchars($pm_bank); ?></span> | Cédula: <span id="pm_ci"><?php echo htmlspecialchars($pm_ci); ?></span><br>
             Teléfono: <span id="pm_phone"><?php echo htmlspecialchars($pm_phone); ?></span><br>
             Titular: <span id="pm_titular"><?php echo htmlspecialchars($pm_titular); ?></span><br>
-            <strong>💰 Monto a pagar: <span id="pm_amount">$0.00</span></strong>
+            <strong><i class="bi bi-cash-coin me-1"></i> Monto a pagar: <span id="pm_amount">$0.00</span></strong>
          </div>
          <div class="mb-0 bg-light rounded-3 p-3">
             <div class="d-flex justify-content-between mb-1">
@@ -181,32 +181,52 @@ $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
 </div>
 
 <div class="page-body">
+
+  <!-- Hero Slider Full-Bleed (Edge-to-Edge) - banners dinámicos del Admin -->
+  <section class="hero-slider-fullwidth">
+    <div id="heroSlider" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="3500">
+
+      <div class="carousel-inner">
+        <?php if(count($slides)>0): ?>
+          <?php foreach($slides as $idx => $s): ?>
+          <div class="carousel-item hero-slide-item <?php echo $idx==0?'active':''; ?>">
+            <img src="admin/storage/slides/<?php echo $s->image; ?>" class="hero-slide-img" alt="<?php echo htmlspecialchars($s->title); ?>">
+          </div>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <div class="carousel-item hero-slide-item active">
+            <div class="hero-slide-fallback"></div>
+          </div>
+        <?php endif; ?>
+      </div>
+
+      <?php if(count($slides)>1): ?>
+      <button class="carousel-control-prev" type="button" data-bs-target="#heroSlider" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#heroSlider" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      </button>
+      <?php endif; ?>
+
+    </div>
+  </section>
+
   <div class="container-xl">
+    <div class="text-center menu-cta">
+      <a href="#menu-anchor" id="btn-go-menu" class="btn btn-warning rounded-pill px-5 py-3 fw-bold style-yellow-btn">
+        VER MENÚ <i class="bi bi-arrow-down-circle-fill ms-1"></i>
+      </a>
+    </div>
     <div class="row g-4 mt-2">
       
       <!-- Menu Section (Full Width) -->
       <div class="col-md-12">
-        
-        <!-- Slider Section -->
-        <?php if(count($slides)>0): ?>
-        <div id="carousel-hero" class="carousel slide shadow-sm rounded-4 overflow-hidden mb-5" data-bs-ride="carousel">
-          <div class="carousel-inner">
-            <?php foreach($slides as $idx => $s): ?>
-            <div class="carousel-item <?php echo $idx==0?'active':''; ?>">
-              <img src="admin/storage/slides/<?php echo $s->image; ?>" class="d-block w-100" style="height: 200px; object-fit: cover;">
-              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded-3 p-2">
-                <h2 class="fw-bold h2 mb-0"><?php echo htmlspecialchars($s->title); ?></h2>
-              </div>
-            </div>
-            <?php endforeach; ?>
-          </div>
-        </div>
-        <?php endif; ?>
 
         <!-- Category Dynamic Navigation -->
-        <div class="mb-4 overflow-auto scroll-hide pb-2">
+        <div class="mb-4 overflow-auto scroll-hide pb-2" id="menu-anchor">
           <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn-category-ajax active" data-cat="">🔥 Destacados</button>
+            <button type="button" class="btn-category-ajax active" data-cat=""><i class="bi bi-star-fill me-1"></i> Destacados</button>
             <?php foreach($categories as $cat): ?>
             <button type="button" class="btn-category-ajax text-nowrap" data-cat="<?php echo $cat->id; ?>">
               <?php echo htmlspecialchars($cat->name); ?>
@@ -217,14 +237,14 @@ $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
 
         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
            <div>
-              <h2 class="h1 mb-0 fw-bold" id="grid-title">🔥 El Menú que Amas</h2>
-              <p class="text-muted mb-0">Selecciona tus favoritos y arma tu orden</p>
+              <h2 class="h1 mb-0 fw-bold" id="grid-title">Menú Principal</h2>
+              <p class="text-muted mb-0">Explora nuestras especialidades y realiza tu pedido</p>
            </div>
            <!-- Dynamic Search Bar -->
            <div class="search-container">
-              <div class="input-icon">
-                <span class="input-icon-addon"><i class="bi bi-search"></i></span>
-                <input type="text" id="product_search" class="form-control form-control-rounded shadow-sm" placeholder="Buscar platillo..." style="min-width: 280px;">
+              <div class="search-box">
+                <i class="bi bi-search search-box-icon"></i>
+                <input type="text" id="product_search" class="form-control search-box-input" placeholder="Buscar platillo..." style="min-width: 280px;">
               </div>
            </div>
         </div>
@@ -319,6 +339,15 @@ function addToCart(pid, pname, extrasJson) {
      $("#offcanvas-cart-container").html(data);
      updateUI();
      if(typeof showCartToast === "function") { showCartToast("Se agregó: " + pname); }
+  });
+}
+
+function incCart(key, pname) {
+  $.post("./?action=cart&opt=inc&ajax=1", { key: key }, function(data) {
+     $("#cart-container").html(data);
+     $("#offcanvas-cart-container").html(data);
+     updateUI();
+     if(typeof showCartToast === "function") { showCartToast("Se incrementó: " + pname); }
   });
 }
 
@@ -435,6 +464,13 @@ function itemsWhatsAppText(items, delivery) {
 }
 
 $(document).ready(function() {
+  // Hero "VER MENÚ" smooth scroll
+  $("#btn-go-menu").on("click", function(e) {
+    e.preventDefault();
+    const target = document.getElementById("menu-anchor");
+    if (target) { $("html,body").animate({ scrollTop: target.offsetTop - 90 }, 500); }
+  });
+
   // Sede Selection Events
   $(".sede-option").click(function() {
     selectSedeCard($(this).data("id"));
@@ -442,7 +478,7 @@ $(document).ready(function() {
   $("#btn_confirm_sede").click(function() {
     const sel = $(".sede-option.selected");
     if (sel.length === 0) {
-      Swal.fire({ icon: "warning", title: "Elige una sede", text: "Selecciona la sede que te queda más cerca para continuar.", confirmButtonColor: "#e67e22" });
+      Swal.fire({ icon: "warning", title: "Elige una sede", text: "Selecciona la sede que te queda más cerca para continuar.", confirmButtonColor: "#c67718" });
       return;
     }
     localStorage.setItem("blissfull_sede_id", sel.data("id"));
@@ -462,7 +498,7 @@ $(document).ready(function() {
     $(this).addClass("active");
     currentCatId = $(this).data("cat");
     const name = $(this).text().trim();
-    $("#grid-title").html(currentCatId === "" ? "🔥 Destacados" : "📁 " + name);
+    $("#grid-title").html(currentCatId === "" ? '<i class="bi bi-star-fill me-1"></i> Destacados' : '<i class="bi bi-folder2-open me-1"></i> ' + name);
     updateGrid();
   });
 
@@ -474,10 +510,10 @@ $(document).ready(function() {
     
     searchTimer = setTimeout(function() {
       if(currentSearch !== "") {
-        $("#grid-title").html('🔍 Buscando: ' + currentSearch);
+        $("#grid-title").html('<i class="bi bi-search me-1"></i> Buscando: ' + currentSearch);
       } else {
         const activeName = $(".btn-category-ajax.active").text().trim();
-        $("#grid-title").html(currentCatId === "" ? "🔥 Destacados" : "📁 " + activeName);
+        $("#grid-title").html(currentCatId === "" ? '<i class="bi bi-star-fill me-1"></i> Destacados' : '<i class="bi bi-folder2-open me-1"></i> ' + activeName);
       }
       updateGrid();
     }, 400); 
@@ -522,7 +558,7 @@ $(document).ready(function() {
   $("#btn_confirm_order").click(async function() {
     const sede = getSelectedSede();
     if (!sede) {
-      Swal.fire({ icon: "warning", title: "Elige tu sede", text: "Primero selecciona la sede que te queda más cerca, así tu pedido llega al WhatsApp correcto.", confirmButtonColor: "#e67e22" }).then(function(){ openSedeModal(); });
+      Swal.fire({ icon: "warning", title: "Elige tu sede", text: "Primero selecciona la sede que te queda más cerca, así tu pedido llega al WhatsApp correcto.", confirmButtonColor: "#c67718" }).then(function(){ openSedeModal(); });
       return;
     }
     const name = $("#order_name").val().trim();
@@ -535,16 +571,16 @@ $(document).ready(function() {
     const isPM = $(".payment-method:checked").data("pm") == 1;
 
     if (name === "" || phone === "") {
-      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor completa tu nombre y teléfono.", confirmButtonColor: "#e67e22" });
+      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor completa tu nombre y teléfono.", confirmButtonColor: "#c67718" });
       return;
     }
     if (isPickup) { address = "Recoger en sucursal"; }
     else if (address === "") {
-      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor escribe tu dirección de entrega.", confirmButtonColor: "#e67e22" });
+      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor escribe tu dirección de entrega.", confirmButtonColor: "#c67718" });
       return;
     }
     if (!isPickup && zoneSel === "0") {
-      Swal.fire({ icon: "warning", title: "Zona de entrega", text: "Por favor selecciona tu zona de entrega (o marca que pasarás a recoger).", confirmButtonColor: "#e67e22" });
+      Swal.fire({ icon: "warning", title: "Zona de entrega", text: "Por favor selecciona tu zona de entrega (o marca que pasarás a recoger).", confirmButtonColor: "#c67718" });
       return;
     }
 
@@ -569,23 +605,23 @@ $(document).ready(function() {
       clearCart();
 
       const whatsappNum = sede.phone ? String(sede.phone).replace(/\D/g, "") : "<?php echo $whatsapp_number; ?>";
-      let msg = "*🍕 NUEVA ORDEN - GENTE LO NUESTRO*%0A%0A";
-      msg += "*📌 Sede:* " + sede.name + "%0A";
-      msg += "*👤 Cliente:* " + name + "%0A";
-      msg += "*📞 Teléfono:* " + phone + "%0A";
+      let msg = "*NUEVA ORDEN - ALIANZAS BLISSFUL*%0A%0A";
+      msg += "*Sede:* " + sede.name + "%0A";
+      msg += "*Cliente:* " + name + "%0A";
+      msg += "*Teléfono:* " + phone + "%0A";
       if(delivery){
-        msg += "*📍 Dirección:* " + address + "%0A";
-        msg += "*🚚 Zona (Delivery):* " + zoneName + "%0A";
-        msg += "*💰 Delivery:* " + fmt(t.delivery) + "%0A";
+        msg += "*Dirección:* " + address + "%0A";
+        msg += "*Zona (Delivery):* " + zoneName + "%0A";
+        msg += "*Delivery:* " + fmt(t.delivery) + "%0A";
       } else {
-        msg += "*📍 Entrega:* Recoger en sucursal%0A";
+        msg += "*Entrega:* Recoger en sucursal%0A";
       }
-      msg += "*💳 Pagará con:* " + paymethodName + "%0A%0A";
-      msg += "*🍕 Productos:*%0A" + itemsWhatsAppText(items, delivery);
+      msg += "*Pago:* " + paymethodName + "%0A%0A";
+      msg += "*Productos:*%0A" + itemsWhatsAppText(items, delivery);
       msg += "%0A*------------------------------*%0A";
-      msg += "*💰 SUBTOTAL (US$): " + fmt(t.subtotal) + "*%0A";
-      msg += "*💵 TOTAL (US$): " + fmt(t.total) + "*%0A";
-      msg += "*💵 TOTAL (Bs): " + (bcvRate > 0 ? fmtBs(t.total * bcvRate) : "a confirmar") + "*%0A";
+      msg += "*SUBTOTAL (US$): " + fmt(t.subtotal) + "*%0A";
+      msg += "*TOTAL (US$): " + fmt(t.total) + "*%0A";
+      msg += "*TOTAL (Bs): " + (bcvRate > 0 ? fmtBs(t.total * bcvRate) : "a confirmar") + "*%0A";
       msg += "*------------------------------*%0A";
       msg += isPM ? "_El cliente pagó/pagará el monto indicado. Solicita el capture de pago por este chat antes de confirmar._" : "_El cliente confirmará el pago._";
 
@@ -594,13 +630,13 @@ $(document).ready(function() {
       Swal.fire({
         icon: "success",
         title: "¡Pedido enviado!",
-        html: "Tu pedido ha sido enviado por WhatsApp. Te confirmaremos pronto. 🍕",
+        html: "Tu pedido ha sido enviado por WhatsApp. Te confirmaremos pronto.",
         confirmButtonText: "¡Genial!",
-        confirmButtonColor: "#25D366"
+        confirmButtonColor: "#ffde64"
       }).then(function(){ location.reload(); });
     }).fail(function() {
       btn.prop("disabled", false).html('CONFIRMAR Y PEDIR POR WHATSAPP <i class="bi bi-whatsapp ms-2"></i>');
-      Swal.fire({ icon: "error", title: "Error", text: "Ocurrió un error al registrar tu pedido. Intenta de nuevo.", confirmButtonColor: "#d63939" });
+      Swal.fire({ icon: "error", title: "Error", text: "Ocurrió un error al registrar tu pedido. Intenta de nuevo.", confirmButtonColor: "#922235" });
     });
   });
 
@@ -613,29 +649,29 @@ $(document).ready(function() {
 <style>
 .product-card { transition: 0.3s; cursor: default; }
 .product-card:hover { transform: translateY(-5px); }
-.text-truncate-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .btn-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
 .scroll-hide::-webkit-scrollbar { display: none; }
 .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
 .btn-category-ajax {
-  border: 1px solid #dee2e6;
-  background: white;
+  border: 1px solid rgba(146, 34, 53, 0.6);
+  background: transparent;
   padding: 0.5rem 1.25rem;
   border-radius: 2rem;
   font-weight: 600;
-  color: #495057;
+  color: #a0a0a0;
   transition: 0.2s;
 }
+.btn-category-ajax:hover { color: #ffffff; border-color: rgba(255, 222, 100, 0.5); }
 .btn-category-ajax.active {
-  background: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-  box-shadow: 0 4px 10px rgba(230, 126, 34, 0.3);
+  background: rgba(255, 222, 100, 0.08);
+  color: #ffde64;
+  border-color: #ffde64;
+  box-shadow: 0 0 0 1px rgba(255, 222, 100, 0.25);
 }
 .sede-option { cursor: pointer; }
-.sede-card { transition: 0.2s; background: #fff; }
-.sede-option:hover .sede-card { border-color: #2fb344; }
-.sede-check { color: #ced4da; }
-.sede-option.selected .sede-card { border-color: #2fb344; background: #f2fbf5; box-shadow: 0 4px 12px rgba(47, 179, 68, 0.2); }
-.sede-option.selected .sede-check { color: #2fb344; }
+.sede-card { transition: 0.2s; background: #270a16; }
+.sede-option:hover .sede-card { border-color: rgba(255, 222, 100, 0.45); }
+.sede-check { color: rgba(255, 222, 100, 0.4); }
+.sede-option.selected .sede-card { border-color: #ffde64; background: rgba(255, 222, 100, 0.07); box-shadow: 0 4px 12px rgba(255, 222, 100, 0.15); }
+.sede-option.selected .sede-check { color: #ffde64; }
 </style>
