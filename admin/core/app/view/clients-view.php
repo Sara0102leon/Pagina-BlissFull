@@ -30,13 +30,18 @@ if($user==null){ Core::redir("./");}
       <div class="card-body">
     <?php
     $clients = ClientData::getAll();
+    $counts = array();
+    $q_counts = Executor::doit("select client_id, count(*) as c from buy where status_id<>3 group by client_id");
+    foreach(Model::many($q_counts[0],new BuyData()) as $r){ $counts[$r->client_id] = intval($r->c); }
     if(count($clients)>0):?>
       <div class="table-responsive">
         <table class="table card-table table-vcenter text-nowrap datatable">
           <thead>
             <tr>
               <th>Nombre</th>
+              <th>Teléfono</th>
               <th>Email</th>
+              <th>Pedidos</th>
               <th class="w-1"></th>
             </tr>
           </thead>
@@ -44,7 +49,13 @@ if($user==null){ Core::redir("./");}
           <?php foreach($clients as $cat):?>
             <tr>
               <td><?php echo $cat->getFullname(); ?></td>
+              <td><?php echo $cat->phone; ?></td>
               <td><?php echo $cat->email; ?></td>
+              <td>
+                <?php $n = isset($counts[$cat->id]) ? $counts[$cat->id] : 0; ?>
+                <?php echo $n; ?>
+                <?php if($n>=8):?> <span class="badge bg-success ms-1">Cliente frecuente</span><?php endif; ?>
+              </td>
               <td>
                 <div class="btn-list flex-nowrap">
                   <a href="./?view=clients&opt=edit&id=<?php echo $cat->id; ?>" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a> 

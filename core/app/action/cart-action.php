@@ -96,15 +96,25 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="clear"){
 else if(isset($_GET["opt"]) && $_GET["opt"]=="buy"){
 	if(!empty($_POST) && isset($_SESSION["cart"]) && count($_SESSION["cart"])>0){
 		$client = null;
-		$phone = $_POST["phone"];
-		$sql = "select * from client where phone=\"$phone\" order by id desc limit 1";
+		$phone = trim($_POST["phone"]);
+		$name = trim($_POST["name"]);
+
+		// 1) mismo telefono + mismo nombre -> cliente recurrente
+		$sql = "select * from client where phone=\"$phone\" and lower(trim(name))=lower(trim(\"$name\")) order by id desc limit 1";
 		$query = Executor::doit($sql);
 		$client = Model::one($query[0],new ClientData());
 
+		// 2) mismo telefono pero nombre diferente -> se usa el cliente existente
+		if($client==null){
+			$sql = "select * from client where phone=\"$phone\" order by id desc limit 1";
+			$query = Executor::doit($sql);
+			$client = Model::one($query[0],new ClientData());
+		}
+
 		if($client==null){
 			$client = new ClientData();
-			$client->name = $_POST["name"];
-			$client->phone = $_POST["phone"];
+			$client->name = $name;
+			$client->phone = $phone;
 			$client->address = $_POST["address"];
 			$client->email = "";
 			$client->password = "";
@@ -114,8 +124,12 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="buy"){
 			$query_find = Executor::doit($sql_find);
 			$client = Model::one($query_find[0],new ClientData());
 		}else{
-			$client->name = $_POST["name"];
-			$client->lastname = "";
+			$q_ped = Executor::doit("select count(*) as c from buy where client_id=".intval($client->id)." and status_id<>3");
+			$pedidos = Model::one($q_ped[0],new BuyData());
+			// solo se renombra el cliente si nunca ha completado un pedido (evita que datos de prueba arruinen el nombre)
+			if(trim($client->name)!=="" && strcasecmp(trim($client->name),$name)!=0 && intval($pedidos->c)==0){
+				$client->name = $name;
+			}
 			$client->address = $_POST["address"];
 			$client->update();
 		}
@@ -149,6 +163,19 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="buy"){
 		unset($_SESSION["cart"]);
 		echo "ok";
 	}
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="check"){
+	header("Content-Type: application/json");
+	$phone = trim(isset($_POST["phone"])?$_POST["phone"]:"");
+	$frequent = false;
+	$orders = 0;
+	if($phone!=""){
+		$sql = "select cl.id, count(b.id) as c from client cl left join buy b on b.client_id=cl.id and b.status_id<>3 where cl.phone=\"$phone\" group by cl.id order by c desc limit 1";
+		$query = Executor::doit($sql);
+		$row = Model::one($query[0],new BuyData());
+		if($row){ $orders = intval($row->c); $frequent = $orders>=8; }
+	}
+	echo json_encode(array("frequent"=>$frequent,"orders"=>$orders));
 }
 else if(isset($_GET["opt"]) && $_GET["opt"]=="search"){
 	View::load("product-grid");

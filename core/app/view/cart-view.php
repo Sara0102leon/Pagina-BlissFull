@@ -90,6 +90,9 @@ $total = 0;
                    <div class="col-md-5">
                       <label class="form-label fw-bold">Teléfono / WhatsApp</label>
                       <input type="tel" id="order_phone" class="form-control form-control-lg border-primary-lt" placeholder="Tu celular" required>
+                      <div id="frequent_alert" class="d-none mt-2">
+                        <span class="badge bg-success fs-5"><i class="bi bi-star-fill me-1"></i> Cliente frecuente: gracias por preferirnos!</span>
+                      </div>
                    </div>
                 </div>
                 <div class="mb-0">
@@ -130,6 +133,23 @@ $total = 0;
         
         <script>
         $(document).ready(function() {
+          var freq_timer = null;
+          $("#order_phone").on("input", function() {
+            clearTimeout(freq_timer);
+            const phone = $(this).val().trim();
+            const $alert = $("#frequent_alert");
+            if (phone.length < 7) { $alert.addClass("d-none"); return; }
+            freq_timer = setTimeout(function() {
+              $.post("./?action=cart&opt=check", { phone: phone }, function(res) {
+                if (res && res.frequent) {
+                  $alert.removeClass("d-none");
+                } else {
+                  $alert.addClass("d-none");
+                }
+              });
+            }, 600);
+          });
+
           $("#btn_whatsapp").click(function() {
             const name = $("#order_name").val().trim();
             const phone = $("#order_phone").val().trim();
