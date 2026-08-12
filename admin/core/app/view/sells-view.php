@@ -92,8 +92,7 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
 <script>
 $(function(){
   var EL_LV = [
-    { max: 600,     color: "#2fb344", txt: "Recientemente" },
-    { max: 1800,    color: "#f59f00", txt: "Sin pagar" },
+    { max: 2400,    color: "#2fb344", txt: "Esperando pago" },
     { max: 3600,    color: "#fd7e14", txt: "Riesgo de no pagar" },
     { max: 9999999, color: "#d63939", txt: "Posible pedido falso" }
   ];

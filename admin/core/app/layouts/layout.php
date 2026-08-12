@@ -71,7 +71,7 @@
                       <div class="col-6">
                         <a href="./?view=categories&opt=all" class="d-flex flex-column flex-center text-center text-secondary py-3 px-2 link-hoverable">
                           <i class="bi bi-tags text-warning mb-2" style="font-size: 2rem;"></i>
-                          <span class="h5">Categorías</span>
+                          <span class="h5">CategorÃ­as</span>
                         </a>
                       </div>
                       <div class="col-6">
@@ -116,7 +116,7 @@
               </a>
               <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow dropdown-menu-card shadow">
                 <div class="dropdown-header d-flex align-items-center border-bottom">
-                  <span class="fw-bold h5 mb-0"><i class="bi bi-bell-fill text-danger me-1"></i> Pedidos pendientes de pago</span>
+                  <span class="fw-bold h5 mb-0"><i class="bi bi-bell-fill text-danger me-1"></i> Pedidos sin pagar (40+ min)</span>
                 </div>
                 <div id="notif-list" class="list-group list-group-flush overflow-auto" style="max-height: 65vh;"></div>
                 <div class="dropdown-header border-top d-flex justify-content-between">
@@ -135,7 +135,7 @@
                 </div>
               </a>
               <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                <a href="./?view=settings&opt=all" class="dropdown-item">Configuración</a>
+                <a href="./?view=settings&opt=all" class="dropdown-item">ConfiguraciÃ³n</a>
                 <div class="dropdown-divider"></div>
                 <a href="./?action=access&opt=logout" class="dropdown-item text-danger">Salir</a>
               </div>
@@ -177,7 +177,7 @@
                 <li class="nav-item">
                   <a class="nav-link" href="./?view=categories&opt=all" >
                     <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="bi bi-tags"></i></span>
-                    <span class="nav-link-title">Categorías</span>
+                    <span class="nav-link-title">CategorÃ­as</span>
                   </a>
                 </li>
                 <li class="nav-item">
@@ -209,7 +209,7 @@
                   <li class="nav-item">
                     <a class="nav-link" href="./?view=login" >
                       <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="bi bi-box-arrow-in-right"></i></span>
-                      <span class="nav-link-title">Iniciar Sesión</span>
+                      <span class="nav-link-title">Iniciar SesiÃ³n</span>
                     </a>
                   </li>
                 <?php endif; ?>
@@ -254,10 +254,8 @@
       function initNotifications(){
         var lastCount = -1;
         var LEVEL = {
-          recent:   { label: "Reci\u00e9n llegado",        color: "#2fb344" },
-          wait:     { label: "Sin pagar",                 color: "#f59f00" },
-          risk:     { label: "Riesgo de no pagar",        color: "#fd7e14" },
-          critical: { label: "Posible pedido falso",      color: "#d63939" }
+          risk:     { label: "Riesgo de no pagar",   color: "#fd7e14" },
+          critical: { label: "Posible pedido falso", color: "#d63939" }
         };
 
         function fmtDur(sec){
@@ -269,7 +267,7 @@
 
         function renderOrders(orders){
           if(!orders || !orders.length){
-            $("#notif-list").html('<div class="text-center py-4 text-muted small"><i class="bi bi-check-circle text-success d-block h3 mb-1"></i>No hay pedidos pendientes de pago</div>');
+            $("#notif-list").html('<div class="text-center py-4 text-muted small"><i class="bi bi-check-circle text-success d-block h3 mb-1"></i>No hay pedidos sin pago a tiempo</div>');
             return;
           }
           var html = "";
@@ -325,3 +323,5 @@
     </script>
   </body>
 </html>
+
+

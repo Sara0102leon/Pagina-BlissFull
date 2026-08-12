@@ -10,10 +10,8 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="json"){
 	foreach($rows as $b){
 		$elapsed = $now - strtotime($b->created_at);
 		if($elapsed < 0){ $elapsed = 0; }
-		if($elapsed <= 600){
-			$level = "recent";
-		}else if($elapsed <= 1800){
-			$level = "wait";
+		if($elapsed <= 2400){
+			continue; // solo se notifican pedidos con 40+ minutos sin pagar
 		}else if($elapsed <= 3600){
 			$level = "risk";
 		}else{
