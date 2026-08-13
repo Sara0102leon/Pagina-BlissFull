@@ -58,9 +58,9 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
               <td>
                 <?php if($b->status_id==1):?>
                   <?php if(intval($pending_map[$b->id])>=30):?>
-                    <span class="badge bg-danger" title="30+ minutos sin pago ni señales del cliente"><i class="bi bi-bell-fill me-1"></i>Sin señales de pago</span>
+                    <span class="badge bg-danger text-white" title="30+ minutos sin pago ni señales del cliente"><i class="bi bi-bell-fill me-1"></i>Sin señales de pago</span>
                   <?php else:?>
-                    <span class="badge bg-secondary">Pendiente</span>
+                    <span class="badge bg-warning text-dark">Pendiente</span>
                   <?php endif;?>
                 <?php else:?>
                   <?php echo $b->getStatus()->name; ?>
@@ -69,7 +69,7 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
               <td><?php echo $b->created_at; ?></td>
               <td>
                 <?php if($b->status_id==3):?>
-                  <span class="badge bg-danger"><i class="bi bi-x-lg me-1"></i>Cancelado</span>
+                  <span class="badge bg-danger text-white"><i class="bi bi-x-lg me-1"></i>Cancelado</span>
                 <?php elseif($b->status_id!=5):?>
                   <?php $is_pickup = ($b->delivery_zone_id=="" || strpos(strtolower($b->getClient()->address), "sucursal") !== false); ?>
                   <?php $st = intval($b->status_id); ?>

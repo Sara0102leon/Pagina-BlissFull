@@ -54,7 +54,7 @@ if($user==null){ Core::redir("./");}
               <td>
                 <?php $n = isset($counts[$cat->id]) ? $counts[$cat->id] : 0; ?>
                 <?php echo $n; ?>
-                <?php if($n>=8):?> <span class="badge bg-success ms-1">Cliente frecuente</span><?php endif; ?>
+                <?php if($n>=8):?> <span class="badge bg-success text-white ms-1">Cliente frecuente</span><?php endif; ?>
               </td>
               <td>
                 <div class="btn-list flex-nowrap">

@@ -812,11 +812,40 @@ body {
 }
 .sede-option.selected .sede-check { color: var(--tt-gold); }
 
+/* Refuerzo oscuro del modal de selección de sede (evita fondo blanco) */
+#modal-sede .modal-content,
+#modal-checkout .modal-content,
+#modal-extras .modal-content {
+  background: #161616 !important;
+  color: var(--tt-text) !important;
+}
+#modal-sede .modal-body,
+#modal-checkout .modal-body,
+#modal-extras .modal-body { background: #161616; }
+#sede-list .sede-card {
+  background: #1e1e1e !important;
+  color: var(--tt-text) !important;
+  border-color: rgba(255, 183, 3, 0.25) !important;
+}
+#sede-list .sede-card .small,
+#sede-list .sede-card .text-muted { color: var(--tt-muted) !important; }
+#sede-list .sede-card:hover { border-color: var(--tt-gold) !important; }
+
 /* ================= FORMS ================= */
 .form-control, .form-select {
   background-color: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.14);
   color: #ffffff;
+  color-scheme: dark;
+}
+.form-select option,
+.form-select optgroup {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+.form-select option:checked {
+  background-color: var(--tt-gold) !important;
+  color: #161616 !important;
 }
 .form-control:focus, .form-select:focus {
   border-color: var(--tt-gold);
