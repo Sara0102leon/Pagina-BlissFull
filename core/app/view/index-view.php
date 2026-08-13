@@ -25,13 +25,16 @@ if(strpos($script_dir,"/core")!==false){ $script_dir = substr($script_dir,0,strp
 else if(strpos($script_dir,"/admin")!==false){ $script_dir = substr($script_dir,0,strpos($script_dir,"/admin")); }
 $base_url .= $script_dir;
 $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
+$featured = ProductData::getFeatureds();
+$hero_img = $img_default;
+if(count($featured)>0){ $hero_img = "admin/storage/products/".$featured[0]->image; if(!file_exists($hero_img)){ $hero_img=$img_default; } }
 ?>
 
 <!-- Modal Selección de Sede -->
 <div class="modal modal-blur fade" id="modal-sede" tabindex="-1" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header" style="background: linear-gradient(135deg,#922235,#51111f); color: white;">
+      <div class="modal-header" style="background: linear-gradient(135deg,#ffb703,#ff9f1c); color: #161616;">
         <div>
           <h5 class="modal-title fw-bold"><i class="bi bi-geo-alt-fill me-2"></i>¿Cuál sede te queda más cerca?</h5>
           <div class="small opacity-75">Elige tu sucursal y tu pedido se enviará directo a su WhatsApp</div>
@@ -70,13 +73,13 @@ $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
 <div class="modal modal-blur fade" id="modal-checkout" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title fw-bold"><i class="bi bi-cart-check-fill me-2"></i> Estás a un paso de tu pizza</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-header bg-primary">
+        <h5 class="modal-title fw-bold"><i class="bi bi-cart-check-fill me-2"></i> Estás a un paso de tu pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
          <button type="button" class="btn btn-light border w-100 mb-3 d-flex align-items-center justify-content-between text-start" id="btn_checkout_sede">
-           <span><i class="bi bi-geo-alt-fill me-2 text-success"></i><span class="fw-bold" id="checkout_sede_name">Elegir tu sede</span></span>
+           <span><i class="bi bi-geo-alt-fill me-2 text-gold"></i><span class="fw-bold" id="checkout_sede_name">Elegir tu sede</span></span>
            <span class="small text-muted">Cambiar ▾</span>
          </button>
          <div class="mb-3">
@@ -157,9 +160,9 @@ $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
 <div class="modal modal-blur fade" id="modal-extras" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header bg-primary text-white">
+      <div class="modal-header bg-primary">
         <h5 class="modal-title fw-bold" id="extras_modal_title">Extras</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-hint mb-3">Elige los ingredientes adicionales para tu producto:</div>
@@ -182,8 +185,9 @@ $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
 
 <div class="page-body">
 
-  <!-- Hero Slider Full-Bleed (Edge-to-Edge) - banners dinámicos del Admin -->
-  <section class="hero-slider-fullwidth">
+  <!-- ============ HERO PRINCIPAL (TITO STYLE) ============ -->
+  <section class="tt-hero">
+    <!-- Hero Slider (banners dinámicos del Admin) como fondo -->
     <div id="heroSlider" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="3500">
 
       <div class="carousel-inner">
@@ -210,22 +214,54 @@ $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
       <?php endif; ?>
 
     </div>
+
+    <!-- Overlay de contenido: título, badges, imagen flotante y CTA -->
+    <div class="tt-hero-content">
+      <div class="container-xl">
+        <div class="row align-items-center position-relative">
+          <div class="col-lg-7 text-center text-lg-start">
+            <div class="tt-hand tt-hand-big tt-neon mb-2">sabor casero que enamora</div>
+            <h1 class="tt-display tt-title mb-3">Alianza <span class="text-gold">Blissfull</span></h1>
+            <p class="tt-sub mx-auto mx-lg-0">pizzas y platillos caseros preparados al momento. Ordena desde tu celular y recíbelo caliente donde estés.</p>
+            <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap mt-4">
+              <a href="#menu-anchor" id="btn-go-menu" class="btn btn-warning style-yellow-btn px-4 py-3 rounded-pill fw-bold text-nowrap">
+                <i class="bi bi-basket3 me-2"></i> PEDIR AHORA
+              </a>
+              <a href="#horarios-section" class="btn tt-btn-ghost px-4 py-3 rounded-pill fw-bold text-nowrap">
+                VER HORARIOS <i class="bi bi-arrow-down ms-1"></i>
+              </a>
+            </div>
+            <div class="d-flex align-items-center justify-content-center justify-content-lg-start gap-3 mt-4 flex-wrap text-white-50 small">
+              <span class="d-inline-flex align-items-center gap-1"><i class="bi bi-truck text-gold"></i> Delivery a domicilio</span>
+              <span class="d-inline-flex align-items-center gap-1"><i class="bi bi-shop text-gold"></i> Recoge en sucursal</span>
+              <span class="d-inline-flex align-items-center gap-1"><i class="bi bi-whatsapp text-gold"></i> Pedidos por WhatsApp</span>
+            </div>
+          </div>
+          <div class="col-lg-5 d-none d-lg-block">
+            <img src="<?php echo $hero_img; ?>" class="tt-float-img" alt="Alianzas Blissful">
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <div class="container-xl">
-    <div class="text-center menu-cta">
-      <a href="#menu-anchor" id="btn-go-menu" class="btn btn-warning rounded-pill px-5 py-3 fw-bold style-yellow-btn">
-        VER MENÚ <i class="bi bi-arrow-down-circle-fill ms-1"></i>
-      </a>
-    </div>
-    <div class="row g-4 mt-2">
-      
+  <!-- ============ MENÚ SEMANAL (Carrusel Scroll/Swipe) ============ -->
+
+  <div class="container-xl mt-5">
+    <hr class="tt-divider">
+    <div class="row g-4 mt-1">
+
       <!-- Menu Section (Full Width) -->
       <div class="col-md-12">
 
+        <div class="tt-section-head text-center mb-4">
+          <div class="tt-hand tt-hand-big">nuestros platillos</div>
+          <h2 class="tt-display tt-section-title">MENÚ <span class="text-gold">PRINCIPAL</span></h2>
+        </div>
+
         <!-- Category Dynamic Navigation -->
         <div class="mb-4 overflow-auto scroll-hide pb-2" id="menu-anchor">
-          <div class="d-flex align-items-center gap-2">
+          <div class="d-flex align-items-center gap-2 justify-content-center flex-wrap">
             <button type="button" class="btn-category-ajax active" data-cat=""><i class="bi bi-star-fill me-1"></i> Destacados</button>
             <?php foreach($categories as $cat): ?>
             <button type="button" class="btn-category-ajax text-nowrap" data-cat="<?php echo $cat->id; ?>">
@@ -237,14 +273,14 @@ $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
 
         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
            <div>
-              <h2 class="h1 mb-0 fw-bold" id="grid-title">Menú Principal</h2>
+              <h2 class="h1 mb-0 fw-bold tt-display" id="grid-title" style="font-size: 1.8rem;">MENÚ PRINCIPAL</h2>
               <p class="text-muted mb-0">Explora nuestras especialidades y realiza tu pedido</p>
            </div>
            <!-- Dynamic Search Bar -->
            <div class="search-container">
               <div class="search-box">
                 <i class="bi bi-search search-box-icon"></i>
-                <input type="text" id="product_search" class="form-control search-box-input" placeholder="Buscar platillo..." style="min-width: 280px;">
+                <input type="text" id="product_search" class="form-control search-box-input" placeholder="Buscar platillo...">
               </div>
            </div>
         </div>
@@ -259,9 +295,81 @@ $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
 
       </div>
 
-
     </div>
   </div>
+
+  <!-- ============ HORARIOS Y SUCURSALES ============ -->
+  <section class="container-xl mt-5" id="horarios-section">
+    <div class="tt-section-head text-center">
+      <div class="tt-hand tt-hand-big">te esperamos</div>
+      <h2 class="tt-display tt-section-title">HORARIOS <span class="text-gold">Y SUCURSALES</span></h2>
+    </div>
+    <div class="row g-4 mt-1">
+      <div class="col-lg-5">
+        <div class="tt-panel">
+          <div class="tt-panel-title mb-3"><i class="bi bi-clock-fill text-gold me-2"></i>HORARIO DE ATENCIÓN</div>
+          <div class="tt-hours-row">
+            <span class="tt-day">Lunes</span>
+            <span class="tt-hours">10:00 - 22:00</span>
+          </div>
+          <div class="tt-hours-row">
+            <span class="tt-day">Martes</span>
+            <span class="tt-hours">10:00 - 22:00</span>
+          </div>
+          <div class="tt-hours-row">
+            <span class="tt-day">Miércoles</span>
+            <span class="tt-hours">10:00 - 22:00</span>
+          </div>
+          <div class="tt-hours-row">
+            <span class="tt-day">Jueves</span>
+            <span class="tt-hours">10:00 - 22:00</span>
+          </div>
+          <div class="tt-hours-row">
+            <span class="tt-day">Viernes</span>
+            <span class="tt-hours">10:00 - 22:00</span>
+          </div>
+          <div class="tt-hours-row tt-weekend">
+            <span class="tt-day">Sábado</span>
+            <span class="tt-hours">10:00 - 22:00</span>
+          </div>
+          <div class="tt-hours-row tt-weekend">
+            <span class="tt-day">Domingo</span>
+            <span class="tt-hours">10:00 - 22:00</span>
+          </div>
+          <div class="d-flex align-items-center gap-2 text-white-50 small mt-3 pt-3 border-top">
+            <i class="bi bi-whatsapp text-gold"></i> Los pedidos por WhatsApp se atienden en el mismo horario.
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="row g-3">
+          <?php foreach($sedes as $sd): ?>
+          <div class="col-md-6">
+            <div class="tt-map-card">
+              <div class="tt-map-bg"></div>
+              <div class="tt-map-road" style="top: 22%; left: -15%; width: 130%; height: 9px;"></div>
+              <div class="tt-map-road" style="top: 66%; left: -15%; width: 130%; height: 7px;"></div>
+              <div class="tt-map-pin"><i class="bi bi-geo-alt-fill"></i></div>
+              <div class="tt-map-info">
+                <div class="fw-bold"><i class="bi bi-shop me-1 text-gold"></i><?php echo htmlspecialchars($sd->name); ?></div>
+                <div class="small text-white-50"><i class="bi bi-geo-alt me-1"></i><?php echo htmlspecialchars($sd->address); ?></div>
+                <div class="small text-white-50"><i class="bi bi-telephone me-1"></i><?php echo htmlspecialchars($sd->phone); ?></div>
+              </div>
+            </div>
+          </div>
+          <?php endforeach; ?>
+          <?php if(count($sedes)==0): ?>
+          <div class="col-12">
+            <div class="tt-panel d-flex align-items-center justify-content-center text-white-50">
+              <i class="bi bi-geo-alt-fill me-2 text-gold"></i> No hay sucursales registradas por ahora.
+            </div>
+          </div>
+          <?php endif; ?>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </div>
 
 <script>
@@ -464,7 +572,7 @@ function itemsWhatsAppText(items, delivery) {
 }
 
 $(document).ready(function() {
-  // Hero "VER MENÚ" smooth scroll
+  // Hero "PEDIR AHORA" smooth scroll
   $("#btn-go-menu").on("click", function(e) {
     e.preventDefault();
     const target = document.getElementById("menu-anchor");
@@ -478,7 +586,7 @@ $(document).ready(function() {
   $("#btn_confirm_sede").click(function() {
     const sel = $(".sede-option.selected");
     if (sel.length === 0) {
-      Swal.fire({ icon: "warning", title: "Elige una sede", text: "Selecciona la sede que te queda más cerca para continuar.", confirmButtonColor: "#c67718" });
+      Swal.fire({ icon: "warning", title: "Elige una sede", text: "Selecciona la sede que te queda más cerca para continuar.", confirmButtonColor: "#ff9f1c" });
       return;
     }
     localStorage.setItem("blissfull_sede_id", sel.data("id"));
@@ -558,7 +666,7 @@ $(document).ready(function() {
   $("#btn_confirm_order").click(async function() {
     const sede = getSelectedSede();
     if (!sede) {
-      Swal.fire({ icon: "warning", title: "Elige tu sede", text: "Primero selecciona la sede que te queda más cerca, así tu pedido llega al WhatsApp correcto.", confirmButtonColor: "#c67718" }).then(function(){ openSedeModal(); });
+      Swal.fire({ icon: "warning", title: "Elige tu sede", text: "Primero selecciona la sede que te queda más cerca, así tu pedido llega al WhatsApp correcto.", confirmButtonColor: "#ff9f1c" }).then(function(){ openSedeModal(); });
       return;
     }
     const name = $("#order_name").val().trim();
@@ -571,16 +679,16 @@ $(document).ready(function() {
     const isPM = $(".payment-method:checked").data("pm") == 1;
 
     if (name === "" || phone === "") {
-      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor completa tu nombre y teléfono.", confirmButtonColor: "#c67718" });
+      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor completa tu nombre y teléfono.", confirmButtonColor: "#ff9f1c" });
       return;
     }
     if (isPickup) { address = "Recoger en sucursal"; }
     else if (address === "") {
-      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor escribe tu dirección de entrega.", confirmButtonColor: "#c67718" });
+      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor escribe tu dirección de entrega.", confirmButtonColor: "#ff9f1c" });
       return;
     }
     if (!isPickup && zoneSel === "0") {
-      Swal.fire({ icon: "warning", title: "Zona de entrega", text: "Por favor selecciona tu zona de entrega (o marca que pasarás a recoger).", confirmButtonColor: "#c67718" });
+      Swal.fire({ icon: "warning", title: "Zona de entrega", text: "Por favor selecciona tu zona de entrega (o marca que pasarás a recoger).", confirmButtonColor: "#ff9f1c" });
       return;
     }
 
@@ -632,11 +740,11 @@ $(document).ready(function() {
         title: "¡Pedido enviado!",
         html: "Tu pedido ha sido enviado por WhatsApp. Te confirmaremos pronto.",
         confirmButtonText: "¡Genial!",
-        confirmButtonColor: "#ffde64"
+        confirmButtonColor: "#ffb703"
       }).then(function(){ location.reload(); });
     }).fail(function() {
       btn.prop("disabled", false).html('CONFIRMAR Y PEDIR POR WHATSAPP <i class="bi bi-whatsapp ms-2"></i>');
-      Swal.fire({ icon: "error", title: "Error", text: "Ocurrió un error al registrar tu pedido. Intenta de nuevo.", confirmButtonColor: "#922235" });
+      Swal.fire({ icon: "error", title: "Error", text: "Ocurrió un error al registrar tu pedido. Intenta de nuevo.", confirmButtonColor: "#e63946" });
     });
   });
 
@@ -653,25 +761,25 @@ $(document).ready(function() {
 .scroll-hide::-webkit-scrollbar { display: none; }
 .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
 .btn-category-ajax {
-  border: 1px solid rgba(146, 34, 53, 0.6);
-  background: transparent;
-  padding: 0.5rem 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.55rem 1.3rem;
   border-radius: 2rem;
-  font-weight: 600;
-  color: #a0a0a0;
+  font-weight: 700;
+  color: #cfc8be;
   transition: 0.2s;
 }
-.btn-category-ajax:hover { color: #ffffff; border-color: rgba(255, 222, 100, 0.5); }
+.btn-category-ajax:hover { color: #ffffff; border-color: rgba(255, 183, 3, 0.55); }
 .btn-category-ajax.active {
-  background: rgba(255, 222, 100, 0.08);
-  color: #ffde64;
-  border-color: #ffde64;
-  box-shadow: 0 0 0 1px rgba(255, 222, 100, 0.25);
+  background: linear-gradient(135deg, #ffb703, #ff9f1c) !important;
+  color: #161616 !important;
+  border-color: transparent !important;
+  box-shadow: 0 8px 20px rgba(255, 159, 28, 0.35);
 }
 .sede-option { cursor: pointer; }
-.sede-card { transition: 0.2s; background: #270a16; }
-.sede-option:hover .sede-card { border-color: rgba(255, 222, 100, 0.45); }
-.sede-check { color: rgba(255, 222, 100, 0.4); }
-.sede-option.selected .sede-card { border-color: #ffde64; background: rgba(255, 222, 100, 0.07); box-shadow: 0 4px 12px rgba(255, 222, 100, 0.15); }
-.sede-option.selected .sede-check { color: #ffde64; }
+.sede-card { transition: 0.2s; background: #1e1e1e; }
+.sede-option:hover .sede-card { border-color: rgba(255, 183, 3, 0.45); }
+.sede-check { color: rgba(255, 183, 3, 0.4); }
+.sede-option.selected .sede-card { border-color: #ffb703; background: rgba(255, 183, 3, 0.08); box-shadow: 0 8px 22px rgba(255, 159, 28, 0.18); }
+.sede-option.selected .sede-check { color: #ffb703; }
 </style>

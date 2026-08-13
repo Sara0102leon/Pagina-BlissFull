@@ -24,7 +24,7 @@ if($cat_id>0){
 ?>
 
 <?php if(count($products)>0):?>
-<div class="row g-3">
+<div class="row g-4">
   <?php foreach($products as $p):
   $img = "admin/storage/products/".$p->image;
   if($p->image=="" || !file_exists($img)){ $img=$img_default; }
@@ -34,25 +34,27 @@ if($cat_id>0){
   $extras_json_str = htmlspecialchars(json_encode($extras_json), ENT_QUOTES);
   ?>
   <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-    <div class="dark-product-card">
-      <div class="dp-img-wrap">
-        <img src="<?php echo $img; ?>" class="dp-img" alt="<?php echo htmlspecialchars($p->name); ?>" loading="lazy">
+    <div class="tt-product-card">
+      <div class="pc-img-wrap">
+        <img src="<?php echo $img; ?>" class="pc-img" alt="<?php echo htmlspecialchars($p->name); ?>" loading="lazy">
       </div>
-      <div class="dp-body">
-        <h3 class="dp-name" title="<?php echo htmlspecialchars($p->name); ?>"><?php echo htmlspecialchars($p->name); ?></h3>
-        <div class="dp-meta">
-          <span class="dp-price"><?php echo $coin_symbol.number_format($p->price,2,".",","); ?></span>
+      <div class="pc-body">
+        <h3 class="pc-name" title="<?php echo htmlspecialchars($p->name); ?>"><?php echo htmlspecialchars($p->name); ?></h3>
+        <div class="pc-meta">
+          <span class="pc-price-pill"><?php echo $coin_symbol.number_format($p->price,2,".",","); ?></span>
           <?php if($bcv_rate>0): ?>
-          <span class="dp-price-bs">≈ <?php echo $bs_symbol.number_format($p->price*$bcv_rate,2,".",","); ?></span>
+          <span class="pc-price-bs">≈ <?php echo $bs_symbol.number_format($p->price*$bcv_rate,2,".",","); ?></span>
           <?php endif; ?>
         </div>
+      </div>
+      <div class="pc-footer">
         <?php if(count($extras_json)>0): ?>
-        <button type="button" class="dp-add-btn" onclick="openExtrasModal(<?php echo $p->id; ?>, '<?php echo addslashes($p->name); ?>', '<?php echo $extras_json_str; ?>')">
-          AGREGAR AL CARRITO <i class="bi bi-plus-lg ms-1"></i>
+        <button type="button" class="pc-add-btn" onclick="openExtrasModal(<?php echo $p->id; ?>, '<?php echo addslashes($p->name); ?>', '<?php echo $extras_json_str; ?>')" title="Agregar al carrito" aria-label="Agregar al carrito">
+          <i class="bi bi-plus-lg"></i>
         </button>
         <?php else: ?>
-        <button type="button" class="dp-add-btn" onclick="addToCart(<?php echo $p->id; ?>, '<?php echo addslashes($p->name); ?>', '[]')">
-          AGREGAR AL CARRITO <i class="bi bi-plus-lg ms-1"></i>
+        <button type="button" class="pc-add-btn" onclick="addToCart(<?php echo $p->id; ?>, '<?php echo addslashes($p->name); ?>', '[]')" title="Agregar al carrito" aria-label="Agregar al carrito">
+          <i class="bi bi-plus-lg"></i>
         </button>
         <?php endif; ?>
       </div>

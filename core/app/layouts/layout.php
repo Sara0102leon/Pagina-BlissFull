@@ -10,13 +10,13 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@500;600;700&family=Inter:wght@400;600;800;900&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     
     <!-- CSS files -->
     <link href="./dist/css/tabler.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="assets/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="assets/css/style.css">
-    <!-- Dark Theme (cargado al final para sobreescribir Tabler/Bootstrap) -->
+    <!-- Dark Theme Tito Burger (cargado al final para sobreescribir Tabler/Bootstrap) -->
     <link rel="stylesheet" href="assets/css/custom-dark.css">
     
     <script src="assets/jquery/jquery.min.js"></script>
@@ -24,8 +24,8 @@
     <style>
       :root {
         --tblr-font-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
-        --secondary-color: #c67718; /* Dorado Oscuro */
-        --primary-color: #ffde64; /* Dorado Claro */
+        --secondary-color: #ff9f1c; /* Dorado Tito */
+        --primary-color: #ffb703;   /* Dorado Brillante */
       }
       body {
         font-family: 'Inter', sans-serif;
@@ -33,13 +33,13 @@
       }
       h1,h2,h3, .navbar-brand { font-family: 'Outfit', sans-serif; }
       .brand-logo {
-        height: 42px;
+        height: 44px;
         width: auto;
         max-width: 70vw;
         object-fit: contain;
       }
       @media (max-width: 575.98px) {
-        .brand-logo { height: 34px; }
+        .brand-logo { height: 36px; }
       }
     </style>
   </head>
@@ -48,39 +48,38 @@
     $bcv_rate_header = 0;
     $bcv_row = ConfigurationData::getByPreffix("bcv_rate");
     if($bcv_row && $bcv_row->val){ $bcv_rate_header = floatval($bcv_row->val); }
+    $whatsapp_footer = ConfigurationData::getByPreffix("general_whatsapp")?ConfigurationData::getByPreffix("general_whatsapp")->val:"+5215574506232";
     ?>
     <div class="page">
-      <!-- Top Navbar -->
-      <header class="navbar navbar-expand-md navbar-dark d-print-none shadow-sm sticky-top">
+      <!-- Top Navbar (Sticky Minimal) -->
+      <header class="navbar navbar-expand-md navbar-dark tt-navbar d-print-none shadow-sm sticky-top">
         <div class="container-xl">
-          <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu" aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
           <div class="navbar-brand pe-0 pe-md-3">
             <a href="./" class="text-decoration-none d-flex align-items-center">
               <img src="fotos%20para%20logos/LOGO%20HORIZONTAL.png" alt="Alianzas Blissful" class="brand-logo">
             </a>
           </div>
-          
-          <div class="navbar-nav flex-row order-md-last ms-auto">
-            <div class="nav-item me-3">
+
+          <div class="navbar-nav flex-row align-items-center order-md-last ms-auto">
+            <div class="nav-item me-2 me-md-3">
               <!-- Sede Selection Badge -->
-              <a href="#" class="nav-link px-2 d-flex align-items-center gap-1 small fw-bold text-muted" id="btn-change-sede" title="Cambiar sede">
-                <i class="bi bi-geo-alt-fill text-success"></i>
+              <a href="#" class="nav-link px-2 d-flex align-items-center gap-1 small fw-bold" id="btn-change-sede" title="Cambiar sede">
+                <i class="bi bi-geo-alt-fill text-gold"></i>
                 <span id="header-sede-name" class="d-none d-md-inline">Elegir sede</span>
                 <i class="bi bi-chevron-down extra-small d-none d-md-inline"></i>
               </a>
             </div>
-            <div class="nav-item me-3">
+            <div class="nav-item me-2 me-md-3">
               <!-- BCV Rate Badge -->
-              <span class="nav-link px-2 d-none d-md-flex align-items-center gap-1 small fw-bold text-success" title="Dólar BCV">
+              <span class="nav-link px-2 d-none d-md-flex align-items-center gap-1 small fw-bold text-gold" title="Dólar BCV">
                 <i class="bi bi-currency-dollar"></i>
                 <span id="bcv_rate_badge"><?php echo number_format($bcv_rate_header,2); ?> Bs</span>
               </span>
-            </div>            <div class="nav-item me-3">
+            </div>
+            <div class="nav-item">
               <!-- Desktop/Mobile Cart Button -->
               <a href="#" class="nav-link px-2 d-flex align-items-center gap-2" title="Mi Orden" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart">
-                <span class="d-none d-md-inline fw-bold text-primary" id="header-total">
+                <span class="d-none d-md-inline fw-bold" id="header-total">
                   <?php 
                   $total_header = 0;
                   $cart_count_header = 0;
@@ -109,9 +108,9 @@
 
       <!-- Offcanvas Cart (Mobile/Desktop Swipe) -->
       <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
-        <div class="offcanvas-header bg-primary text-white">
+        <div class="offcanvas-header bg-primary">
           <h5 class="offcanvas-title fw-bold" id="offcanvasCartLabel"><i class="bi bi-bag-heart me-2"></i> Mi Orden</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body p-0" id="offcanvas-cart-container">
            <?php View::load("cart-side"); ?>
@@ -123,7 +122,7 @@
         <div class="container d-flex align-items-center justify-content-between py-2">
           <div>
             <div class="small text-white-50">Total de tu orden:</div>
-            <div class="h2 fw-bold text-white mb-0" id="mobile-total-display">
+            <div class="h2 fw-bold mb-0" id="mobile-total-display">
                <?php echo $coin_symbol.number_format($total_header,2,".",","); ?>
             </div>
           </div>
@@ -134,14 +133,6 @@
       </div>
 
       <div class="page-wrapper">
-        <div class="collapse navbar-collapse border-bottom menu-collapse-dark" id="navbar-menu">
-          <div class="container-xl py-3">
-             <ul class="navbar-nav">
-                <li class="nav-item active"><a class="nav-link" href="./">Inicio</a></li>
-                <li class="nav-item"><a class="nav-link" href="./">Nuestro Menú Completo</a></li>
-             </ul>
-          </div>
-        </div>
 
         <?php View::load("index"); ?>
         
@@ -158,43 +149,54 @@
                title: "¡Pedido registrado!",
                html: "Tu WhatsApp se ha abierto para enviar el detalle.",
                confirmButtonText: "Perfecto",
-               confirmButtonColor: "#ffde64"
+               confirmButtonColor: "#ffb703"
              });
           }
         });
         </script>
-          <footer class="site-footer pt-5 pb-4">
+
+        <?php 
+        $footer_sedes = SedeData::getActives();
+        $footer_sede = count($footer_sedes)>0 ? $footer_sedes[0] : null;
+        ?>
+        <footer class="tt-footer pt-5 pb-3" id="footer-contact">
           <div class="container-xl">
-            <div class="row">
-              <div class="col-md-4 mb-4 mb-md-0">
-                <h3 class="text-white mb-3">Alianzas Blissful</h3>
-                <p class="text-white-50 small">Disfruta de la mejor experiencia gastronómica desde tu celular. Escanea, ordena y disfruta.</p>
-                <div class="d-flex gap-3">
-                   <a href="#" class="text-white-50 h4"><i class="bi bi-facebook"></i></a>
-                   <a href="#" class="text-white-50 h4"><i class="bi bi-instagram"></i></a>
-                   <a href="#" class="text-white-50 h4"><i class="bi bi-whatsapp"></i></a>
+            <div class="row g-4">
+              <div class="col-md-5 col-lg-4 mb-4 mb-md-0">
+                <img src="fotos%20para%20logos/LOGO%20HORIZONTAL.png" alt="Alianzas Blissful" class="brand-logo mb-3" style="filter: brightness(1);">
+                <p class="text-white-50 small mb-3">Disfruta de la mejor experiencia gastronómica desde tu celular. Escanea, ordena y disfruta.</p>
+                <div class="d-flex gap-2">
+                   <a href="#" class="social-icon" title="Facebook"><i class="bi bi-facebook"></i></a>
+                   <a href="#" class="social-icon" title="Instagram"><i class="bi bi-instagram"></i></a>
+                   <a href="https://api.whatsapp.com/send?phone=<?php echo preg_replace('/\D/','',$whatsapp_footer); ?>" class="social-icon" target="_blank" rel="noopener" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
                 </div>
               </div>
-              <div class="col-6 col-md-4">
-                <h4 class="text-white mb-3">Menú</h4>
-                <ul class="list-unstyled text-white-50 small">
-                  <li><a href="#" class="text-reset text-decoration-none">Especialidades</a></li>
-                  <li><a href="#" class="text-reset text-decoration-none">Bebidas</a></li>
-                  <li><a href="#" class="text-reset text-decoration-none">Postres</a></li>
+              <div class="col-6 col-md-3 col-lg-2">
+                <h4 class="h5 mb-3">Mapa del Sitio</h4>
+                <ul class="list-unstyled small d-grid gap-2">
+                  <li><a href="./">Inicio</a></li>
+                  <li><a href="#menu-anchor">Menú Completo</a></li>
+                  <li><a href="#horarios-section">Horarios y Sucursales</a></li>
                 </ul>
               </div>
-              <div class="col-6 col-md-4">
-                <h4 class="text-white mb-3">Contacto</h4>
-                <ul class="list-unstyled text-white-50 small">
-                  <li>Av. Principal #123</li>
-                  <li>Tel: 555-MENU</li>
-                  <li>Abierto: 10:00 - 22:00</li>
+              <div class="col-6 col-md-4 col-lg-3">
+                <h4 class="h5 mb-3">Horario</h4>
+                <ul class="list-unstyled small d-grid gap-1 mb-0">
+                  <li><span class="tt-hand tt-hand-sm">Todos los días</span> <span class="float-end text-white fw-bold">10:00 - 22:00</span></li>
+                  <li class="text-white-50">Entrega a domicilio y recogida en sucursal.</li>
+                </ul>
+              </div>
+              <div class="col-12 col-lg-3">
+                <h4 class="h5 mb-3">Contacto</h4>
+                <ul class="list-unstyled small d-grid gap-2 mb-0">
+                  <li class="d-flex gap-2"><i class="bi bi-geo-alt-fill text-gold mt-1"></i><span class="text-white-50"><?php echo $footer_sede ? htmlspecialchars($footer_sede->address) : "Av. Principal #123"; ?></span></li>
+                  <li class="d-flex gap-2"><i class="bi bi-telephone-fill text-gold mt-1"></i><span class="text-white-50"><?php echo $footer_sede ? htmlspecialchars($footer_sede->phone) : "555-MENU"; ?></span></li>
+                  <li class="d-flex gap-2"><i class="bi bi-whatsapp text-gold mt-1"></i><a href="https://api.whatsapp.com/send?phone=<?php echo preg_replace('/\D/','',$whatsapp_footer); ?>" target="_blank" rel="noopener" class="text-white-50">Pedir por WhatsApp</a></li>
                 </ul>
               </div>
             </div>
-            <hr class="border-secondary my-4">
-            <div class="text-center text-white-50 small">
-              &copy; 2026 Alianzas Blissful. Powered by Antigravity.
+            <div class="tt-footer-bottom text-center small py-3 mt-4">
+              &copy; 2026 Alianzas Blissful. Todos los derechos reservados. Powered by Antigravity.
             </div>
           </div>
         </footer>
@@ -204,36 +206,11 @@
     <style>
       .scroll-hide::-webkit-scrollbar { display: none; }
       .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      .navbar-dark { background: #090205 !important; border-bottom: 1px solid rgba(146, 34, 53, 0.6) !important; }
-      .navbar-dark .navbar-toggler-icon { filter: invert(1) grayscale(1); }
-      .category-pill {
-        display: inline-block;
-        white-space: nowrap;
-        padding: 0.5rem 1.25rem;
-        border-radius: 2rem;
-        background: #270a16;
-        color: #a0a0a0;
-        font-weight: 600;
-        text-decoration: none;
-        transition: 0.2s;
-        border: 1px solid rgba(146, 34, 53, 0.6);
-      }
-      .category-pill.active {
-        background: rgba(255, 222, 100, 0.08);
-        color: #ffde64;
-        border-color: #ffde64;
-      }
-      .category-pill:hover:not(.active) {
-        background: rgba(146, 34, 53, 0.4);
-        color: #ffffff;
-      }
       .sticky-bottom-bar {
         position: fixed;
         bottom: 0;
         left: 0;
         width: 100%;
-        background: #090205; /* Base Oscura */
-        border-top: 1px solid rgba(146, 34, 53, 0.6);
         z-index: 1040; /* Just below offcanvas */
         padding-bottom: env(safe-area-inset-bottom);
       }
@@ -251,46 +228,29 @@
     </style>
     <script src="./dist/js/tabler.min.js" defer></script>
 
-    <!-- Cart Toast Notification -->
-    <div id="cartToast" class="cart-toast d-flex align-items-center gap-2 shadow-lg">
-      <i class="bi bi-check-circle-fill text-success h4 mb-0"></i>
-      <span id="cartToastMsg" class="fw-bold"></span>
-    </div>
-    <style>
-      .cart-toast {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 1060;
-        background: #090205;
-        color: #ffffff;
-        border-left: 4px solid #ffde64;
-        border: 1px solid rgba(146, 34, 53, 0.6);
-        border-radius: 8px;
-        padding: 10px 16px;
-        font-size: 0.85rem;
-        max-width: 280px;
-        opacity: 0;
-        transform: translateY(20px);
-        pointer-events: none;
-        transition: opacity 0.3s ease, transform 0.3s ease;
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
-      }
-      .cart-toast.show {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    </style>
+    <!-- Cart Added Alert (SweetAlert2 accesible, grande y con paleta del proyecto) -->
     <script>
     let cartToastTimer = null;
     function showCartToast(msg) {
-      $("#cartToastMsg").text(msg);
-      const el = document.getElementById("cartToast");
-      el.classList.add("show");
-      clearTimeout(cartToastTimer);
-      cartToastTimer = setTimeout(function() { el.classList.remove("show"); }, 2200);
+      Swal.fire({
+        icon: "success",
+        title: "¡AGREGADO AL CARRITO!",
+        html: '<span class="tt-swal-msg">' + msg + '</span>',
+        background: "#0c0409",
+        color: "#ffb703",
+        iconColor: "#ffb703",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#ffb703",
+        customClass: {
+          popup: "tt-swal-popup",
+          htmlContainer: "tt-swal-html",
+          confirmButton: "tt-swal-confirm"
+        },
+        timer: 3400,
+        timerProgressBar: true,
+        showCloseButton: true
+      });
     }
     </script>
   </body>
 </html>
-
