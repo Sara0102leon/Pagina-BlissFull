@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set("America/Caracas");
+
 if(isset($_SESSION["user_id"])){
 	Core::$user = UserData::getById($_SESSION["user_id"]);
 }

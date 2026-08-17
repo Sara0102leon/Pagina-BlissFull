@@ -49,6 +49,21 @@
     $bcv_row = ConfigurationData::getByPreffix("bcv_rate");
     if($bcv_row && $bcv_row->val){ $bcv_rate_header = floatval($bcv_row->val); }
     $whatsapp_footer = ConfigurationData::getByPreffix("general_whatsapp")?ConfigurationData::getByPreffix("general_whatsapp")->val:"+5215574506232";
+    $horario_open_raw = ConfigurationData::getByPreffix("horario_open")?ConfigurationData::getByPreffix("horario_open")->val:"11:00";
+    $horario_close_raw = ConfigurationData::getByPreffix("horario_close")?ConfigurationData::getByPreffix("horario_close")->val:"23:00";
+    $horario_open_raw = $horario_open_raw=="" ? "11:00" : $horario_open_raw;
+    $horario_close_raw = $horario_close_raw=="" ? "23:00" : $horario_close_raw;
+    $h_open_min = (int)explode(":",$horario_open_raw)[0]*60 + (int)explode(":",$horario_open_raw)[1];
+    $h_close_min = (int)explode(":",$horario_close_raw)[0]*60 + (int)explode(":",$horario_close_raw)[1];
+    $now_min = (int)date("G")*60 + (int)date("i");
+    if($h_close_min > $h_open_min){
+      $store_closed = ($now_min < $h_open_min || $now_min >= $h_close_min);
+    }else{
+      $store_closed = !($now_min >= $h_open_min || $now_min < $h_close_min);
+    }
+    $horario_open_display = date("g:i A", strtotime($horario_open_raw));
+    $horario_close_display = date("g:i A", strtotime($horario_close_raw));
+    $horario_display = $horario_open_display." - ".$horario_close_display;
     ?>
     <div class="page">
       <!-- Top Navbar (Sticky Minimal) -->
@@ -61,7 +76,7 @@
           </div>
 
           <div class="navbar-nav flex-row align-items-center order-md-last ms-auto">
-            <div class="nav-item me-2 me-md-3">
+            <div class="nav-item">
               <!-- Sede Selection Badge -->
               <a href="#" class="nav-link px-2 d-flex align-items-center gap-1 small fw-bold" id="btn-change-sede" title="Cambiar sede">
                 <i class="bi bi-geo-alt-fill text-gold"></i>
@@ -102,9 +117,28 @@
                 </div>
               </a>
             </div>
+            <div class="nav-item ms-2 ms-md-3">
+              <!-- PEDIR (último, pegado a la esquina superior derecha) -->
+              <a href="#menu-anchor" id="btn-nav-pedir" class="btn btn-warning style-yellow-btn rounded-pill fw-bold px-3 py-2 d-inline-flex align-items-center gap-1 text-nowrap" title="Ver menú y pedir">
+                <i class="bi bi-basket3"></i>
+                <span>PEDIR</span>
+              </a>
+            </div>
           </div>
         </div>
       </header>
+
+      <?php if($store_closed): ?>
+      <!-- CINTA SUPERIOR: sistema cerrado fuera del horario del admin -->
+      <div class="tt-ribbon d-print-none">
+        <i class="bi bi-clock-history"></i>
+        <span>ESTAMOS CERRADOS</span>
+        <span class="tt-ribbon-sep">·</span>
+        <span class="tt-ribbon-time">Abrimos hoy a las <?php echo $horario_open_display; ?></span>
+        <span class="tt-ribbon-sep">·</span>
+        <span class="tt-ribbon-time">Atendemos de <?php echo $horario_display; ?></span>
+      </div>
+      <?php endif; ?>
 
       <!-- Offcanvas Cart (Mobile/Desktop Swipe) -->
       <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
@@ -137,7 +171,29 @@
         <?php View::load("index"); ?>
         
         <script>
+        const TITO_STORE_CLOSED = <?php echo $store_closed ? "true" : "false"; ?>;
+        const TITO_CLOSED_MSG = "Estamos cerrados. Abrimos hoy a las <?php echo $horario_open_display; ?> y atendemos de <?php echo $horario_display; ?>. ¡Te esperamos!";
+        function showStoreClosedAlert() {
+          if (!TITO_STORE_CLOSED) { return false; }
+          Swal.fire({
+            icon: "error",
+            title: "ESTAMOS CERRADOS",
+            html: TITO_CLOSED_MSG,
+            background: "#0c0409",
+            color: "#ffffff",
+            iconColor: "#e63946",
+            confirmButtonText: "Entendido",
+            confirmButtonColor: "#e63946",
+            customClass: { title: "tt-swal-closed-title" }
+          });
+          return true;
+        }
         $(document).ready(function() {
+          $("#btn-nav-pedir").on("click", function(e) {
+            e.preventDefault();
+            const target = document.getElementById("menu-anchor");
+            if (target) { $("html,body").animate({ scrollTop: target.offsetTop - 90 }, 500); }
+          });
           $("#btn-change-sede").click(function(e) {
             e.preventDefault();
             if(typeof openSedeModal === "function") { openSedeModal(); }
@@ -182,7 +238,7 @@
               <div class="col-6 col-md-4 col-lg-3">
                 <h4 class="h5 mb-3">Horario</h4>
                 <ul class="list-unstyled small d-grid gap-1 mb-0">
-                  <li><span class="tt-hand tt-hand-sm">Todos los días</span> <span class="float-end text-white fw-bold">10:00 - 22:00</span></li>
+                  <li><span class="tt-hand tt-hand-sm">Todos los días</span> <span class="float-end text-white fw-bold"><?php echo $horario_display; ?></span></li>
                   <li class="text-white-50">Entrega a domicilio y recogida en sucursal.</li>
                 </ul>
               </div>

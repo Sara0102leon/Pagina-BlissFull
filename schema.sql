@@ -293,11 +293,13 @@ insert into configuration(name,label,kind,val) value ("hero_title","Titulo hero 
 insert into configuration(name,label,kind,val) value ("hero_sub","Subtitulo hero - inicio",1,"pizzas y platillos caseros preparados al momento. Ordena desde tu celular y recíbelo caliente donde estés.");
 insert into configuration(name,label,kind,val) value ("flotante_img","Imagen flotante hero",1,"");
 insert into configuration(name,label,kind,val) value ("flotante_product_id","Producto enlazado al flotante",1,"");
+insert into configuration(name,label,kind,val) value ("horario_open","Hora de apertura (cintas abierto/cerrado)",1,"11:00");
+insert into configuration(name,label,kind,val) value ("horario_close","Hora de cierre (cintas abierto/cerrado)",1,"23:00");
 /* horarios */
-insert into configuration(name,label,kind,val) value ("horario_lunes","Horario Lunes",1,"10:00 - 22:00");
-insert into configuration(name,label,kind,val) value ("horario_martes","Horario Martes",1,"10:00 - 22:00");
-insert into configuration(name,label,kind,val) value ("horario_miercoles","Horario Miércoles",1,"10:00 - 22:00");
-insert into configuration(name,label,kind,val) value ("horario_jueves","Horario Jueves",1,"10:00 - 22:00");
-insert into configuration(name,label,kind,val) value ("horario_viernes","Horario Viernes",1,"10:00 - 22:00");
-insert into configuration(name,label,kind,val) value ("horario_sabado","Horario Sábado",1,"10:00 - 22:00");
-insert into configuration(name,label,kind,val) value ("horario_domingo","Horario Domingo",1,"10:00 - 22:00");
+insert into configuration(name,label,kind,val) value ("horario_lunes","Horario Lunes",1,"11:00 - 23:00");
+insert into configuration(name,label,kind,val) value ("horario_martes","Horario Martes",1,"11:00 - 23:00");
+insert into configuration(name,label,kind,val) value ("horario_miercoles","Horario Miércoles",1,"11:00 - 23:00");
+insert into configuration(name,label,kind,val) value ("horario_jueves","Horario Jueves",1,"11:00 - 23:00");
+insert into configuration(name,label,kind,val) value ("horario_viernes","Horario Viernes",1,"11:00 - 23:00");
+insert into configuration(name,label,kind,val) value ("horario_sabado","Horario Sábado",1,"11:00 - 23:00");
+insert into configuration(name,label,kind,val) value ("horario_domingo","Horario Domingo",1,"11:00 - 23:00");

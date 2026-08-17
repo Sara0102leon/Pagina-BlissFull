@@ -29,6 +29,12 @@ if(strpos($script_dir,"/core")!==false){ $script_dir = substr($script_dir,0,strp
 else if(strpos($script_dir,"/admin")!==false){ $script_dir = substr($script_dir,0,strpos($script_dir,"/admin")); }
 $base_url .= $script_dir;
 $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
+$horario_display = isset($horario_display) ? $horario_display : "11:00 AM - 11:00 PM";
+$tt_hours = array();
+foreach(array("horario_lunes"=>"Lunes","horario_martes"=>"Martes","horario_miercoles"=>"Miércoles","horario_jueves"=>"Jueves","horario_viernes"=>"Viernes","horario_sabado"=>"Sábado","horario_domingo"=>"Domingo") as $hk=>$hl){
+  $hr = ConfigurationData::getByPreffix($hk);
+  $tt_hours[$hl] = ($hr && $hr->val!="") ? $hr->val : $horario_display;
+}
 $featured = ProductData::getFeatureds();
 $hero_hand = ConfigurationData::getByPreffix("hero_hand")?ConfigurationData::getByPreffix("hero_hand")->val:"sabor casero que enamora";
 $hero_title = ConfigurationData::getByPreffix("hero_title")?ConfigurationData::getByPreffix("hero_title")->val:"Alianza Blissfull";
@@ -346,34 +352,12 @@ foreach($horario_keys as $hk){
       <div class="col-lg-5">
         <div class="tt-panel">
           <div class="tt-panel-title mb-3"><i class="bi bi-clock-fill text-gold me-2"></i>HORARIO DE ATENCIÓN</div>
-          <div class="tt-hours-row">
-            <span class="tt-day">Lunes</span>
-            <span class="tt-hours">10:00 - 22:00</span>
+          <?php $dias_fin = array("Sábado","Domingo"); foreach($tt_hours as $dlabel => $dhours): ?>
+          <div class="tt-hours-row<?php echo in_array($dlabel,$dias_fin)?" tt-weekend":""; ?>">
+            <span class="tt-day"><?php echo $dlabel; ?></span>
+            <span class="tt-hours"><?php echo $dhours; ?></span>
           </div>
-          <div class="tt-hours-row">
-            <span class="tt-day">Martes</span>
-            <span class="tt-hours">10:00 - 22:00</span>
-          </div>
-          <div class="tt-hours-row">
-            <span class="tt-day">Miércoles</span>
-            <span class="tt-hours">10:00 - 22:00</span>
-          </div>
-          <div class="tt-hours-row">
-            <span class="tt-day">Jueves</span>
-            <span class="tt-hours">10:00 - 22:00</span>
-          </div>
-          <div class="tt-hours-row">
-            <span class="tt-day">Viernes</span>
-            <span class="tt-hours">10:00 - 22:00</span>
-          </div>
-          <div class="tt-hours-row tt-weekend">
-            <span class="tt-day">Sábado</span>
-            <span class="tt-hours">10:00 - 22:00</span>
-          </div>
-          <div class="tt-hours-row tt-weekend">
-            <span class="tt-day">Domingo</span>
-            <span class="tt-hours">10:00 - 22:00</span>
-          </div>
+          <?php endforeach; ?>
           <div class="d-flex align-items-center gap-2 text-white-50 small mt-3 pt-3 border-top">
             <i class="bi bi-whatsapp text-gold"></i> Los pedidos por WhatsApp se atienden en el mismo horario.
           </div>
@@ -501,6 +485,7 @@ function updateUI() {
 }
 
 function addToCart(pid, pname, extrasJson) {
+  if (typeof showStoreClosedAlert === "function" && showStoreClosedAlert()) { return; }
   $.post("./?action=cart&opt=add&ajax=1", { product_id: pid, extras: extrasJson || "[]" }, function(data) {
      $("#cart-container").html(data);
      $("#offcanvas-cart-container").html(data);
@@ -546,6 +531,7 @@ function clearCart() {
 
 // ===== Extras Modal =====
 function openExtrasModal(pid, pname, extrasJson) {
+  if (typeof showStoreClosedAlert === "function" && showStoreClosedAlert()) { return; }
   pendingExtrasPid = pid;
   pendingExtrasName = pname;
   try { pendingExtras = JSON.parse(extrasJson || "[]"); } catch(e) { pendingExtras = []; }
@@ -740,6 +726,7 @@ $(document).ready(function() {
 
   // Confirm Order
   $("#btn_confirm_order").click(async function() {
+    if (typeof showStoreClosedAlert === "function" && showStoreClosedAlert()) { return; }
     const sede = getSelectedSede();
     if (!sede) {
       Swal.fire({ icon: "warning", title: "Elige tu sede", text: "Primero selecciona la sede que te queda más cerca, así tu pedido llega al WhatsApp correcto.", confirmButtonColor: "#ff9f1c" }).then(function(){ openSedeModal(); });

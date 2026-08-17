@@ -61,6 +61,14 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="updflotante"){
 		Core::redir("./?view=slider&opt=flotante");
 	}
 }
+else if(isset($_GET["opt"]) && $_GET["opt"]=="updhorario"){
+	if(count($_POST)>0){
+		foreach(array("horario_open","horario_close") as $k){
+			if(isset($_POST[$k])){ ConfigurationData::updateValFromName($k, $_POST[$k]); }
+		}
+		Core::redir("./?view=slider&opt=flotante");
+	}
+}
 else if(isset($_GET["opt"]) && $_GET["opt"]=="del"){
 	$product = SlideData::getById($_GET["id"]);
 	$product->del();

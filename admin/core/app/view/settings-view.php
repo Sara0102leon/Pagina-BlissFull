@@ -410,6 +410,8 @@ $days = array(
   "horario_sabado" => "Sábado",
   "horario_domingo" => "Domingo"
 );
+$h_open_cfg = ConfigurationData::getByPreffix("horario_open");
+$h_close_cfg = ConfigurationData::getByPreffix("horario_close");
 ?>
 <div class="page-header d-print-none">
   <div class="container-xl">
@@ -422,11 +424,36 @@ $days = array(
 </div>
 <div class="page-body">
   <div class="container-xl">
+    <div class="card mb-3">
+      <div class="card-status-top bg-green"></div>
+      <div class="card-header">
+        <h3 class="card-title">Apertura y Cierre (cintas de Abierto/Cerrado)</h3>
+        <p class="text-muted small mb-0 ms-3">Fuera de este rango la página del cliente muestra las cintas de CERRADO y bloquea los pedidos.</p>
+      </div>
+      <form method="post" action="./?action=settings&opt=updhorario">
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Hora de apertura</label>
+              <input type="time" class="form-control" name="horario_open" value="<?php echo htmlspecialchars($h_open_cfg?$h_open_cfg->val:"11:00"); ?>">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Hora de cierre</label>
+              <input type="time" class="form-control" name="horario_close" value="<?php echo htmlspecialchars($h_close_cfg?$h_close_cfg->val:"23:00"); ?>">
+            </div>
+          </div>
+          <div class="form-hint mt-2">Ejemplo: 11:00 AM abre y 11:00 PM cierra. El cliente ve "Estamos cerrados · Abrimos a las..." con esta hora.</div>
+        </div>
+        <div class="card-footer text-end">
+          <button type="submit" class="btn btn-success">Guardar Apertura y Cierre</button>
+        </div>
+      </form>
+    </div>
     <div class="card">
       <div class="card-status-top bg-info"></div>
       <div class="card-header">
-        <h3 class="card-title">Horario de atención (sección "te esperamos")</h3>
-        <p class="text-muted small mb-0 ms-3">Escribe cada día con formato de hora: 10:00 - 22:00</p>
+        <h3 class="card-title">Horario de atención por día (sección "te esperamos")</h3>
+        <p class="text-muted small mb-0 ms-3">Se muestra en la página del cliente. Si un día queda vacío, usa el rango de Apertura y Cierre.</p>
       </div>
       <div class="card-body">
         <form method="post" action="./?action=settings&opt=updhorarios">

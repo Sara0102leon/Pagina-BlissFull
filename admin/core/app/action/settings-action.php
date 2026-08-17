@@ -122,6 +122,14 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="updhorarios"){
 		Core::redir("./?view=settings&opt=horarios");
 	}
 }
+else if(isset($_GET["opt"]) && $_GET["opt"]=="updhorario"){
+	if(count($_POST)>0){
+		foreach(array("horario_open","horario_close") as $k){
+			if(isset($_POST[$k])){ ConfigurationData::updateValFromName($k,$_POST[$k]); }
+		}
+		Core::redir("./?view=settings&opt=horarios");
+	}
+}
 else if(isset($_GET["opt"]) && $_GET["opt"]=="changepass"){
 	if(count($_POST)>0){
 		$user = UserData::getById($_SESSION["user_id"]);
