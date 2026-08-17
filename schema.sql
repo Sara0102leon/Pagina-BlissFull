@@ -1,5 +1,5 @@
 /**
-@author evilnapsis
+@author Sara0102leon y Keyler948
 @brief Modelo de base de datos de sistema TacoMenu
 @ updated 2026-04-07
 **/

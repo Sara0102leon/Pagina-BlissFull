@@ -1,4 +1,4 @@
-<?php 
+﻿<?php 
 if(!isset($_SESSION["user_id"])){ Core::redir("./");}
 $user= UserData::getById($_SESSION["user_id"]);
 if($user==null){ Core::redir("./");}
@@ -100,16 +100,16 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
 <script>
 $(function(){
   var STATUS_CONF = {
-    2: { title: "¿Marcar como PAGADO?", icon: "success", color: "#2f9e44", confirmText: "Sí, marcar pagado", doneText: "Pedido marcado como pagado" },
-    4: { title: "¿Marcar como ENVIADO?", icon: "question", color: "#2f9e44", confirmText: "Sí, marcar enviado", doneText: "Pedido marcado como enviado" },
-    5: { title: "¿Marcar como FINALIZADO?", icon: "success", color: "#2f9e44", confirmText: "Sí, finalizar", doneText: "Pedido finalizado" },
-    3: { title: "¿CANCELAR este pedido?", icon: "warning", color: "#d63939", confirmText: "Sí, cancelar", doneText: "Pedido cancelado" }
+    2: { title: "¿Marcar como PAGADO?", icon: "success", color: "#e0a96d", confirmText: "Sí, marcar pagado", doneText: "Pedido marcado como pagado" },
+    4: { title: "¿Marcar como ENVIADO?", icon: "question", color: "#e0a96d", confirmText: "Sí, marcar enviado", doneText: "Pedido marcado como enviado" },
+    5: { title: "¿Marcar como FINALIZADO?", icon: "success", color: "#e0a96d", confirmText: "Sí, finalizar", doneText: "Pedido finalizado" },
+    3: { title: "¿CANCELAR este pedido?", icon: "warning", color: "#1a0004", confirmText: "Sí, cancelar", doneText: "Pedido cancelado" }
   };
   $(document).on("click", ".btn-status-change", function(){
     var $btn = $(this);
     var id = $btn.data("id");
     var status = $btn.data("status");
-    var cfg = STATUS_CONF[status] || { title: "¿Cambiar estado?", icon: "question", color: "#2f9e44", confirmText: "Sí", doneText: "Estado actualizado" };
+    var cfg = STATUS_CONF[status] || { title: "¿Cambiar estado?", icon: "question", color: "#e0a96d", confirmText: "Sí", doneText: "Estado actualizado" };
     Swal.fire({
       title: cfg.title,
       html: status == 3
@@ -120,7 +120,7 @@ $(function(){
       confirmButtonText: cfg.confirmText,
       cancelButtonText: "Cancelar",
       confirmButtonColor: cfg.color,
-      cancelButtonColor: "#2c3b41",
+      cancelButtonColor: "#000000",
       reverseButtons: true
     }).then(function(result){
       if(!result.isConfirmed) return;
@@ -132,7 +132,7 @@ $(function(){
         })
         .fail(function(){
           $btn.prop("disabled", false).html('<i class="bi bi-exclamation-triangle"></i>');
-          Swal.fire({ icon: "error", title: "Error", text: "No se pudo cambiar el estado. Intenta de nuevo.", confirmButtonColor: "#d63939" });
+          Swal.fire({ icon: "error", title: "Error", text: "No se pudo cambiar el estado. Intenta de nuevo.", confirmButtonColor: "#1a0004" });
         });
     });
   });
@@ -479,7 +479,7 @@ td, th { mso-number-format: "@"; }
     <th>Fecha</th>
   </tr>
   <?php echo $rows; ?>
-  <tr style="font-weight:bold; background-color:#DDEBF7;">
+  <tr style="font-weight:bold; background-color:#1a0004;">
     <td colspan="2">TOTAL (<?php echo $count; ?> ventas)</td>
     <td><?php echo number_format($sum_usd,2); ?></td>
     <td><?php echo number_format($sum_bs,2); ?></td>

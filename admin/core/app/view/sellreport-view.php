@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 if(!isset($_SESSION["user_id"])){ Core::redir("./");}
 
 if(isset($_GET["opt"]) && $_GET["opt"]=="excel"){
@@ -54,7 +54,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="excel"){
     <th>Fecha</th>
   </tr>
   <?php echo $rows; ?>
-  <tr style="font-weight:bold; background-color:#DDEBF7;">
+  <tr style="font-weight:bold; background-color:#1a0004;">
     <td colspan="4">TOTAL (<?php echo count($buys); ?> ventas)</td>
     <td><?php echo number_format($sum_total,2); ?></td>
     <td colspan="3"></td>

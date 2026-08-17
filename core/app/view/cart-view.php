@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 $coin_symbol = ConfigurationData::getByPreffix("general_coin")?ConfigurationData::getByPreffix("general_coin")->val:"$";
 $iva = ConfigurationData::getByPreffix("general_iva")?ConfigurationData::getByPreffix("general_iva")->val:0;
 $ivatxt = ConfigurationData::getByPreffix("general_iva_txt")?ConfigurationData::getByPreffix("general_iva_txt")->val:"IVA";
@@ -117,7 +117,7 @@ $total = 0;
                 </div>
 
                 <div class="d-grid">
-                  <button id="btn_whatsapp" class="btn btn-success btn-lg py-3 rounded-pill shadow-sm fw-bold border-0" style="background: #ffde64; color: #090205;">
+                  <button id="btn_whatsapp" class="btn btn-success btn-lg py-3 rounded-pill shadow-sm fw-bold border-0" style="background: #e0a96d; color: #000000;">
                     <i class="bi bi-whatsapp me-2 h3 mb-0"></i> 
                     <span class="h3 mb-0">CONFIRMAR Y PEDIR</span>
                   </button>

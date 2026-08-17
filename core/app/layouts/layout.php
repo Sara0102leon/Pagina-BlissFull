@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es" data-bs-theme="dark">
   <head>
     <meta charset="utf-8"/>
@@ -24,8 +24,8 @@
     <style>
       :root {
         --tblr-font-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
-        --secondary-color: #ff9f1c; /* Dorado Tito */
-        --primary-color: #ffb703;   /* Dorado Brillante */
+        --secondary-color: #b87e38; /* Dorado Tito */
+        --primary-color: #e0a96d;   /* Dorado Brillante */
       }
       body {
         font-family: 'Inter', sans-serif;
@@ -179,11 +179,11 @@
             icon: "error",
             title: "ESTAMOS CERRADOS",
             html: TITO_CLOSED_MSG,
-            background: "#0c0409",
+            background: "#000000",
             color: "#ffffff",
-            iconColor: "#e63946",
+            iconColor: "#1a0004",
             confirmButtonText: "Entendido",
-            confirmButtonColor: "#e63946",
+            confirmButtonColor: "#1a0004",
             customClass: { title: "tt-swal-closed-title" }
           });
           return true;
@@ -205,7 +205,7 @@
                title: "¡Pedido registrado!",
                html: "Tu WhatsApp se ha abierto para enviar el detalle.",
                confirmButtonText: "Perfecto",
-               confirmButtonColor: "#ffb703"
+               confirmButtonColor: "#e0a96d"
              });
           }
         });
@@ -252,7 +252,13 @@
               </div>
             </div>
             <div class="tt-footer-bottom text-center small py-3 mt-4">
-              &copy; 2026 Alianzas Blissful. Todos los derechos reservados. Powered by Antigravity.
+              <div class="mb-1">&copy; 2026 Alianzas Blissful. Todos los derechos reservados.</div>
+              <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <span>Términos y condiciones</span>
+                <span class="tt-footer-sep" aria-hidden="true">&middot;</span>
+                <span>Tratamiento de datos</span>
+              </div>
+              <div class="mt-1">Desarrollado por Sara0102leon y Keyler948</div>
             </div>
           </div>
         </footer>
@@ -292,11 +298,11 @@
         icon: "success",
         title: "¡AGREGADO AL CARRITO!",
         html: '<span class="tt-swal-msg">' + msg + '</span>',
-        background: "#0c0409",
-        color: "#ffb703",
-        iconColor: "#ffb703",
+        background: "#000000",
+        color: "#e0a96d",
+        iconColor: "#e0a96d",
         confirmButtonText: "OK",
-        confirmButtonColor: "#ffb703",
+        confirmButtonColor: "#e0a96d",
         customClass: {
           popup: "tt-swal-popup",
           htmlContainer: "tt-swal-html",

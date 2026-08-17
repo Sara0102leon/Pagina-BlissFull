@@ -1,4 +1,4 @@
-<?php 
+﻿<?php 
 $coin_symbol = ConfigurationData::getByPreffix("general_coin")?ConfigurationData::getByPreffix("general_coin")->val:"$";
 $img_default = ConfigurationData::getByPreffix("general_img_default")?ConfigurationData::getByPreffix("general_img_default")->val:"assets/img/default.png";
 $whatsapp_number = ConfigurationData::getByPreffix("general_whatsapp")?ConfigurationData::getByPreffix("general_whatsapp")->val:"+5215574506232";
@@ -69,7 +69,7 @@ foreach($horario_keys as $hk){
 <div class="modal modal-blur fade" id="modal-sede" tabindex="-1" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header" style="background: linear-gradient(135deg,#ffb703,#ff9f1c); color: #161616;">
+      <div class="modal-header" style="background: linear-gradient(135deg,#e0a96d,#b87e38); color: #000000;">
         <div>
           <h5 class="modal-title fw-bold"><i class="bi bi-geo-alt-fill me-2"></i>¿Cuál sede te queda más cerca?</h5>
           <div class="small opacity-75">Elige tu sucursal y tu pedido se enviará directo a su WhatsApp</div>
@@ -640,7 +640,7 @@ $(document).ready(function() {
   $("#btn_confirm_sede").click(function() {
     const sel = $(".sede-option.selected");
     if (sel.length === 0) {
-      Swal.fire({ icon: "warning", title: "Elige una sede", text: "Selecciona la sede que te queda más cerca para continuar.", confirmButtonColor: "#ff9f1c" });
+      Swal.fire({ icon: "warning", title: "Elige una sede", text: "Selecciona la sede que te queda más cerca para continuar.", confirmButtonColor: "#b87e38" });
       return;
     }
     localStorage.setItem("blissfull_sede_id", sel.data("id"));
@@ -729,7 +729,7 @@ $(document).ready(function() {
     if (typeof showStoreClosedAlert === "function" && showStoreClosedAlert()) { return; }
     const sede = getSelectedSede();
     if (!sede) {
-      Swal.fire({ icon: "warning", title: "Elige tu sede", text: "Primero selecciona la sede que te queda más cerca, así tu pedido llega al WhatsApp correcto.", confirmButtonColor: "#ff9f1c" }).then(function(){ openSedeModal(); });
+      Swal.fire({ icon: "warning", title: "Elige tu sede", text: "Primero selecciona la sede que te queda más cerca, así tu pedido llega al WhatsApp correcto.", confirmButtonColor: "#b87e38" }).then(function(){ openSedeModal(); });
       return;
     }
     const name = $("#order_name").val().trim();
@@ -742,16 +742,16 @@ $(document).ready(function() {
     const isPM = $(".payment-method:checked").data("pm") == 1;
 
     if (name === "" || phone === "") {
-      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor completa tu nombre y teléfono.", confirmButtonColor: "#ff9f1c" });
+      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor completa tu nombre y teléfono.", confirmButtonColor: "#b87e38" });
       return;
     }
     if (isPickup) { address = "Recoger en sucursal"; }
     else if (address === "") {
-      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor escribe tu dirección de entrega.", confirmButtonColor: "#ff9f1c" });
+      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor escribe tu dirección de entrega.", confirmButtonColor: "#b87e38" });
       return;
     }
     if (!isPickup && zoneSel === "0") {
-      Swal.fire({ icon: "warning", title: "Zona de entrega", text: "Por favor selecciona tu zona de entrega (o marca que pasarás a recoger).", confirmButtonColor: "#ff9f1c" });
+      Swal.fire({ icon: "warning", title: "Zona de entrega", text: "Por favor selecciona tu zona de entrega (o marca que pasarás a recoger).", confirmButtonColor: "#b87e38" });
       return;
     }
 
@@ -803,11 +803,11 @@ $(document).ready(function() {
         title: "¡Pedido enviado!",
         html: "Tu pedido ha sido enviado por WhatsApp. Te confirmaremos pronto.",
         confirmButtonText: "¡Genial!",
-        confirmButtonColor: "#ffb703"
+        confirmButtonColor: "#e0a96d"
       }).then(function(){ location.reload(); });
     }).fail(function() {
       btn.prop("disabled", false).html('CONFIRMAR Y PEDIR POR WHATSAPP <i class="bi bi-whatsapp ms-2"></i>');
-      Swal.fire({ icon: "error", title: "Error", text: "Ocurrió un error al registrar tu pedido. Intenta de nuevo.", confirmButtonColor: "#e63946" });
+      Swal.fire({ icon: "error", title: "Error", text: "Ocurrió un error al registrar tu pedido. Intenta de nuevo.", confirmButtonColor: "#1a0004" });
     });
   });
 
@@ -829,20 +829,20 @@ $(document).ready(function() {
   padding: 0.55rem 1.3rem;
   border-radius: 2rem;
   font-weight: 700;
-  color: #cfc8be;
+  color: #ffffff;
   transition: 0.2s;
 }
 .btn-category-ajax:hover { color: #ffffff; border-color: rgba(255, 183, 3, 0.55); }
 .btn-category-ajax.active {
-  background: linear-gradient(135deg, #ffb703, #ff9f1c) !important;
-  color: #161616 !important;
+  background: linear-gradient(135deg, #e0a96d, #b87e38) !important;
+  color: #000000 !important;
   border-color: transparent !important;
   box-shadow: 0 8px 20px rgba(255, 159, 28, 0.35);
 }
 .sede-option { cursor: pointer; }
-.sede-card { transition: 0.2s; background: #1e1e1e; }
+.sede-card { transition: 0.2s; background: #0a0a0a; }
 .sede-option:hover .sede-card { border-color: rgba(255, 183, 3, 0.45); }
 .sede-check { color: rgba(255, 183, 3, 0.4); }
-.sede-option.selected .sede-card { border-color: #ffb703; background: rgba(255, 183, 3, 0.08); box-shadow: 0 8px 22px rgba(255, 159, 28, 0.18); }
-.sede-option.selected .sede-check { color: #ffb703; }
+.sede-option.selected .sede-card { border-color: #e0a96d; background: rgba(255, 183, 3, 0.08); box-shadow: 0 8px 22px rgba(255, 159, 28, 0.18); }
+.sede-option.selected .sede-check { color: #e0a96d; }
 </style>

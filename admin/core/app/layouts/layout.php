@@ -1,14 +1,31 @@
+<?php 
+$current_view = isset($_GET["view"]) ? $_GET["view"] : "";
+$admin_titles = array(
+  "home"=>"Dashboard","sells"=>"Ventas","sellreport"=>"Reportes de Ventas",
+  "products"=>"Productos","categories"=>"Categorías","clients"=>"Clientes",
+  "slider"=>"Slider","users"=>"Usuarios","settings"=>"Configuración",
+  "spends"=>"Gastos","persons"=>"Personas","forms"=>"Formularios",
+  "table"=>"Tablas","login"=>"Iniciar Sesión"
+);
+$page_title = isset($admin_titles[$current_view]) ? $admin_titles[$current_view] : "Panel Administrativo";
+$is_auth = isset($_SESSION["user_id"]);
+$sys_active = ($current_view=="users" || $current_view=="settings") ? "active" : "";
+$sys_open = $sys_active!="" ? " show" : "";
+?>
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
     <title>.: Alianzas Blissful - Panel Administrativo :.</title>
+    <link rel="icon" type="image/png" href="assets/favicon-32.png"/>
     <!-- CSS files -->
     <link href="./dist/css/tabler.min.css" rel="stylesheet"/>
     <link href="./dist/css/tabler-vendors.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="assets/bootstrap-icons/bootstrap-icons.css">
+    <!-- Admin Jobie Style (cargado al final para sobreescribir Tabler) -->
+    <link rel="stylesheet" href="assets/css/admin-custom.css">
     <script src="assets/jquery/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" type="text/css" href="assets/datatables/datatables.min.css">
@@ -23,101 +40,96 @@
       }
     </style>
   </head>
-  <body>
-    <div class="page">
-      <!-- Navbar -->
-      <header class="navbar  navbar-expand-md d-print-none" data-bs-theme="dark">
-        <div class="container-xl">
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu" aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+  <body class="admin-jobie<?php echo $is_auth ? " is-auth" : ""; ?>">
+    <div class="app-shell">
+
+      <?php if($is_auth): ?>
+      <!-- ============ SIDEBAR VERTICAL (Jobie) ============ -->
+      <aside class="app-sidebar" id="appSidebar">
+        <a href="./" class="sidebar-logo">
+          <img src="assets/logo.png" alt="Logo Blissful" class="sidebar-logo-img">
+          <span class="brand-name">ALIANZAS <span>BLISSFUL</span><small>Panel Admin</small></span>
+        </a>
+
+        <nav class="sidebar-nav">
+          <div class="sidebar-section-title">Menú Principal</div>
+
+          <a class="sidebar-item<?php echo ($current_view=="" || $current_view=="home") ? " active" : ""; ?>" href="./">
+            <i class="bi bi-grid-fill"></i><span>Dashboard</span>
+          </a>
+          <a class="sidebar-item<?php echo $current_view=="sells" ? " active" : ""; ?>" href="./?view=sells&opt=all">
+            <i class="bi bi-cart-check"></i><span>Ventas</span>
+          </a>
+          <a class="sidebar-item<?php echo $current_view=="sellreport" ? " active" : ""; ?>" href="./?view=sellreport">
+            <i class="bi bi-graph-up"></i><span>Reportes</span>
+          </a>
+          <a class="sidebar-item<?php echo $current_view=="products" ? " active" : ""; ?>" href="./?view=products&opt=all">
+            <i class="bi bi-box-seam"></i><span>Productos</span>
+          </a>
+          <a class="sidebar-item<?php echo $current_view=="categories" ? " active" : ""; ?>" href="./?view=categories&opt=all">
+            <i class="bi bi-tags"></i><span>Categorías</span>
+          </a>
+          <a class="sidebar-item<?php echo $current_view=="clients" ? " active" : ""; ?>" href="./?view=clients&opt=all">
+            <i class="bi bi-people"></i><span>Clientes</span>
+          </a>
+          <a class="sidebar-item<?php echo $current_view=="slider" ? " active" : ""; ?>" href="./?view=slider&opt=all">
+            <i class="bi bi-images"></i><span>Slider</span>
+          </a>
+
+          <button type="button" class="sidebar-item sidebar-toggle<?php echo $sys_active!="" ? " active" : ""; ?>" data-bs-toggle="collapse" data-bs-target="#menuSistema" aria-expanded="<?php echo $sys_active!="" ? "true" : "false"; ?>">
+            <i class="bi bi-gear"></i><span>Sistema</span>
+            <i class="bi bi-chevron-right chevron"></i>
           </button>
-          <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
-            <a href="./" class="text-decoration-none d-flex align-items-center">
-              <i class="bi bi-shield-lock text-primary me-2 h1 mb-0"></i>
-              <span>ALIANZAS <span class="text-primary">BLISSFUL</span></span>
-            </a>
-          </h1>
-          <div class="navbar-nav flex-row order-md-last">
-            <?php if(isset($_SESSION["user_id"])): ?>
-            <div class="nav-item dropdown d-none d-md-flex me-3">
-              <a href="#" class="nav-link px-0" data-bs-toggle="dropdown" tabindex="-1" aria-label="Show app menu" data-bs-auto-close="outside" aria-expanded="false">
-                <i class="bi bi-grid-3x3-gap" style="font-size: 1.25rem;"></i>
-              </a>
-              <div class="dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card">
-                <div class="card">
-                  <div class="card-header">
-                    <h3 class="card-title">My Apps</h3>
-                  </div>
-                  <div class="card-body scroll-y p-2" style="max-height: 50vh; width: 300px;">
-                    <div class="row g-0">
-                      <div class="col-6">
-                        <a href="./?view=products&opt=all" class="d-flex flex-column flex-center text-center text-secondary py-3 px-2 link-hoverable">
-                          <i class="bi bi-box-seam text-primary mb-2" style="font-size: 2rem;"></i>
-                          <span class="h5">Productos</span>
-                        </a>
-                      </div>
-                      <div class="col-6">
-                        <a href="./?view=sells&opt=all" class="d-flex flex-column flex-center text-center text-secondary py-3 px-2 link-hoverable">
-                          <i class="bi bi-cart-check text-success mb-2" style="font-size: 2rem;"></i>
-                          <span class="h5">Ventas</span>
-                        </a>
-                      </div>
-                      <div class="col-6">
-                        <a href="./?view=sellreport" class="d-flex flex-column flex-center text-center text-secondary py-3 px-2 link-hoverable">
-                          <i class="bi bi-graph-up text-indigo mb-2" style="font-size: 2rem;"></i>
-                          <span class="h5">Reportes</span>
-                        </a>
-                      </div>
-                      <div class="col-6">
-                        <a href="./?view=categories&opt=all" class="d-flex flex-column flex-center text-center text-secondary py-3 px-2 link-hoverable">
-                          <i class="bi bi-tags text-warning mb-2" style="font-size: 2rem;"></i>
-                          <span class="h5">CategorÃ­as</span>
-                        </a>
-                      </div>
-                      <div class="col-6">
-                        <a href="./?view=settings&opt=sedes" class="d-flex flex-column flex-center text-center text-secondary py-3 px-2 link-hoverable">
-                          <i class="bi bi-shop text-success mb-2" style="font-size: 2rem;"></i>
-                          <span class="h5">Sedes</span>
-                        </a>
-                      </div>
-                      <div class="col-6">
-                        <a href="./?view=settings&opt=units" class="d-flex flex-column flex-center text-center text-secondary py-3 px-2 link-hoverable">
-                          <i class="bi bi-rulers text-purple mb-2" style="font-size: 2rem;"></i>
-                          <span class="h5">Unidades</span>
-                        </a>
-                      </div>
-                      <div class="col-6">
-                        <a href="./?view=settings&opt=ingredients" class="d-flex flex-column flex-center text-center text-secondary py-3 px-2 link-hoverable">
-                          <i class="bi bi-egg-fried text-orange mb-2" style="font-size: 2rem;"></i>
-                          <span class="h5">Ingredientes</span>
-                        </a>
-                      </div>
-                      <div class="col-6">
-                        <a href="./?view=settings&opt=payment" class="d-flex flex-column flex-center text-center text-secondary py-3 px-2 link-hoverable">
-                          <i class="bi bi-credit-card text-info mb-2" style="font-size: 2rem;"></i>
-                          <span class="h5">Pagos</span>
-                        </a>
-                      </div>
-                      <div class="col-6">
-                        <a href="./?view=slider&opt=all" class="d-flex flex-column flex-center text-center text-secondary py-3 px-2 link-hoverable">
-                          <i class="bi bi-images text-danger mb-2" style="font-size: 2rem;"></i>
-                          <span class="h5">Slider</span>
-                        </a>
-                      </div>
-                      <div class="col-6">
-                        <a href="./?view=users&opt=all" class="d-flex flex-column flex-center text-center text-secondary py-3 px-2 link-hoverable">
-                          <i class="bi bi-person-badge text-light mb-2" style="font-size: 2rem;"></i>
-                          <span class="h5">Usuarios</span>
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <div class="collapse<?php echo $sys_open; ?>" id="menuSistema">
+            <div class="sidebar-submenu">
+              <a class="sidebar-subitem<?php echo $current_view=="users" ? " active" : ""; ?>" href="./?view=users&opt=all"><i class="bi bi-person-badge"></i> Usuarios</a>
+              <a class="sidebar-subitem<?php echo ($current_view=="settings" && (!isset($_GET["opt"]) || $_GET["opt"]=="all")) ? " active" : ""; ?>" href="./?view=settings&opt=all"><i class="bi bi-sliders"></i> Ajustes</a>
+              <a class="sidebar-subitem<?php echo ($current_view=="settings" && isset($_GET["opt"]) && $_GET["opt"]=="sedes") ? " active" : ""; ?>" href="./?view=settings&opt=sedes"><i class="bi bi-shop"></i> Sedes</a>
+              <a class="sidebar-subitem<?php echo ($current_view=="settings" && isset($_GET["opt"]) && $_GET["opt"]=="payment") ? " active" : ""; ?>" href="./?view=settings&opt=payment"><i class="bi bi-credit-card"></i> Métodos de Pago</a>
+              <a class="sidebar-subitem<?php echo ($current_view=="settings" && isset($_GET["opt"]) && $_GET["opt"]=="units") ? " active" : ""; ?>" href="./?view=settings&opt=units"><i class="bi bi-rulers"></i> Unidades</a>
+              <a class="sidebar-subitem<?php echo ($current_view=="settings" && isset($_GET["opt"]) && $_GET["opt"]=="ingredients") ? " active" : ""; ?>" href="./?view=settings&opt=ingredients"><i class="bi bi-egg-fried"></i> Ingredientes</a>
             </div>
+          </div>
+
+          <a class="sidebar-item sidebar-logout" href="./?action=access&opt=logout">
+            <i class="bi bi-box-arrow-right"></i><span>Salir</span>
+          </a>
+        </nav>
+      </aside>
+      <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+      <?php endif; ?>
+
+      <!-- ============ MAIN + HEADER (Jobie) ============ -->
+      <div class="app-main">
+        <header class="app-header">
+          <?php if($is_auth): ?>
+          <button type="button" class="icon-btn" id="btnSidebarToggle" aria-label="Abrir menú">
+            <i class="bi bi-list"></i>
+          </button>
+          <?php else: ?>
+          <a href="./" class="app-brand">
+            <img src="assets/logo.png" alt="Logo Blissful" class="app-brand-img">
+            <span>ALIANZAS <b>BLISSFUL</b></span>
+          </a>
+          <div class="app-header-right">
+            <a href="./?view=login" class="icon-btn btn-login-link">
+              <i class="bi bi-box-arrow-in-right"></i>
+            </a>
+          </div>
+          <?php endif; ?>
+
+          <h1 class="app-title"><?php echo htmlspecialchars($page_title); ?></h1>
+
+          <div class="app-search d-none d-md-block">
+            <i class="bi bi-search"></i>
+            <input type="search" placeholder="Buscar en el panel..." aria-label="Buscar">
+          </div>
+
+          <?php if($is_auth): ?>
+          <div class="app-header-right">
             <div class="nav-item dropdown me-2" id="notif-wrap">
-              <a href="#" class="nav-link px-2 position-relative" data-bs-toggle="dropdown" aria-label="Notificaciones" title="Pedidos pendientes de pago">
-                <i class="bi bi-bell" style="font-size: 1.4rem;"></i>
+              <a href="#" class="icon-btn" data-bs-toggle="dropdown" aria-label="Notificaciones" title="Pedidos pendientes de pago">
+                <i class="bi bi-bell"></i>
                 <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" style="font-size: 0.65rem;">0</span>
               </a>
               <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow dropdown-menu-card shadow">
@@ -131,123 +143,40 @@
                 </div>
               </div>
             </div>
+
             <?php $u = UserData::getById($_SESSION["user_id"]); ?>
-            <div class="nav-item dropdown ps-3">
-              <a href="#" class="nav-link d-flex lh-1 p-0 px-2" data-bs-toggle="dropdown">
-                <span class="avatar avatar-sm bg-primary text-white"><i class="bi bi-person"></i></span>
-                <div class="d-none d-xl-block ps-2">
-                  <div><?php echo htmlspecialchars($u->name." ".$u->lastname); ?></div>
-                  <div class="mt-1 small text-muted">Administrador</div>
-                </div>
+            <div class="nav-item dropdown">
+              <a href="#" class="profile-chip" data-bs-toggle="dropdown">
+                <span class="avatar avatar-sm"><i class="bi bi-person"></i></span>
+                <span class="profile-name d-none d-xl-block">
+                  <span class="fw-bold d-block" style="line-height:1.1;"><?php echo htmlspecialchars($u->name." ".$u->lastname); ?></span>
+                  <span class="small text-muted" style="line-height:1.1;">Administrador</span>
+                </span>
               </a>
               <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                <a href="./?view=settings&opt=all" class="dropdown-item">ConfiguraciÃ³n</a>
+                <a href="./?view=settings&opt=all" class="dropdown-item">Configuración</a>
                 <div class="dropdown-divider"></div>
                 <a href="./?action=access&opt=logout" class="dropdown-item text-danger">Salir</a>
               </div>
             </div>
-            <?php endif; ?>
           </div>
+          <?php endif; ?>
+        </header>
+
+        <div class="app-content">
+          <?php View::load("index"); ?>
+
+          <footer class="app-footer">
+            &copy; 2026 Alianzas Blissful. Todos los derechos reservados. Desarrollado por Sara0102leon y Keyler948
+          </footer>
         </div>
-      </header>
-      <header class="navbar-expand-md">
-        <div class="collapse navbar-collapse" id="navbar-menu">
-          <div class="navbar">
-            <div class="container-xl">
-              <ul class="navbar-nav">
-                <li class="nav-item">
-                  <a class="nav-link" href="./" >
-                    <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="bi bi-house"></i></span>
-                    <span class="nav-link-title">Inicio</span>
-                  </a>
-                </li>
-                <?php if(isset($_SESSION["user_id"])):?>
-                <li class="nav-item">
-                  <a class="nav-link" href="./?view=sells&opt=all" >
-                    <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="bi bi-cart-check"></i></span>
-                    <span class="nav-link-title">Ventas</span>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="./?view=sellreport" >
-                    <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="bi bi-graph-up"></i></span>
-                    <span class="nav-link-title">Reportes</span>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="./?view=products&opt=all" >
-                    <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="bi bi-box-seam"></i></span>
-                    <span class="nav-link-title">Productos</span>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="./?view=categories&opt=all" >
-                    <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="bi bi-tags"></i></span>
-                    <span class="nav-link-title">CategorÃ­as</span>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="./?view=clients&opt=all" >
-                    <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="bi bi-people"></i></span>
-                    <span class="nav-link-title">Clientes</span>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="./?view=slider&opt=all" >
-                    <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="bi bi-images"></i></span>
-                    <span class="nav-link-title">Slider</span>
-                  </a>
-                </li>
-                <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle" href="#navbar-more" data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                    <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="bi bi-gear"></i></span>
-                    <span class="nav-link-title">Sistema</span>
-                  </a>
-                  <div class="dropdown-menu">
-                    <a class="dropdown-item" href="./?view=users&opt=all">Usuarios</a>
-                    <a class="dropdown-item" href="./?view=settings&opt=all">Ajustes</a>
-                    <a class="dropdown-item" href="./?view=settings&opt=sedes">Sedes</a>
-                    <a class="dropdown-item" href="./?view=settings&opt=payment">Metodos de Pago</a>
-                    <a class="dropdown-item" href="./?view=settings&opt=units">Unidades</a>
-                    <a class="dropdown-item" href="./?view=settings&opt=ingredients">Ingredientes</a>
-                  </div>
-                </li>
-                <?php else: ?>
-                  <li class="nav-item">
-                    <a class="nav-link" href="./?view=login" >
-                      <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="bi bi-box-arrow-in-right"></i></span>
-                      <span class="nav-link-title">Iniciar SesiÃ³n</span>
-                    </a>
-                  </li>
-                <?php endif; ?>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </header>
-      
-      <div class="page-wrapper">
-        <?php View::load("index"); ?>
-        <footer class="footer footer-transparent d-print-none">
-          <div class="container-xl">
-            <div class="row text-center align-items-center flex-row-reverse">
-              <div class="col-12 col-lg-auto mt-3 mt-lg-0">
-                <ul class="list-inline list-inline-dots mb-0">
-                  <li class="list-inline-item">
-                    Powered by <a href="http://evilnapsis.com/" target="_blank" class="link-secondary">Evilnapsis</a> &copy; 2026
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </footer>
       </div>
     </div>
-    
+
     <style>
       @keyframes notifFlash{ 0%,100%{ transform: translate(-50%,-50%) scale(1); } 50%{ transform: translate(-50%,-50%) scale(1.6); } }
       #notif-badge.anim-flash{ animation: notifFlash 0.5s ease-in-out 2; }
-      .notif-item{ border-left: 4px solid #dee2e6; }
+      .notif-item{ border-left: 4px solid rgba(184,126,56,0.4); }
       .notif-item:hover{ border-left-width: 4px; }
     </style>
     <script src="./dist/libs/apexcharts/dist/apexcharts.min.js" defer></script>
@@ -256,13 +185,17 @@
       $(document).ready(function(){
         $(".datatable").DataTable();
         initNotifications();
+        var $toggle = document.getElementById("btnSidebarToggle");
+        var $backdrop = document.getElementById("sidebarBackdrop");
+        if($toggle){ $toggle.addEventListener("click", function(){ document.body.classList.toggle("sidebar-open"); }); }
+        if($backdrop){ $backdrop.addEventListener("click", function(){ document.body.classList.remove("sidebar-open"); }); }
       });
 
       function initNotifications(){
         var lastCount = -1;
         var LEVEL = {
-          risk:     { label: "Riesgo de no pagar",   color: "#fd7e14" },
-          critical: { label: "Posible pedido falso", color: "#d63939" }
+          risk:     { label: "Riesgo de no pagar",   color: "#b87e38" },
+          critical: { label: "Posible pedido falso", color: "#e0a96d" }
         };
 
         function fmtDur(sec){
@@ -323,5 +256,3 @@
     </script>
   </body>
 </html>
-
-

@@ -3,7 +3,7 @@
     <div class="row g-2 align-items-center">
       <div class="col">
         <h2 class="page-title">
-          Ayuda Legobox Min
+          Ayuda
         </h2>
       </div>
     </div>
@@ -14,13 +14,8 @@
     <div class="card">
       <div class="card-body">
         <div class="markdown">
-          <p>Puedes obtener ayuda en los siguientes links:</p>
-          <ul>
-            <li><a href="http://evilnapsis.com/?s=legobox" target="_blank">http://evilnapsis.com/</a></li>
-            <li><a href="https://youtube.com/evilnapsis/videos" target="_blank">https://youtube.com/evilnapsis/videos/</a></li>
-          </ul>
-          <p>Tambien me puedes contactar por email a <b>evilnapsis@gmail.com</b></p>
-          <p>Acepto todo tipo de donaciones.</p>
+          <p>Este sistema fue desarrollado por <b>Sara0102leon y Keyler948</b>.</p>
+          <p>Para soporte o información, contacta a los desarrolladores del proyecto.</p>
         </div>
       </div>
     </div>

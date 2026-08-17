@@ -1,4 +1,4 @@
-<?php 
+﻿<?php 
 if(!isset($_SESSION["user_id"])){ Core::redir("./");}
 $user= UserData::getById($_SESSION["user_id"]);
 if($user==null){ Core::redir("./");}
@@ -112,8 +112,8 @@ $(function(){
       showCancelButton: true,
       confirmButtonText: "Eliminar",
       cancelButtonText: "Cancelar",
-      confirmButtonColor: "#d63939",
-      cancelButtonColor: "#2c3b41",
+      confirmButtonColor: "#1a0004",
+      cancelButtonColor: "#000000",
       inputValidator: function(value){
         if(!value) return "Debes responder la verificaci\u00f3n";
         if(challenge === "text" && value.trim().toUpperCase() !== expected) return "Palabra incorrecta, int\u00e9ntalo de nuevo";
