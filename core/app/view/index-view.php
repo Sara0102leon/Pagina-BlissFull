@@ -17,7 +17,11 @@ $binance_contact = ConfigurationData::getByPreffix("binance_contact")?Configurat
 $zones = DeliveryZoneData::getAll();
 $sedes = SedeData::getActives();
 $sede_json = array();
-foreach($sedes as $sd){ array_push($sede_json, array("id"=>$sd->id,"name"=>$sd->name,"address"=>$sd->address,"phone"=>$sd->phone)); }
+foreach($sedes as $sd){
+  $deliv_map = array();
+  foreach(SedeDeliveryZoneData::getBySede($sd->id) as $sdzd){ $deliv_map[$sdzd->delivery_zone_id] = floatval($sdzd->price); }
+  array_push($sede_json, array("id"=>$sd->id,"name"=>$sd->name,"address"=>$sd->address,"phone"=>$sd->phone,"delivery"=>$deliv_map));
+}
 $sede_json = json_encode($sede_json);
 $base_url = (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"]!="off" ? "https" : "http")."://".$_SERVER["HTTP_HOST"];
 $script_dir = str_replace("\\","/",dirname($_SERVER["SCRIPT_NAME"]));
@@ -126,7 +130,7 @@ foreach($horario_keys as $hk){
             <select id="order_zone" class="form-select">
               <option value="0" data-price="0">Comer aquí / Recoger en sucursal</option>
               <?php foreach($zones as $z): ?>
-              <option value="<?php echo $z->id; ?>" data-price="<?php echo $z->price; ?>"><?php echo htmlspecialchars($z->name); ?> (+ $<?php echo number_format($z->price,2,".",","); ?>)</option>
+              <option value="<?php echo $z->id; ?>" data-price="<?php echo $z->price; ?>"><?php echo htmlspecialchars($z->name); ?></option>
               <?php endforeach; ?>
             </select>
          </div>
@@ -163,9 +167,11 @@ foreach($horario_keys as $hk){
             </div>
             <hr class="my-2">
             <div class="d-flex justify-content-between fw-bold h5 mb-1">
-              <span>TOTAL</span><span id="ck_total">$0.00</span>
+              <span>TOTAL (US$)</span><span id="ck_total">$0.00</span>
             </div>
-            <div class="text-end text-muted small" id="ck_total_bs"></div>
+            <div class="d-flex justify-content-between align-items-center fw-bold text-gold">
+              <span>TOTAL (Bs)</span><span id="ck_total_bs">Bs a confirmar</span>
+            </div>
          </div>
          <div class="alert alert-warning py-2 small mt-3">
             <i class="bi bi-exclamation-triangle me-1"></i> El negocio confirmará tu pedido por WhatsApp antes de prepararlo.
@@ -455,7 +461,15 @@ function selectSedeCard(id) {
   $(".sede-option[data-id='" + id + "']").addClass("selected");
 }
 
+let sedeModalReturnToCheckout = false;
+
 function openSedeModal() {
+  if ($("#modal-checkout").hasClass("show")) {
+    sedeModalReturnToCheckout = true;
+    $("#modal-checkout").modal("hide");
+  } else {
+    sedeModalReturnToCheckout = false;
+  }
   const sede = getSelectedSede();
   if (sede) { selectSedeCard(sede.id); }
   $("#modal-sede").modal("show");
@@ -581,12 +595,21 @@ function computeTotals(items, delivery, deliveryPrice) {
   return { subtotal: subtotal, delivery: deliveryCost, total: subtotal + deliveryCost };
 }
 
+function deliveryPriceFor(sede, zoneId) {
+  if (!zoneId || zoneId === "0") return 0;
+  const zoneOpt = $("#order_zone option[value='" + zoneId + "']");
+  const zoneDefault = zoneOpt.length ? (parseFloat(zoneOpt.data("price")) || 0) : 0;
+  if (sede && sede.delivery && sede.delivery[zoneId] !== undefined) {
+    return parseFloat(sede.delivery[zoneId]) || 0;
+  }
+  return zoneDefault;
+}
+
 function updateCheckoutUI() {
   const isPickup = $("#order_pickup").is(":checked");
   const zoneSel = $("#order_zone").val();
   const delivery = !isPickup && zoneSel !== "0";
-  const zoneOpt = zoneSel !== "0" ? $("#order_zone option:selected") : null;
-  const deliveryPrice = delivery ? parseFloat(zoneOpt.data("price")) : 0;
+  const deliveryPrice = delivery ? deliveryPriceFor(getSelectedSede(), zoneSel) : 0;
   const t = computeTotals(getCartItems(), delivery, deliveryPrice);
   const paySel = $(".payment-method:checked");
   const isPM = paySel.data("pm") == 1;
@@ -594,7 +617,7 @@ function updateCheckoutUI() {
   $("#ck_subtotal").text(fmt(t.subtotal));
   $("#ck_delivery").text(delivery ? fmt(t.delivery) : "Comer aquí / Recoger");
   $("#ck_total").text(fmt(t.total));
-  $("#ck_total_bs").text(bcvRate > 0 ? "≈ " + fmtBs(t.total * bcvRate) : "");
+  $("#ck_total_bs").text(bcvRate > 0 ? fmtBs(t.total * bcvRate) : "Bs a confirmar");
 
   if(isPM){
     $("#pm_amount").text(fmt(t.total) + " (" + (bcvRate>0 ? fmtBs(t.total*bcvRate) : "Bs a confirmar") + ")");
@@ -637,6 +660,11 @@ $(document).ready(function() {
     localStorage.setItem("blissfull_sede_id", sel.data("id"));
     setSedeUI();
     $("#modal-sede").modal("hide");
+    updateCheckoutUI();
+    if (sedeModalReturnToCheckout) {
+      sedeModalReturnToCheckout = false;
+      setTimeout(function() { $("#modal-checkout").modal("show"); }, 350);
+    }
   });
   $("#btn_checkout_sede").click(function() { openSedeModal(); });
 
@@ -692,6 +720,9 @@ $(document).ready(function() {
   $("#order_zone").change(updateCheckoutUI);
   $(".payment-method").change(updateCheckoutUI);
 
+  // Refresh totals when checkout opens
+  $("#modal-checkout").on("shown.bs.modal", function() { updateCheckoutUI(); });
+
   // BCV Rate
   let bcvRate = <?php echo $bcv_rate_js; ?>;
   function bcvLoadRate(showSpinner) {
@@ -739,7 +770,7 @@ $(document).ready(function() {
 
     const delivery = !isPickup;
     const zoneOpt = delivery ? $("#order_zone option:selected") : null;
-    const deliveryPrice = delivery ? parseFloat(zoneOpt.data("price")) : 0;
+    const deliveryPrice = delivery ? deliveryPriceFor(sede, zoneSel) : 0;
     const zoneName = delivery ? zoneOpt.text() : "Recoger en sucursal";
     const items = getCartItems();
     const t = computeTotals(items, delivery, deliveryPrice);

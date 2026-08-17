@@ -106,6 +106,14 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="delsede"){
 	SedeData::delById($_GET["id"]);
 	Core::redir("./?view=settings&opt=sedes");
 }
+else if(isset($_GET["opt"]) && $_GET["opt"]=="updsedezones"){
+	if(isset($_POST["sede_id"]) && $_POST["sede_id"]!="" && isset($_POST["zone_price"]) && is_array($_POST["zone_price"])){
+		foreach($_POST["zone_price"] as $zid => $zprice){
+			SedeDeliveryZoneData::save(intval($_POST["sede_id"]), intval($zid), floatval($zprice));
+		}
+		Core::redir("./?view=settings&opt=sedes");
+	}
+}
 else if(isset($_GET["opt"]) && $_GET["opt"]=="updhorarios"){
 	if(count($_POST)>0){
 		foreach(array("horario_lunes","horario_martes","horario_miercoles","horario_jueves","horario_viernes","horario_sabado","horario_domingo") as $k){

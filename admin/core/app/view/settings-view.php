@@ -275,6 +275,7 @@ $settings = ConfigurationData::getAll();
 
 <?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="sedes"):?>
 <?php $sedes = SedeData::getAll(); ?>
+<?php $zones = DeliveryZoneData::getAll(); ?>
 <div class="page-header d-print-none">
   <div class="container-xl">
     <div class="row g-2 align-items-center">
@@ -357,6 +358,41 @@ $settings = ConfigurationData::getAll();
         </div>
         <?php else:?>
           <p class="alert alert-warning mb-0">No hay sedes registradas.</p>
+        <?php endif;?>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-status-top bg-warning"></div>
+      <div class="card-header">
+        <h3 class="card-title">Precios de Delivery por Sede y Zona</h3>
+      </div>
+      <div class="card-body">
+        <p class="text-muted small mb-3">Cada sede puede tener su propio precio por zona de entrega (útil cuando una sede queda lejos de una zona barata).</p>
+        <?php if(count($sedes)==0):?>
+          <p class="alert alert-warning mb-0">Primero agrega una sede.</p>
+        <?php elseif(count($zones)==0):?>
+          <p class="alert alert-warning mb-0">No hay zonas de entrega registradas.</p>
+        <?php else:?>
+          <?php foreach($sedes as $sd): ?>
+          <?php $sd_prices = SedeDeliveryZoneData::getBySede($sd->id); $price_map = array(); foreach($sd_prices as $sp){ $price_map[$sp->delivery_zone_id] = $sp->price; } ?>
+          <form method="post" action="./?action=settings&opt=updsedezones" class="border rounded-3 p-3 mb-3">
+            <input type="hidden" name="sede_id" value="<?php echo $sd->id; ?>">
+            <div class="fw-bold mb-2"><i class="bi bi-shop me-1"></i><?php echo htmlspecialchars($sd->name); ?></div>
+            <div class="row g-2">
+              <?php foreach($zones as $z): ?>
+              <div class="col-md-4 col-lg-3">
+                <label class="small text-muted"><?php echo htmlspecialchars($z->name); ?></label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">$</span>
+                  <input type="number" step="0.01" min="0" name="zone_price[<?php echo $z->id; ?>]" class="form-control"
+                    value="<?php echo isset($price_map[$z->id]) ? number_format(floatval($price_map[$z->id]),2,".","") : number_format($z->price,2,".",""); ?>">
+                </div>
+              </div>
+              <?php endforeach; ?>
+            </div>
+            <button type="submit" class="btn btn-warning btn-sm mt-3"><i class="bi bi-check-lg"></i> Guardar precios de <?php echo htmlspecialchars($sd->name); ?></button>
+          </form>
+          <?php endforeach; ?>
         <?php endif;?>
       </div>
     </div>

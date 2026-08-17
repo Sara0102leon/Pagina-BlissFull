@@ -181,6 +181,16 @@ create table delivery_zone (
 	price decimal(10,2) default 0
 );
 
+create table sede_delivery_zone (
+	id int not null auto_increment primary key,
+	sede_id int,
+	delivery_zone_id int,
+	price decimal(10,2) default 0,
+	unique key uq_sede_zone (sede_id, delivery_zone_id),
+	foreign key(sede_id) references sede(id),
+	foreign key(delivery_zone_id) references delivery_zone(id)
+);
+
 create table product_extra (
 	id int not null auto_increment primary key,
 	product_id int,
