@@ -272,6 +272,54 @@ body {
   50% { transform: translateY(-44%); }
 }
 
+.tt-float-link {
+  display: block;
+  position: absolute;
+  right: 3%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: min(330px, 30vw);
+  aspect-ratio: 1 / 1;
+  z-index: 4;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.tt-float-link .tt-float-img {
+  position: relative;
+  right: auto;
+  top: auto;
+  transform: none;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  animation: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.tt-float-link:hover .tt-float-img {
+  transform: scale(1.05);
+  box-shadow:
+    0 30px 70px rgba(0, 0, 0, 0.65),
+    0 0 95px rgba(255, 159, 28, 0.45);
+}
+.tt-float-badge {
+  position: absolute;
+  left: 50%;
+  bottom: 10%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ffb703, #ff9f1c);
+  color: #161616;
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  box-shadow: 0 8px 24px rgba(255, 159, 28, 0.4);
+  pointer-events: none;
+  white-space: nowrap;
+  transition: transform 0.3s ease;
+}
+.tt-float-link:hover .tt-float-badge { transform: translateX(-50%) scale(1.08); }
+
 /* ================= GOLD BUTTONS ================= */
 .style-yellow-btn,
 .btn-primary,
@@ -1016,11 +1064,13 @@ hr { border-color: rgba(255, 255, 255, 0.1); }
 @media (max-width: 991.98px) {
   .tt-hero { min-height: 520px; }
   .tt-float-img { width: 240px; right: 4%; }
+  .tt-float-link { width: 240px; right: 4%; }
 }
 
 @media (max-width: 767.98px) {
   .tt-hero { min-height: 500px; }
   .tt-float-img { display: none; }
+  .tt-float-link { display: none; }
   .tt-hero-content { padding: 3rem 0; }
   .tt-title { font-size: clamp(2.6rem, 14vw, 4rem); }
   .tt-badge-gold { display: none; }

@@ -26,8 +26,33 @@ else if(strpos($script_dir,"/admin")!==false){ $script_dir = substr($script_dir,
 $base_url .= $script_dir;
 $bcv_rate_js = $bcv_rate>0 ? $bcv_rate : 0;
 $featured = ProductData::getFeatureds();
+$hero_hand = ConfigurationData::getByPreffix("hero_hand")?ConfigurationData::getByPreffix("hero_hand")->val:"sabor casero que enamora";
+$hero_title = ConfigurationData::getByPreffix("hero_title")?ConfigurationData::getByPreffix("hero_title")->val:"Alianza Blissfull";
+$hero_sub = ConfigurationData::getByPreffix("hero_sub")?ConfigurationData::getByPreffix("hero_sub")->val:"pizzas y platillos caseros preparados al momento. Ordena desde tu celular y recíbelo caliente donde estés.";
+$flotante_pid = ConfigurationData::getByPreffix("flotante_product_id")?ConfigurationData::getByPreffix("flotante_product_id")->val:"";
+$flotante_pdata = null;
+if($flotante_pid!=""){ $flotante_pdata = ProductData::getById($flotante_pid); }
 $hero_img = $img_default;
-if(count($featured)>0){ $hero_img = "admin/storage/products/".$featured[0]->image; if(!file_exists($hero_img)){ $hero_img=$img_default; } }
+if($flotante_pdata && $flotante_pdata->image!=""){
+  $pimg = "admin/storage/products/".$flotante_pdata->image;
+  if(file_exists($pimg)){ $hero_img = $pimg; }
+}
+if($hero_img==$img_default && count($featured)>0){ $hero_img = "admin/storage/products/".$featured[0]->image; if(!file_exists($hero_img)){ $hero_img=$img_default; } }
+$flotante_extras_json = "[]";
+$flotante_extras_json_js = "[]";
+if($flotante_pdata){
+  $extras_tmp = ProductExtraData::getByProductId($flotante_pdata->id);
+  $extras_tmp2 = array();
+  foreach($extras_tmp as $e){ $extras_tmp2[] = array("name"=>$e->name,"price"=>floatval($e->price)); }
+  $flotante_extras_json = htmlspecialchars(json_encode($extras_tmp2), ENT_QUOTES);
+  $flotante_extras_json_js = json_encode($extras_tmp2, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
+}
+$horarios = array();
+$horario_keys = array("lunes","martes","miercoles","jueves","viernes","sabado","domingo");
+foreach($horario_keys as $hk){
+  $cfg = ConfigurationData::getByPreffix("horario_".$hk);
+  $horarios[$hk] = $cfg && $cfg->val!="" ? $cfg->val : "10:00 - 22:00";
+}
 ?>
 
 <!-- Modal Selección de Sede -->
@@ -220,9 +245,9 @@ if(count($featured)>0){ $hero_img = "admin/storage/products/".$featured[0]->imag
       <div class="container-xl">
         <div class="row align-items-center position-relative">
           <div class="col-lg-7 text-center text-lg-start">
-            <div class="tt-hand tt-hand-big tt-neon mb-2">sabor casero que enamora</div>
-            <h1 class="tt-display tt-title mb-3">Alianza <span class="text-gold">Blissfull</span></h1>
-            <p class="tt-sub mx-auto mx-lg-0">pizzas y platillos caseros preparados al momento. Ordena desde tu celular y recíbelo caliente donde estés.</p>
+            <div class="tt-hand tt-hand-big tt-neon mb-2"><?php echo htmlspecialchars($hero_hand); ?></div>
+            <h1 class="tt-display tt-title mb-3"><?php echo htmlspecialchars($hero_title); ?></h1>
+            <p class="tt-sub mx-auto mx-lg-0"><?php echo htmlspecialchars($hero_sub); ?></p>
             <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap mt-4">
               <a href="#menu-anchor" id="btn-go-menu" class="btn btn-warning style-yellow-btn px-4 py-3 rounded-pill fw-bold text-nowrap">
                 <i class="bi bi-basket3 me-2"></i> PEDIR AHORA
@@ -238,7 +263,14 @@ if(count($featured)>0){ $hero_img = "admin/storage/products/".$featured[0]->imag
             </div>
           </div>
           <div class="col-lg-5 d-none d-lg-block">
-            <img src="<?php echo $hero_img; ?>" class="tt-float-img" alt="Alianzas Blissful">
+            <?php if($flotante_pdata): ?>
+            <a href="#" class="tt-float-link" onclick="openFlotante(); return false;" title="Agregar al pedido: <?php echo htmlspecialchars($flotante_pdata->name); ?>">
+            <?php endif; ?>
+              <img src="<?php echo $hero_img; ?>" class="tt-float-img" alt="Alianzas Blissful">
+              <?php if($flotante_pdata): ?>
+              <span class="tt-float-badge"><i class="bi bi-basket3 me-1"></i>PEDIR</span>
+            </a>
+            <?php endif; ?>
           </div>
         </div>
       </div>
@@ -377,6 +409,9 @@ const COIN = "$";
 const BS_SYMBOL = "Bs";
 const SITE_BASE = "<?php echo $base_url; ?>";
 const SEDES = <?php echo $sede_json; ?>;
+const FLOTANTE_PID = <?php echo $flotante_pdata ? $flotante_pdata->id : 0; ?>;
+const FLOTANTE_NAME = "<?php echo $flotante_pdata ? addslashes($flotante_pdata->name) : ''; ?>";
+const FLOTANTE_EXTRAS = <?php echo $flotante_pdata ? $flotante_extras_json_js : "[]"; ?>;
 let currentCatId = "";
 let currentSearch = "";
 let pendingExtrasPid = null;
@@ -386,6 +421,16 @@ let pendingExtras = [];
 function fmt(n){ return COIN + n.toFixed(2); }
 function fmtBs(n){ return BS_SYMBOL + " " + n.toFixed(2); }
 function fmtComma(n){ return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+
+// ===== Flotante Hero =====
+function openFlotante() {
+  if (!FLOTANTE_PID) return;
+  if (FLOTANTE_EXTRAS.length > 0) {
+    openExtrasModal(FLOTANTE_PID, FLOTANTE_NAME, JSON.stringify(FLOTANTE_EXTRAS));
+  } else {
+    addToCart(FLOTANTE_PID, FLOTANTE_NAME, "[]");
+  }
+}
 
 // ===== Sede Selection =====
 function getSelectedSede() {

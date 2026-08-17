@@ -106,6 +106,14 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="delsede"){
 	SedeData::delById($_GET["id"]);
 	Core::redir("./?view=settings&opt=sedes");
 }
+else if(isset($_GET["opt"]) && $_GET["opt"]=="updhorarios"){
+	if(count($_POST)>0){
+		foreach(array("horario_lunes","horario_martes","horario_miercoles","horario_jueves","horario_viernes","horario_sabado","horario_domingo") as $k){
+			if(isset($_POST[$k])){ ConfigurationData::updateValFromName($k,$_POST[$k]); }
+		}
+		Core::redir("./?view=settings&opt=horarios");
+	}
+}
 else if(isset($_GET["opt"]) && $_GET["opt"]=="changepass"){
 	if(count($_POST)>0){
 		$user = UserData::getById($_SESSION["user_id"]);

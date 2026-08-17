@@ -47,6 +47,20 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="upd"){
 		Core::redir("./?view=slider&opt=all");
 	}
 }
+else if(isset($_GET["opt"]) && $_GET["opt"]=="updhero"){
+	if(count($_POST)>0){
+		foreach(array("hero_hand","hero_title","hero_sub") as $k){
+			if(isset($_POST[$k])){ ConfigurationData::updateValFromName($k,$_POST[$k]); }
+		}
+		Core::redir("./?view=slider&opt=hero");
+	}
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="updflotante"){
+	if(count($_POST)>0){
+		ConfigurationData::updateValFromName("flotante_product_id", isset($_POST["flotante_product_id"])?$_POST["flotante_product_id"]:"");
+		Core::redir("./?view=slider&opt=flotante");
+	}
+}
 else if(isset($_GET["opt"]) && $_GET["opt"]=="del"){
 	$product = SlideData::getById($_GET["id"]);
 	$product->del();

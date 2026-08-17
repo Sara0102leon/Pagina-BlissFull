@@ -16,6 +16,7 @@ if($user==null){ Core::redir("./");}
           <a href="./?view=settings&opt=payment" class="btn btn-default">Metodos de Pago</a>
           <a href="./?view=settings&opt=zones" class="btn btn-default">Zonas de Delivery</a>
           <a href="./?view=settings&opt=sedes" class="btn btn-default">Sedes</a>
+          <a href="./?view=settings&opt=horarios" class="btn btn-default">Horarios</a>
           <a href="./?view=settings&opt=units" class="btn btn-default">Unidades</a>
           <a href="./?view=settings&opt=ingredients" class="btn btn-default">Ingredientes</a>
           <a href="./?view=settings&opt=password" class="btn btn-default">Cambiar Contraseña</a>
@@ -357,6 +358,55 @@ $settings = ConfigurationData::getAll();
         <?php else:?>
           <p class="alert alert-warning mb-0">No hay sedes registradas.</p>
         <?php endif;?>
+      </div>
+    </div>
+  </div>
+</div>
+
+<?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="horarios"):?>
+<?php
+$days = array(
+  "horario_lunes" => "Lunes",
+  "horario_martes" => "Martes",
+  "horario_miercoles" => "Miércoles",
+  "horario_jueves" => "Jueves",
+  "horario_viernes" => "Viernes",
+  "horario_sabado" => "Sábado",
+  "horario_domingo" => "Domingo"
+);
+?>
+<div class="page-header d-print-none">
+  <div class="container-xl">
+    <div class="row g-2 align-items-center">
+      <div class="col">
+        <h2 class="page-title">Horarios de Atención</h2>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="page-body">
+  <div class="container-xl">
+    <div class="card">
+      <div class="card-status-top bg-info"></div>
+      <div class="card-header">
+        <h3 class="card-title">Horario de atención (sección "te esperamos")</h3>
+        <p class="text-muted small mb-0 ms-3">Escribe cada día con formato de hora: 10:00 - 22:00</p>
+      </div>
+      <div class="card-body">
+        <form method="post" action="./?action=settings&opt=updhorarios">
+          <div class="row g-3">
+            <?php foreach($days as $key => $label): ?>
+            <?php $row = ConfigurationData::getByPreffix($key); ?>
+            <div class="col-md-6">
+              <label class="form-label"><?php echo $label; ?></label>
+              <input type="text" class="form-control" name="<?php echo $key; ?>" value="<?php echo htmlspecialchars($row->val); ?>" placeholder="10:00 - 22:00">
+            </div>
+            <?php endforeach; ?>
+          </div>
+          <div class="form-footer mt-3">
+            <button type="submit" class="btn btn-success w-100">Guardar Horarios</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
