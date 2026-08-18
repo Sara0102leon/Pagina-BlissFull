@@ -41,9 +41,73 @@
       @media (max-width: 575.98px) {
         .brand-logo { height: 36px; }
       }
+      /* ===== Pantalla de carga (página completa) ===== */
+      .tt-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(ellipse at 50% 30%, #1c1210 0%, #0d0a09 65%, #000 100%);
+        transition: opacity 0.35s ease, visibility 0.35s ease;
+      }
+      .tt-loader.done { opacity: 0; visibility: hidden; pointer-events: none; }
+      .tt-loader-ring {
+        width: 62px;
+        height: 62px;
+        margin: 0 auto 16px;
+        border: 5px solid rgba(255, 183, 3, 0.18);
+        border-top-color: #ffb703;
+        border-right-color: #e0a96d;
+        border-radius: 50%;
+        animation: ttLoaderSpin 0.85s linear infinite;
+      }
+      @keyframes ttLoaderSpin { to { transform: rotate(360deg); } }
+      .tt-loader-box { text-align: center; }
+      .tt-loader-brand {
+        font-family: 'Bebas Neue', 'Outfit', sans-serif;
+        font-size: 1.9rem;
+        letter-spacing: 0.1em;
+        color: #ffffff;
+        line-height: 1;
+      }
+      .tt-loader-brand span { color: #ffb703; }
+      .tt-loader-sub {
+        font-family: 'Caveat', cursive;
+        font-size: 1.25rem;
+        color: #e0a96d;
+        margin-top: 4px;
+      }
+      .tt-grid-loading {
+        padding: 4rem 0;
+        text-align: center;
+      }
+      .tt-grid-ring {
+        width: 46px;
+        height: 46px;
+        margin: 0 auto 12px;
+        border: 4px solid rgba(255, 183, 3, 0.18);
+        border-top-color: #ffb703;
+        border-radius: 50%;
+        animation: ttLoaderSpin 0.85s linear infinite;
+      }
+      .tt-grid-loading p {
+        font-family: 'Caveat', cursive;
+        font-size: 1.35rem;
+        color: #e0a96d;
+        margin: 0;
+      }
     </style>
   </head>
   <body>
+    <div id="tt-loader" class="tt-loader" aria-hidden="true">
+      <div class="tt-loader-box">
+        <div class="tt-loader-ring"></div>
+        <div class="tt-loader-brand">ALIANZAS <span>BLISSFUL</span></div>
+        <div class="tt-loader-sub">cargando menú...</div>
+      </div>
+    </div>
     <?php 
     $bcv_rate_header = 0;
     $bcv_row = ConfigurationData::getByPreffix("bcv_rate");
@@ -289,6 +353,15 @@
       .extra-small { font-size: 0.75rem; line-height: 1.2; }
     </style>
     <script src="./dist/js/tabler.min.js" defer></script>
+    <script>
+    // Oculta la pantalla de carga cuando la página termina de cargar
+    (function() {
+      var hideLoader = function() { setTimeout(function() { var el = document.getElementById("tt-loader"); if (el) { el.classList.add("done"); } }, 350); };
+      if (document.readyState === "complete") { hideLoader(); }
+      else { window.addEventListener("load", hideLoader); }
+      setTimeout(hideLoader, 4500);
+    })();
+    </script>
 
     <!-- Cart Added Alert (SweetAlert2 accesible, grande y con paleta del proyecto) -->
     <script>

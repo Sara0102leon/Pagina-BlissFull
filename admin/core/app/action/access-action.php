@@ -41,9 +41,17 @@ if($found==true) {
 
 }
 if(isset($_GET["opt"]) && $_GET["opt"]=="logout"){
-	unset($_SESSION);
-	session_destroy();
-	Core::redir("./?view=home");
+	$_SESSION = array();
+	if(session_id()!==""){
+		session_unset();
+		session_destroy();
+	}
+	$cookieParams = session_get_cookie_params();
+	setcookie(session_name(), "", time()-42000, $cookieParams["path"], $cookieParams["domain"], $cookieParams["secure"], $cookieParams["httponly"]);
+	header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+	header("Pragma: no-cache");
+	header("Location: ./?view=login");
+	exit;
 }
 
 ?>

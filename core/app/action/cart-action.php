@@ -161,6 +161,7 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="buy"){
 		$buy->delivery_zone_id = isset($_POST["delivery_zone_id"])?$_POST["delivery_zone_id"]:"";
 		$buy->sede_id = isset($_POST["sede_id"])?$_POST["sede_id"]:"";
 		$buy->capture = isset($_POST["capture"])?$_POST["capture"]:"";
+		$buy->note = isset($_POST["note"])?trim($_POST["note"]):"";
 		$buy->status_id= 1;
 		$b = $buy->add();
 

@@ -164,6 +164,10 @@ foreach($horario_keys as $hk){
             Titular: <span id="pm_titular"><?php echo htmlspecialchars($pm_titular); ?></span><br>
             <strong><i class="bi bi-cash-coin me-1"></i> Monto a pagar: <span id="pm_amount">$0.00</span></strong>
          </div>
+         <div class="mb-3">
+            <label class="form-label fw-bold">Nota para tu pedido (opcional)</label>
+            <textarea id="order_note" class="form-control" rows="2" maxlength="500" placeholder="Ej: sin cebolla, salsa extra, dejar en portería..."></textarea>
+         </div>
          <div class="mb-0 bg-light rounded-3 p-3">
             <div class="d-flex justify-content-between mb-1">
               <span class="text-muted">Subtotal</span><span id="ck_subtotal">$0.00</span>
@@ -460,8 +464,11 @@ function openSedeModal() {
 }
 
 function updateGrid() {
+  $("#product-grid-container").html('<div class="tt-grid-loading"><div class="tt-grid-ring"></div><p class="tt-hand">buscando platillos...</p></div>');
   $.post("./?action=cart&opt=search", { q: currentSearch, cat_id: currentCatId }, function(data) {
     $("#product-grid-container").html(data);
+  }).fail(function() {
+    $("#product-grid-container").html('<div class="text-center py-5"><i class="bi bi-exclamation-triangle text-warning h1"></i><p class="h4 mt-2">Hubo un error al cargar los productos.</p></div>');
   });
 }
 
@@ -709,6 +716,11 @@ $(document).ready(function() {
   // Refresh totals when checkout opens
   $("#modal-checkout").on("shown.bs.modal", function() { updateCheckoutUI(); });
 
+  // Clear invalid state while typing
+  $("#order_name, #order_phone, #order_address").on("input", function() {
+    $(this).removeClass("is-invalid");
+  });
+
   // BCV Rate
   let bcvRate = <?php echo $bcv_rate_js; ?>;
   function bcvLoadRate(showSpinner) {
@@ -741,13 +753,21 @@ $(document).ready(function() {
     const paymethodName = $(".payment-method:checked").data("name");
     const isPM = $(".payment-method:checked").data("pm") == 1;
 
-    if (name === "" || phone === "") {
-      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor completa tu nombre y teléfono.", confirmButtonColor: "#b87e38" });
+    if (name === "") {
+      $("#order_name").addClass("is-invalid").focus();
+      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor escribe tu nombre.", confirmButtonColor: "#b87e38" });
+      return;
+    }
+    const phoneDigits = String(phone).replace(/\D/g, "");
+    if (phone === "" || phoneDigits.length < 7) {
+      $("#order_phone").addClass("is-invalid").focus();
+      Swal.fire({ icon: "warning", title: "Teléfono inválido", text: "Escribe un número de teléfono válido (mínimo 7 dígitos, sin letras).", confirmButtonColor: "#b87e38" });
       return;
     }
     if (isPickup) { address = "Recoger en sucursal"; }
-    else if (address === "") {
-      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor escribe tu dirección de entrega.", confirmButtonColor: "#b87e38" });
+    else if (address.length < 5) {
+      $("#order_address").addClass("is-invalid").focus();
+      Swal.fire({ icon: "warning", title: "Dirección inválida", text: "Escribe una dirección de entrega válida (al menos 5 caracteres, con más detalle).", confirmButtonColor: "#b87e38" });
       return;
     }
     if (!isPickup && zoneSel === "0") {
@@ -761,6 +781,7 @@ $(document).ready(function() {
     const zoneName = delivery ? zoneOpt.text() : "Recoger en sucursal";
     const items = getCartItems();
     const t = computeTotals(items, delivery, deliveryPrice);
+    const note = $("#order_note").val().trim().replace(/\n/g, ", ");
 
     const btn = $(this);
     btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm me-2"></span> Enviando...');
@@ -771,7 +792,8 @@ $(document).ready(function() {
       address: address,
       sede_id: sede.id,
       paymethod_id: paymethodId,
-      delivery_zone_id: delivery ? zoneSel : ""
+      delivery_zone_id: delivery ? zoneSel : "",
+      note: note
     }, function(res) {
       clearCart();
 
@@ -788,6 +810,7 @@ $(document).ready(function() {
         msg += "*Entrega:* Recoger en sucursal%0A";
       }
       msg += "*Pago:* " + paymethodName + "%0A%0A";
+      if(note){ msg += "*Nota:* " + note + "%0A"; }
       msg += "*Productos:*%0A" + itemsWhatsAppText(items, delivery);
       msg += "%0A*------------------------------*%0A";
       msg += "*SUBTOTAL (US$): " + fmt(t.subtotal) + "*%0A";

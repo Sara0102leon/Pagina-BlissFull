@@ -9,6 +9,8 @@ $admin_titles = array(
 );
 $page_title = isset($admin_titles[$current_view]) ? $admin_titles[$current_view] : "Panel Administrativo";
 $is_auth = isset($_SESSION["user_id"]);
+if($is_auth && $current_view=="login"){ header("Location: ./"); exit; }
+if(!$is_auth && $current_view!="login"){ header("Location: ./?view=login"); exit; }
 $sys_active = ($current_view=="users" || $current_view=="settings") ? "active" : "";
 $sys_open = $sys_active!="" ? " show" : "";
 ?>
@@ -41,6 +43,13 @@ $sys_open = $sys_active!="" ? " show" : "";
     </style>
   </head>
   <body class="admin-jobie<?php echo $is_auth ? " is-auth" : ""; ?>">
+    <div id="tt-admin-loader" class="tt-admin-loader" aria-hidden="true">
+      <div class="tt-admin-loader-box">
+        <img src="assets/logo.png" alt="Blissful" class="tt-admin-loader-logo">
+        <div class="tt-admin-loader-ring"></div>
+        <p class="tt-admin-loader-text">Cargando panel...</p>
+      </div>
+    </div>
     <div class="app-shell">
 
       <?php if($is_auth): ?>
@@ -120,11 +129,6 @@ $sys_open = $sys_active!="" ? " show" : "";
 
           <h1 class="app-title"><?php echo htmlspecialchars($page_title); ?></h1>
 
-          <div class="app-search d-none d-md-block">
-            <i class="bi bi-search"></i>
-            <input type="search" placeholder="Buscar en el panel..." aria-label="Buscar">
-          </div>
-
           <?php if($is_auth): ?>
           <div class="app-header-right">
             <div class="nav-item dropdown me-2" id="notif-wrap">
@@ -178,6 +182,31 @@ $sys_open = $sys_active!="" ? " show" : "";
       #notif-badge.anim-flash{ animation: notifFlash 0.5s ease-in-out 2; }
       .notif-item{ border-left: 4px solid rgba(184,126,56,0.4); }
       .notif-item:hover{ border-left-width: 4px; }
+      .tt-admin-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(ellipse at 50% 30%, #2a1c10 0%, #16120c 65%, #0c0a07 100%);
+        transition: opacity 0.35s ease, visibility 0.35s ease;
+      }
+      .tt-admin-loader.done { opacity: 0; visibility: hidden; pointer-events: none; }
+      .tt-admin-loader-box { text-align: center; }
+      .tt-admin-loader-logo { height: 52px; width: auto; margin-bottom: 16px; }
+      .tt-admin-loader-ring {
+        width: 46px;
+        height: 46px;
+        margin: 0 auto 12px;
+        border: 4px solid rgba(184, 126, 56, 0.2);
+        border-top-color: #b87e38;
+        border-right-color: #e0a96d;
+        border-radius: 50%;
+        animation: ttAdminSpin 0.85s linear infinite;
+      }
+      @keyframes ttAdminSpin { to { transform: rotate(360deg); } }
+      .tt-admin-loader-text { color: #e0a96d; font-weight: 600; margin: 0; letter-spacing: 0.04em; }
     </style>
     <script src="./dist/libs/apexcharts/dist/apexcharts.min.js" defer></script>
     <script src="./dist/js/tabler.min.js" defer></script>
@@ -190,6 +219,19 @@ $sys_open = $sys_active!="" ? " show" : "";
         if($toggle){ $toggle.addEventListener("click", function(){ document.body.classList.toggle("sidebar-open"); }); }
         if($backdrop){ $backdrop.addEventListener("click", function(){ document.body.classList.remove("sidebar-open"); }); }
       });
+
+      // Oculta la pantalla de carga cuando termina de cargar
+      (function(){
+        var hideLoader = function(){
+          setTimeout(function(){
+            var el = document.getElementById("tt-admin-loader");
+            if(el){ el.classList.add("done"); }
+          }, 300);
+        };
+        if(document.readyState === "complete"){ hideLoader(); }
+        else { window.addEventListener("load", hideLoader); }
+        setTimeout(hideLoader, 4500);
+      })();
 
       function initNotifications(){
         var lastCount = -1;

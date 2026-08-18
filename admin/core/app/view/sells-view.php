@@ -177,6 +177,9 @@ $ivatxt = ConfigurationData::getByPreffix("general_iva_txt")->val;
         <?php endif; ?>
         <?php if($buy->capture): ?>
         <strong>Capture de pago:</strong> <a href="../core/uploads/captures/<?php echo $buy->capture; ?>" target="_blank">Ver capture</a><br>
+        <?php endif; ?>
+        <?php if($buy->note): ?>
+        <strong>Nota del cliente:</strong> <?php echo htmlspecialchars($buy->note); ?><br>
         <?php endif; ?></p>
 
         <?php if(count($products)>0):?>

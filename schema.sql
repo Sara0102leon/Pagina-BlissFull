@@ -162,6 +162,7 @@ create table buy (
 	delivery_zone_id int,
 	sede_id int,
 	capture varchar(255),
+	note varchar(500),
 	foreign key(paymethod_id) references paymethod(id),
 	foreign key(coupon_id) references coupon(id),
 	foreign key(client_id) references client(id),
