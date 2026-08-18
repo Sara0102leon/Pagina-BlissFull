@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
     <title>Alianzas Blissful - Menú Digital</title>
-    <link rel="icon" type="image/png" href="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/admin/assets/favicon-32.png?v=2">
+    <link rel="icon" type="image/png" href="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/assets/img/favicon.png">
+    <link rel="shortcut icon" type="image/x-icon" href="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/favicon.ico">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
