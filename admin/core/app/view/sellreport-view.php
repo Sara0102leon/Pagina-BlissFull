@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if(!isset($_SESSION["user_id"])){ Core::redir("./");}
 
 if(isset($_GET["opt"]) && $_GET["opt"]=="excel"){

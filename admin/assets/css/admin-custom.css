@@ -1,21 +1,23 @@
 /* =============================================================
    ALIANZAS BLISSFUL - ADMIN DARK THEME (admin-custom.css)
-   Paleta:
-     Negro base       #000000 / #0a0a0a
-     Vinotinto        #57010a / #4d0c1b (hover, acentos)
-     Dorado Brillo    #E0A96D (letras)  Dorado Base #B87E38
+   Paleta "Vinotinto & Gris Carbón" (agosto 2026):
+     Fondo general     #141214 (carbón noche profundo)
+     Sidebar/tarjetas  #1e181c (gris oscuro matiz vino)
+     Acento vinotinto  #8b1538 (hover #a31d45)
+     Bordes/separd.    #2e2429 (sutiles, tono vino oscuro)
+     Texto principal   #f4f4f5 / secundario #94a3b8
    ============================================================= */
 
 :root {
-  --bl-red: #57010a;
-  --bl-red-deep: #000000;
-  --bl-red-mid: #050505;
-  --bl-red-light: #4d0c1b;
-  --bl-gold: #b87e38;
-  --bl-gold-light: #e0a96d;
-  --bl-gold-dark: #7c4f1e;
-  --bl-navy: #0a0d14;
-  --bl-black: #000000;
+  --bl-red: #8b1538;
+  --bl-red-deep: #141214;
+  --bl-red-mid: #1e181c;
+  --bl-red-light: #2e2429;
+  --bl-gold: #8b1538;
+  --bl-gold-light: #f4f4f5;
+  --bl-gold-dark: #a31d45;
+  --bl-navy: #141214;
+  --bl-black: #141214;
 
   --j-bg: var(--bl-red-deep);
   --j-bg-2: var(--bl-red-mid);
@@ -23,24 +25,24 @@
   --j-red: var(--bl-red);
   --j-gold: var(--bl-gold);
   --j-gold-light: var(--bl-gold-light);
-  --j-text: var(--bl-gold);
-  --j-text-dim: rgba(224, 169, 109, 0.72);
-  --j-text-faint: rgba(224, 169, 109, 0.42);
-  --j-border: rgba(184, 126, 56, 0.35);
+  --j-text: var(--bl-gold-light);
+  --j-text-dim: rgba(148, 163, 184, 0.75);
+  --j-text-faint: rgba(148, 163, 184, 0.45);
+  --j-border: #2e2429;
   --j-card-radius: 15px;
 
   --tblr-body-bg: var(--bl-red-deep);
   --tblr-bg-surface: var(--bl-red-mid);
   --tblr-card-bg: var(--bl-red-mid);
   --tblr-body-color: var(--bl-gold-light);
-  --tblr-primary: var(--bl-gold-light);
-  --tblr-primary-rgb: 224, 169, 109;
-  --tblr-primary-fg: var(--bl-red-deep);
+  --tblr-primary: #8b1538;
+  --tblr-primary-rgb: 139, 21, 56;
+  --tblr-primary-fg: #ffffff;
   --tblr-secondary: var(--bl-gold);
-  --tblr-secondary-rgb: 184, 126, 56;
-  --tblr-border-color: rgba(184, 126, 56, 0.3);
-  --tblr-border-color-light: rgba(184, 126, 56, 0.18);
-  --tblr-bg-primary-subtle: rgba(184, 126, 56, 0.18);
+  --tblr-secondary-rgb: 139, 21, 56;
+  --tblr-border-color: #2e2429;
+  --tblr-border-color-light: #2e2429;
+  --tblr-bg-primary-subtle: #1e181c;
   --tblr-code-bg: var(--bl-red-light);
 }
 
@@ -62,7 +64,7 @@ body.admin-jobie {
   width: 260px;
   z-index: 1045;
   background: var(--bl-red-mid);
-  border-right: 1px solid rgba(184, 126, 56, 0.4);
+  border-right: 1px solid rgba(46, 36, 41, 0.65);
   display: flex;
   flex-direction: column;
   padding: 1.1rem 0 1rem;
@@ -158,7 +160,7 @@ body.admin-jobie {
 .sidebar-toggle .chevron { margin-left: auto; transition: transform 0.25s; font-size: 0.8rem; }
 .sidebar-toggle[aria-expanded="true"] .chevron { transform: rotate(90deg); }
 
-.sidebar-submenu { margin: 0.2rem 0 0.2rem 1.9rem; padding-left: 0.75rem; border-left: 1px solid rgba(184, 126, 56, 0.5); }
+.sidebar-submenu { margin: 0.2rem 0 0.2rem 1.9rem; padding-left: 0.75rem; border-left: 1px solid rgba(46, 36, 41, 0.75); }
 .sidebar-subitem {
   display: flex;
   align-items: center;
@@ -194,7 +196,7 @@ body.admin-jobie {
   background: var(--bl-gold);
   color: var(--bl-black);
   border-color: var(--bl-gold-light);
-  box-shadow: 0 0 0 2px rgba(184, 126, 56, 0.55), 0 4px 14px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 0 0 2px rgba(139, 21, 56, 0.6), 0 4px 14px rgba(0, 0, 0, 0.45);
 }
 
 /* Backdrop móvil */
@@ -224,7 +226,7 @@ body.admin-jobie {
   min-height: 72px;
   padding: 0.8rem 1.5rem;
   background: var(--bl-red-mid);
-  border-bottom: 1px solid rgba(184, 126, 56, 0.45);
+  border-bottom: 1px solid rgba(46, 36, 41, 0.65);
 }
 
 .app-brand {
@@ -254,7 +256,7 @@ body.admin-jobie {
   background: var(--bl-red-deep);
   color: var(--bl-gold-light);
   font-size: 1.25rem;
-  border: 1px solid rgba(184, 126, 56, 0.5);
+  border: 1px solid rgba(46, 36, 41, 0.75);
   cursor: pointer;
   transition: 0.2s;
   text-decoration: none;
@@ -264,7 +266,7 @@ body.admin-jobie {
   background: var(--bl-red-light);
   color: var(--bl-gold-light);
   border-color: var(--bl-gold-light);
-  box-shadow: 0 0 0 3px rgba(184, 126, 56, 0.3);
+  box-shadow: 0 0 0 3px rgba(139, 21, 56, 0.35);
 }
 
 .app-title { font-size: 1.3rem; font-weight: 800; color: var(--bl-gold-light); margin: 0; }
@@ -288,7 +290,7 @@ body.admin-jobie {
 .app-search input {
   width: 100%;
   background: var(--bl-red-deep);
-  border: 1px solid rgba(184, 126, 56, 0.5);
+  border: 1px solid rgba(46, 36, 41, 0.75);
   border-radius: 999px;
   padding: 0.62rem 1.1rem 0.62rem 2.7rem;
   font-size: 0.9rem;
@@ -313,7 +315,7 @@ body.admin-jobie {
   padding: 0.3rem 0.55rem 0.3rem 0.3rem;
   border-radius: 999px;
   background: var(--bl-red-deep);
-  border: 1px solid rgba(184, 126, 56, 0.5);
+  border: 1px solid rgba(46, 36, 41, 0.75);
   cursor: pointer;
   text-decoration: none;
   transition: 0.2s;
@@ -321,7 +323,7 @@ body.admin-jobie {
 .profile-chip:hover {
   background: var(--bl-red-light);
   border-color: var(--bl-gold-light);
-  box-shadow: 0 0 0 3px rgba(184, 126, 56, 0.3);
+  box-shadow: 0 0 0 3px rgba(139, 21, 56, 0.35);
 }
 .profile-chip .avatar { background: var(--bl-red); color: var(--bl-gold-light); font-size: 1rem; }
 
@@ -339,11 +341,11 @@ body.admin-jobie {
   text-align: center;
   color: var(--j-text-faint);
   font-size: 0.85rem;
-  border-top: 1px solid rgba(184, 126, 56, 0.45);
+  border-top: 1px solid rgba(46, 36, 41, 0.65);
   background: var(--bl-red-mid);
 }
 .app-footer a { color: var(--bl-gold-light); font-weight: 600; text-decoration: none; }
-.app-footer a:hover { color: var(--bl-gold-light); text-shadow: 0 0 8px rgba(224, 169, 109, 0.5); }
+.app-footer a:hover { color: var(--bl-gold-light); text-shadow: 0 0 8px rgba(139, 21, 56, 0.45); }
 
 /* Línea superior de las tarjetas: vinotinto (reemplaza el blanco de Tabler) */
 .app-content .card-status-top {
@@ -360,13 +362,13 @@ body.admin-jobie {
 /* Tarjetas: negro profundo, redondeadas, borde dorado sutil */
 .app-content .card {
   border-radius: var(--j-card-radius);
-  border: 1px solid rgba(184, 126, 56, 0.4);
+  border: 1px solid rgba(46, 36, 41, 0.65);
   background-color: var(--bl-red-mid);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 .app-content .card-header {
   background-color: var(--bl-red-mid);
-  border-bottom: 1px solid rgba(184, 126, 56, 0.4);
+  border-bottom: 1px solid rgba(46, 36, 41, 0.65);
   color: var(--bl-gold-light);
 }
 .app-content .card-title { color: var(--bl-gold-light); }
@@ -375,12 +377,12 @@ body.admin-jobie {
 .app-content .table {
   --tblr-table-bg: var(--bl-red-mid);
   --tblr-table-color: var(--j-text);
-  --tblr-table-border-color: rgba(184, 126, 56, 0.25);
+  --tblr-table-border-color: rgba(46, 36, 41, 0.5);
   color: var(--j-text);
 }
 .app-content .table thead th {
   color: var(--bl-gold-light);
-  border-bottom-color: rgba(184, 126, 56, 0.55);
+  border-bottom-color: rgba(139, 21, 56, 0.6);
 }
 .app-content .table tbody tr:hover { background-color: var(--bl-red-light); }
 .app-content .table-striped tbody tr:nth-of-type(odd) { background-color: var(--bl-red-deep); }
@@ -397,7 +399,7 @@ body.admin-jobie {
 .app-content .form-select:focus {
   background-color: var(--bl-red-deep);
   border-color: var(--bl-gold-light);
-  box-shadow: 0 0 0 0.25rem rgba(224, 169, 109, 0.12);
+  box-shadow: 0 0 0 0.25rem rgba(139, 21, 56, 0.14);
   color: var(--bl-gold-light);
 }
 .app-content .form-label { color: var(--bl-gold-light); }
@@ -411,7 +413,7 @@ body.admin-jobie {
 .app-content .dropdown-menu,
 .app-header .dropdown-menu {
   background-color: var(--bl-red-mid);
-  border: 1px solid rgba(184, 126, 56, 0.5);
+  border: 1px solid rgba(46, 36, 41, 0.75);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 .app-content .dropdown-item,
@@ -427,7 +429,7 @@ body.admin-jobie {
 .app-content .dropdown-header,
 .app-header .dropdown-header { color: var(--bl-gold-light); }
 .app-content .dropdown-divider,
-.app-header .dropdown-divider { border-top-color: rgba(184, 126, 56, 0.4); }
+.app-header .dropdown-divider { border-top-color: rgba(46, 36, 41, 0.65); }
 .app-content .text-muted { color: var(--j-text-dim) !important; }
 
 /* Badges / estados semánticos adaptados a la paleta */
@@ -435,17 +437,17 @@ body.admin-jobie {
 .app-content .badge.bg-warning { background-color: var(--bl-gold) !important; color: var(--bl-red-deep) !important; }
 .app-content .badge.bg-danger { background-color: var(--bl-red) !important; color: var(--bl-gold-light) !important; }
 .app-content .badge.bg-success { background-color: var(--bl-gold-light) !important; color: var(--bl-red-deep) !important; }
-.app-content .bg-primary-lt { background-color: rgba(184, 126, 56, 0.18) !important; color: var(--bl-gold-light) !important; }
-.app-content .bg-warning-lt { background-color: rgba(184, 126, 56, 0.18) !important; color: var(--bl-gold-light) !important; }
-.app-content .bg-danger-lt { background-color: rgba(77, 12, 27, 0.5) !important; color: var(--bl-gold-light) !important; }
-.app-content .bg-success-lt { background-color: rgba(224, 169, 109, 0.16) !important; color: var(--bl-gold-light) !important; }
+.app-content .bg-primary-lt { background-color: rgba(139, 21, 56, 0.16) !important; color: var(--bl-gold-light) !important; }
+.app-content .bg-warning-lt { background-color: rgba(139, 21, 56, 0.16) !important; color: var(--bl-gold-light) !important; }
+.app-content .bg-danger-lt { background-color: rgba(220, 38, 38, 0.14) !important; color: #fca5a5 !important; }
+.app-content .bg-success-lt { background-color: rgba(139, 21, 56, 0.16) !important; color: var(--bl-gold-light) !important; }
 .app-content .bg-purple-lt, .app-content .bg-blue-lt,
 .app-content .bg-green-lt, .app-content .bg-cyan-lt,
-.app-content .bg-indigo-lt { background-color: rgba(184, 126, 56, 0.18) !important; color: var(--bl-gold-light) !important; }
+.app-content .bg-indigo-lt { background-color: rgba(139, 21, 56, 0.16) !important; color: var(--bl-gold-light) !important; }
 .app-content .text-primary { color: var(--bl-gold-light) !important; }
 .app-content .text-warning { color: var(--bl-gold-light) !important; }
 .app-content .text-success { color: var(--bl-gold-light) !important; }
-.app-content .text-danger { color: #e0a96d !important; }
+.app-content .text-danger { color: #f87171 !important; }
 .app-content .text-secondary { color: var(--j-text-dim) !important; }
 
 /* Avatares de colores (bg-*) adaptados */
@@ -482,7 +484,7 @@ body.admin-jobie {
 /* ================= MÉTRICAS DASHBOARD ================= */
 .j-metric {
   border-radius: var(--j-card-radius);
-  border: 1px solid rgba(184, 126, 56, 0.45);
+  border: 1px solid rgba(46, 36, 41, 0.65);
   color: var(--bl-gold-light);
   overflow: hidden;
   position: relative;
@@ -499,7 +501,7 @@ body.admin-jobie {
   content: "";
   position: absolute;
   border-radius: 50%;
-  background: rgba(224, 169, 109, 0.12);
+  background: rgba(139, 21, 56, 0.14);
   pointer-events: none;
 }
 .j-metric::before { right: -42px; top: -42px; width: 150px; height: 150px; }
@@ -511,7 +513,7 @@ body.admin-jobie {
   height: 54px;
   min-width: 54px;
   border-radius: 15px;
-  background: rgba(224, 169, 109, 0.22);
+  background: rgba(139, 21, 56, 0.22);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -519,14 +521,14 @@ body.admin-jobie {
 }
 .j-metric-num { font-size: 1.95rem; font-weight: 800; line-height: 1; }
 .j-metric-label {
-  color: rgba(224, 169, 109, 0.92);
+  color: #8b1538;
   font-weight: 700;
   font-size: 0.82rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-top: 0.35rem;
 }
-.j-metric-sub { color: rgba(224, 169, 109, 0.6); font-size: 0.78rem; margin-top: 0.15rem; }
+.j-metric-sub { color: rgba(148, 163, 184, 0.7); font-size: 0.78rem; margin-top: 0.15rem; }
 
 .j-metric-purple { background: linear-gradient(135deg, var(--bl-red), var(--bl-black)); }
 .j-metric-blue { background: linear-gradient(135deg, var(--bl-red-mid), var(--bl-black)); }
@@ -594,9 +596,206 @@ body.admin-jobie {
 table.dataTable thead th,
 table.dataTable thead td,
 .dataTables_wrapper table.dataTable thead th {
-  background-color: #050505 !important;
-  background: #050505 !important;
-  color: #e0a96d !important;
-  border-bottom: 1px solid #57010a !important;
+  background-color: #1e181c !important;
+  background: #1e181c !important;
+  color: #f4f4f5 !important;
+  border-bottom: 1px solid #2e2429 !important;
   box-shadow: none !important;
+}
+
+/* ================= FIX 1: PIE DE FORMULARIO SIN FONDO BLANCO =================
+   Tabler/Bootstrap pinta .card-footer de blanco; lo fundimos con el tema.
+   Selector duplicado = especificidad reforzada + !important gana a todo */
+.card-footer,
+.card.card .card-footer {
+  background-color: #1e181c !important;
+  border-color: #2e2429 !important;
+  border-top: 1px solid #2e2429 !important;
+  color: #f4f4f5 !important;
+}
+
+/* ================= FIX 2: BOTONES btn-success = VINOTINTO ELEGANTE =================
+   Reemplaza el verde genérico por el vinotinto de la paleta (texto blanco) */
+.btn-success,
+.btn-group .btn-success,
+.btn-social .btn-success {
+  --tblr-btn-bg: #8b1538 !important;
+  --tblr-btn-border-color: #8b1538 !important;
+  --tblr-btn-color: #ffffff !important;
+  --tblr-btn-hover-bg: #a31d45 !important;
+  --tblr-btn-hover-border-color: #a31d45 !important;
+  --tblr-btn-hover-color: #ffffff !important;
+  background-color: #8b1538 !important;
+  border-color: #8b1538 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.35), 0 2px 4px -1px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s ease-in-out;
+}
+.btn-success:hover,
+.btn-success:focus {
+  background-color: #a31d45 !important;
+  border-color: #8b1538 !important;
+  color: #ffffff !important;
+}
+
+/* ================= FIX 3: MENÚ SUPERIOR HORIZONTAL SIN SOBREPOSICIÓN =================
+   .btn-list se usa en el header de Ajustes Generales (y demás páginas);
+   flex + wrap permite que las pestañas respiren sin encimarse con el título */
+.page-header .btn-list {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  margin-bottom: 20px !important;
+  overflow-x: auto;
+}
+.page-header .btn-list .btn,
+.page-header .btn-list > * {
+  margin: 0 !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+/* ================= FIX 4: TÍTULO + MENÚ SIN SOLAPAMIENTO =================
+   En Ajustes Generales el <h2> y los botones comparten fila y se enciman;
+   el título pasa a su propia línea (100%) y los botones fluyen debajo,
+   en wrap limpio, sin tapar nada */
+.page-header .row.g-2.align-items-center {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+.page-header .row.g-2.align-items-center > .col {
+  flex: 1 1 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+.page-header .row.g-2.align-items-center > .col-auto.ms-auto {
+  flex: 1 1 100%;
+  max-width: 100%;
+  margin-left: 0 !important;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  min-width: 0;
+}
+.page-header .page-title {
+  line-height: 1.2;
+  margin-bottom: 0.15rem;
+}
+
+/* =========================================================
+   1. FIX DE ALINEACIÓN DE MENÚ Y PESTAÑAS
+   ========================================================= */
+.btn-list,
+.nav-tabs,
+.top-menu-container {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-bottom: 20px !important;
+}
+
+.btn-list > *,
+.nav-tabs > * {
+  margin: 0 !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+/* =========================================================
+   2. PALETA VINOTINTO & GRIS CARBÓN (ELEGANTE Y OSCURA)
+   ========================================================= */
+
+/* Fondo general descansado */
+body, .wrapper, .main-panel {
+  background-color: #141214 !important;
+  color: #f4f4f5 !important;
+}
+
+/* Sidebar (Menú lateral), Tarjetas y Módulos */
+.sidebar, .card, .panel, .modal-content, .top-menu-container {
+  background-color: #1e181c !important;
+  border-color: #2e2429 !important;
+  color: #f4f4f5 !important;
+}
+
+/* Item activo del menú lateral / Botón principal */
+.sidebar .nav li.active > a,
+.btn-primary,
+.btn-warning,
+.bg-warning {
+  background-color: #8b1538 !important;
+  border-color: #8b1538 !important;
+  color: #ffffff !important;
+}
+
+.sidebar .nav li.active > a:hover,
+.btn-primary:hover,
+.btn-warning:hover {
+  background-color: #a31d45 !important;
+  border-color: #a31d45 !important;
+}
+
+/* Bordes y separadores sutiles */
+hr, .table th, .table td, .card-header, .card-footer {
+  border-color: #2e2429 !important;
+}
+
+/* Textos de tablas y etiquetas */
+th, td, label, .form-label {
+  color: #f4f4f5 !important;
+  border-color: #2e2429 !important;
+}
+
+/* Entradas de texto (Inputs) */
+.form-control, .form-select {
+  background-color: #141214 !important;
+  border: 1px solid #2e2429 !important;
+  color: #f4f4f5 !important;
+  border-radius: 6px !important;
+}
+
+.form-control:focus {
+  border-color: #8b1538 !important;
+  box-shadow: 0 0 0 2px rgba(139, 21, 56, 0.25) !important;
+}
+
+/* Botones secundarios (Pestañas del menú superior) */
+.btn-default, .btn-outline-secondary, .nav-tabs .nav-link {
+  background-color: #1e181c !important;
+  border: 1px solid #2e2429 !important;
+  color: #94a3b8 !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-default:hover, .nav-tabs .nav-link:hover {
+  background-color: #2e2429 !important;
+  color: #f4f4f5 !important;
+}
+
+/* =========================================================
+   3. FIX DEL GRÁFICO (QUITA PARCHES BLANCOS)
+   ========================================================= */
+
+/* Oculta los bloques blancos de etiquetas de puntos dentro del canvas/gráfico */
+.chartjs-render-monitor .chartjs-plugin-datalabels,
+.apexcharts-data-labels,
+.morris-hover,
+.jqstooltip {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Asegura que los tooltips (al pasar el ratón) se vean oscuros y limpios */
+.chartjs-tooltip,
+.apexcharts-tooltip {
+  background-color: #1e181c !important;
+  color: #ffffff !important;
+  border: 1px solid #8b1538 !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
 }

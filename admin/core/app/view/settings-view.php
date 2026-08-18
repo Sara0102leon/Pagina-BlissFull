@@ -503,7 +503,7 @@ $h_close_cfg = ConfigurationData::getByPreffix("horario_close");
               <button type="submit" class="btn btn-success w-100">Agregar</button>
             </div>
           </div>
-          <p class="text-muted small mb-0 mt-2">Ej: Unidad, Media unidad, Pedazo, Docena, Kg...</p>
+          <p class="text-muted small mb-0 mt-2">Ej: Pizza Gigante, Pizza Familiar 40 cm, Pizza Pequeña 25 cm, Extra, Litro y medio...</p>
         </div>
       </form>
     </div>

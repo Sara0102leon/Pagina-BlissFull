@@ -3,7 +3,7 @@
    Sistema de diseño:
    - Fondo: pared de ladrillos oscura / negro mate (#000000 / #000000)
    - Acentos dorados/naranja: #e0a96d / #b87e38 (precios, píldoras, CTAs)
-   - Rojo neón / handwritten: #1a0004 / #1a0004 (días, acentos cursivos)
+   - Rojo neón / handwritten: #e63946 / #ff2a2a (días, acentos cursivos)
    ============================================================= */
 
 :root {
@@ -13,8 +13,8 @@
   --tt-card-2: #1a0004;
   --tt-gold: #e0a96d;
   --tt-gold-2: #b87e38;
-  --tt-red: #1a0004;
-  --tt-red-2: #1a0004;
+  --tt-red: #e63946;
+  --tt-red-2: #ff2a2a;
   --tt-text: #ffffff;
   --tt-muted: rgba(255,255,255,0.62);
   --tt-border: rgba(184,126,56,0.35);
@@ -36,7 +36,7 @@
   --tblr-primary-rgb: 255, 222, 100;
   --tblr-primary-fg: #000000;
   --tblr-danger: var(--tt-red);
-  --tblr-danger-rgb: 87, 1, 10;
+  --tblr-danger-rgb: 230, 57, 70;
   --tblr-navbar-bg: var(--tt-bg-2);
 }
 
@@ -732,7 +732,7 @@ body {
   overflow: hidden;
   border-radius: 28px;
   background: linear-gradient(120deg, #e0a96d, #b87e38 60%, #e0a96d);
-  color: #1a0004;
+  color: #ff2a2a;
 }
 .tt-reserve::before {
   content: "";
@@ -763,7 +763,7 @@ body {
 
 .tt-reserve-hand {
   font-family: var(--tt-hand);
-  color: #1a0004;
+  color: #ff2a2a;
   text-shadow: 0 2px 10px rgba(255, 255, 255, 0.35);
   font-size: clamp(1.9rem, 3.5vw, 2.6rem);
   transform: rotate(-3deg);
@@ -771,7 +771,7 @@ body {
 .tt-reserve-title {
   font-family: var(--tt-display);
   font-size: clamp(1.9rem, 4vw, 2.9rem);
-  color: #1a0004;
+  color: #ff2a2a;
   letter-spacing: 0.04em;
   line-height: 1;
 }

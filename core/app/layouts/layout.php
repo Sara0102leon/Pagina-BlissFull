@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
     <title>Alianzas Blissful - Menú Digital</title>
-    <link rel="icon" type="image/png" href="fotos%20para%20logos/favicon.png">
+    <link rel="icon" type="image/png" href="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/admin/assets/favicon-32.png?v=2">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -181,9 +181,9 @@
             html: TITO_CLOSED_MSG,
             background: "#000000",
             color: "#ffffff",
-            iconColor: "#1a0004",
+            iconColor: "#ff2a2a",
             confirmButtonText: "Entendido",
-            confirmButtonColor: "#1a0004",
+            confirmButtonColor: "#ff2a2a",
             customClass: { title: "tt-swal-closed-title" }
           });
           return true;

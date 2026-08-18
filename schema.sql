@@ -38,10 +38,12 @@ create table unit (
 	name varchar(200) not null
 );
 
-insert into unit (name) value ("Pieza");
-insert into unit (name) value ("Kit");
-insert into unit (name) value ("Juego");
-insert into unit (name) value ("Caja");
+insert into unit (name) value ("Unidad");
+insert into unit (name) value ("Pizza Gigante");
+insert into unit (name) value ("Pizza Familiar 40 cm");
+insert into unit (name) value ("Pizza Pequeña 25 cm");
+insert into unit (name) value ("Extra");
+insert into unit (name) value ("Litro y medio");
 
 
 
@@ -54,7 +56,9 @@ create table category (
 	is_active boolean default 0
 );
 
-insert into category (name,short_name,is_active) value ("Basico","basico",1);
+insert into category (name,short_name,is_active) value ("Pizzas","pizzas",1);
+insert into category (name,short_name,is_active) value ("Extras","extras",1);
+insert into category (name,short_name,is_active) value ("Bebidas","bebidas",1);
 
 
 create table product (

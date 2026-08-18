@@ -191,13 +191,25 @@ $values = array_values($data_points);
           },
         },
         fill: {
-          opacity: .1,
-          type: 'solid'
+          type: 'gradient',
+          gradient: {
+            shadeIntensity: 1,
+            opacityFrom: 0.15,
+            opacityTo: 0.02,
+            stops: [0, 90, 100]
+          }
         },
         stroke: {
           width: 3,
           lineCap: "round",
           curve: "smooth",
+        },
+        dataLabels: {
+          enabled: false,
+        },
+        markers: {
+          size: 0,
+          strokeWidth: 0,
         },
         series: [{
           name: "Ventas",
@@ -236,7 +248,7 @@ $values = array_values($data_points);
             padding: 4,
           },
         },
-        colors: ["var(--tblr-primary)"],
+        colors: ["#8b1538"],
         legend: {
           show: false,
         },
