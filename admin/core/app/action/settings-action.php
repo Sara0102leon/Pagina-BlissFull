@@ -38,16 +38,40 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="delzone"){
 }
 else if(isset($_GET["opt"]) && $_GET["opt"]=="addextra"){
 	if(isset($_POST["name"]) && $_POST["name"]!=""){
-		$e = new ProductExtraData();
-		$e->name = $_POST["name"];
-		$e->price = floatval($_POST["price"]);
-		$e->product_id = isset($_POST["product_id"]) ? $_POST["product_id"] : "";
-		$e->add();
+		$products = array();
+		if(isset($_POST["products"])){
+			if(is_array($_POST["products"])){ $products = $_POST["products"]; }
+			else if(trim($_POST["products"])!=""){ $products = explode(",", $_POST["products"]); }
+		}
+		$all_ids = array();
+		foreach(ProductData::getAll() as $ap){ $all_ids[] = intval($ap->id); }
+		$group_key = "g".uniqid(mt_rand());
+		ProductExtraData::setGroup($group_key, trim($_POST["name"]), floatval($_POST["price"]), $products, $all_ids);
 	}
 	Core::redir("./?view=settings&opt=ingredients");
 }
+else if(isset($_GET["opt"]) && $_GET["opt"]=="updextraprods"){
+	if(isset($_POST["group_key"]) && $_POST["group_key"]!="" && isset($_POST["name"]) && $_POST["name"]!=""){
+		$products = array();
+		if(isset($_POST["products"])){
+			if(is_array($_POST["products"])){ $products = $_POST["products"]; }
+			else if(trim($_POST["products"])!=""){ $products = explode(",", $_POST["products"]); }
+		}
+		$all_ids = array();
+		foreach(ProductData::getAll() as $ap){ $all_ids[] = intval($ap->id); }
+		ProductExtraData::setGroup($_POST["group_key"], trim($_POST["name"]), floatval($_POST["price"]), $products, $all_ids);
+	}
+	echo "ok";
+	exit;
+}
 else if(isset($_GET["opt"]) && $_GET["opt"]=="delextra"){
-	ProductExtraData::delById($_GET["id"]);
+	if(isset($_GET["group_key"]) && $_GET["group_key"]!=""){
+		ProductExtraData::delGroup($_GET["group_key"]);
+	}else if(isset($_GET["id"]) && $_GET["id"]!=""){
+		$e = ProductExtraData::getById($_GET["id"]);
+		if($e && $e->group_key!=""){ ProductExtraData::delGroup($e->group_key); }
+		else if($e){ $e->delById($e->id); }
+	}
 	Core::redir("./?view=settings&opt=ingredients");
 }
 else if(isset($_GET["opt"]) && $_GET["opt"]=="addunit"){
@@ -73,10 +97,18 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="delunit"){
 else if(isset($_GET["opt"]) && $_GET["opt"]=="updingredient"){
 	if(isset($_POST["id"]) && isset($_POST["name"]) && $_POST["name"]!=""){
 		$e = ProductExtraData::getById($_POST["id"]);
-		$e->name = $_POST["name"];
-		$e->price = floatval($_POST["price"]);
-		$e->product_id = isset($_POST["product_id"]) ? $_POST["product_id"] : "";
-		$e->update();
+		if($e){
+			$group_key = isset($_POST["group_key"]) && $_POST["group_key"]!="" ? $_POST["group_key"] : $e->group_key;
+			if($group_key=="" && $e->group_key==""){ $group_key = "g".uniqid(mt_rand()); }
+			$products = array();
+			if(isset($_POST["products"])){
+				if(is_array($_POST["products"])){ $products = $_POST["products"]; }
+				else if(trim($_POST["products"])!=""){ $products = explode(",", $_POST["products"]); }
+			}
+			$all_ids = array();
+			foreach(ProductData::getAll() as $ap){ $all_ids[] = intval($ap->id); }
+			ProductExtraData::setGroup($group_key, trim($_POST["name"]), floatval($_POST["price"]), $products, $all_ids);
+		}
 	}
 	Core::redir("./?view=settings&opt=ingredients");
 }
@@ -86,7 +118,15 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="addsede"){
 		$s->name = $_POST["name"];
 		$s->address = isset($_POST["address"]) ? $_POST["address"] : "";
 		$s->phone = $_POST["phone"];
+		$s->maps = isset($_POST["maps"]) ? $_POST["maps"] : "";
 		$s->is_active = isset($_POST["is_active"]) ? "1" : "0";
+		if(isset($_FILES["image"])){
+			$handle = new Upload($_FILES["image"]);
+			if($handle->uploaded){
+				$handle->Process("storage/sedes/");
+				$s->image = $handle->file_dst_name;
+			}
+		}
 		$s->add();
 	}
 	Core::redir("./?view=settings&opt=sedes");
@@ -97,7 +137,15 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="updsede"){
 		$s->name = $_POST["name"];
 		$s->address = isset($_POST["address"]) ? $_POST["address"] : "";
 		$s->phone = $_POST["phone"];
+		$s->maps = isset($_POST["maps"]) ? $_POST["maps"] : "";
 		$s->is_active = isset($_POST["is_active"]) ? "1" : "0";
+		if(isset($_FILES["image"]) && $_FILES["image"]["name"]!=""){
+			$handle = new Upload($_FILES["image"]);
+			if($handle->uploaded){
+				$handle->Process("storage/sedes/");
+				$s->image = $handle->file_dst_name;
+			}
+		}
 		$s->update();
 	}
 	Core::redir("./?view=settings&opt=sedes");

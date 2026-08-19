@@ -29,13 +29,40 @@ if($user==null){ Core::redir("./");}
       </div>
       <div class="card-body">
     <?php
-    $products = ProductData::getAll();
+    $sede_filter = isset($_GET["sede"]) ? intval($_GET["sede"]) : 0;
+    if($sede_filter>0){
+      $products = ProductData::getBySede($sede_filter);
+    } else {
+      $products = ProductData::getAll();
+    }
+    $sedes_list = SedeData::getAll();
     if(count($products)>0):?>
+      <div class="mb-3">
+        <form method="get" class="row g-2 align-items-center">
+          <input type="hidden" name="view" value="products">
+          <input type="hidden" name="opt" value="all">
+          <div class="col-auto">
+            <label class="form-label mb-0 me-2">Sede:</label>
+          </div>
+          <div class="col-auto">
+            <select name="sede" class="form-select" onchange="this.form.submit()">
+              <option value="0" <?php if($sede_filter==0){ echo "selected"; } ?>>Todas las sedes</option>
+              <?php foreach($sedes_list as $sd): ?>
+              <option value="<?php echo $sd->id; ?>" <?php if($sede_filter==$sd->id){ echo "selected"; } ?>><?php echo htmlspecialchars($sd->name); ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div class="col-auto">
+            <span class="text-muted small">Los productos de la vista "Todas las sedes" se muestran en el menú de todas las sucursales.</span>
+          </div>
+        </form>
+      </div>
       <div class="table-responsive">
         <table class="table card-table table-vcenter text-nowrap datatable">
           <thead>
             <tr>
               <th>Nombre</th>
+              <th>Sede</th>
               <th>Visible</th>
               <th>Destacado</th>
               <th>Existencia</th>
@@ -44,9 +71,14 @@ if($user==null){ Core::redir("./");}
             </tr>
           </thead>
           <tbody>
-          <?php foreach($products as $cat):?>
+          <?php foreach($products as $cat):
+          $p_sede_name = "Todas las sedes";
+          $p_sede_class = "bg-secondary";
+          foreach($sedes_list as $sd){ if($sd->id==$cat->sede_id){ $p_sede_name = $sd->name; $p_sede_class = "bg-primary"; } }
+          ?>
             <tr>
               <td><?php echo $cat->name; ?></td>
+              <td><span class="badge <?php echo $p_sede_class; ?>"><i class="bi <?php echo $cat->sede_id? "bi-shop" : "bi-globe2"; ?> me-1"></i><?php echo htmlspecialchars($p_sede_name); ?></span></td>
               <td>
                 <?php if($cat->is_public):?><i class="bi bi-check-lg text-success"></i><?php else: ?><i class="bi bi-x-lg text-danger"></i><?php endif; ?>
               </td>
@@ -205,7 +237,7 @@ $(function(){
             </div>
           </div>
           <div class="row row-cards">
-            <div class="col-md-6">
+            <div class="col-md-4">
               <div class="mb-3">
                 <label class="form-label">Unidad</label>
                 <?php $units = UnitData::getAll(); ?>
@@ -217,7 +249,7 @@ $(function(){
                 </select>
               </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
               <div class="mb-3">
                 <label class="form-label">Categoria</label>
                 <?php $categories = CategoryData::getAll(); ?>
@@ -225,6 +257,18 @@ $(function(){
                   <option value="">-- SELECCIONE CATEGORIA --</option>
                   <?php foreach($categories as $cat):?>
                   <option value="<?php echo $cat->id; ?>"><?php echo $cat->name; ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Sede <span class="text-muted small">(menú por sucursal)</span></label>
+                <?php $sedes_form = SedeData::getAll(); ?>
+                <select name="sede_id" class="form-select">
+                  <option value="">-- TODAS LAS SEDES --</option>
+                  <?php foreach($sedes_form as $sd): ?>
+                  <option value="<?php echo $sd->id; ?>"><?php echo htmlspecialchars($sd->name); ?></option>
                   <?php endforeach; ?>
                 </select>
               </div>
@@ -327,7 +371,7 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
             </div>
           </div>
           <div class="row row-cards">
-            <div class="col-md-6">
+            <div class="col-md-4">
               <div class="mb-3">
                 <label class="form-label">Unidad</label>
                 <?php $units = UnitData::getAll(); ?>
@@ -339,7 +383,7 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
                 </select>
               </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
               <div class="mb-3">
                 <label class="form-label">Categoria</label>
                 <?php $categories = CategoryData::getAll(); ?>
@@ -347,6 +391,18 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
                   <option value="">-- SELECCIONE CATEGORIA --</option>
                   <?php foreach($categories as $cat):?>
                   <option value="<?php echo $cat->id; ?>" <?php if($product->category_id==$cat->id){ echo "selected";} ?>><?php echo $cat->name; ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Sede <span class="text-muted small">(menú por sucursal)</span></label>
+                <?php $sedes_form = SedeData::getAll(); ?>
+                <select name="sede_id" class="form-select">
+                  <option value="">-- TODAS LAS SEDES --</option>
+                  <?php foreach($sedes_form as $sd): ?>
+                  <option value="<?php echo $sd->id; ?>" <?php if($product->sede_id==$sd->id){ echo "selected"; } ?>><?php echo htmlspecialchars($sd->name); ?></option>
                   <?php endforeach; ?>
                 </select>
               </div>

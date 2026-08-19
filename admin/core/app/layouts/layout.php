@@ -29,6 +29,7 @@ $sys_open = $sys_active!="" ? " show" : "";
     <!-- Admin Jobie Style (cargado al final para sobreescribir Tabler) -->
     <link rel="stylesheet" href="assets/css/admin-custom.css?v=6">
     <script src="assets/jquery/jquery.min.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" type="text/css" href="assets/datatables/datatables.min.css">
     <script src="assets/datatables/datatables.min.js"></script>

@@ -369,19 +369,40 @@ foreach($horario_keys as $hk){
       </div>
       <div class="col-lg-7">
         <div class="row g-3">
-          <?php foreach($sedes as $sd): ?>
+          <?php foreach($sedes as $sd):
+          $sede_img = $img_default;
+          if($sd->image!=""){
+            $sp_path = "admin/storage/sedes/".$sd->image;
+            if(file_exists($sp_path)){ $sede_img = $sp_path; }
+          }
+          $mapsq = $sd->maps!="" ? $sd->maps : $sd->address;
+          $maps_url = preg_match('/^https?:\/\//i', $mapsq)
+            ? $mapsq
+            : "https://www.google.com/maps/search/?api=1&query=" . urlencode($mapsq);
+          ?>
           <div class="col-md-6">
-            <div class="tt-map-card">
-              <div class="tt-map-bg"></div>
-              <div class="tt-map-road" style="top: 22%; left: -15%; width: 130%; height: 9px;"></div>
-              <div class="tt-map-road" style="top: 66%; left: -15%; width: 130%; height: 7px;"></div>
-              <div class="tt-map-pin"><i class="bi bi-geo-alt-fill"></i></div>
-              <div class="tt-map-info">
-                <div class="fw-bold"><i class="bi bi-shop me-1 text-gold"></i><?php echo htmlspecialchars($sd->name); ?></div>
-                <div class="small text-white-50"><i class="bi bi-geo-alt me-1"></i><?php echo htmlspecialchars($sd->address); ?></div>
-                <div class="small text-white-50"><i class="bi bi-telephone me-1"></i><?php echo htmlspecialchars($sd->phone); ?></div>
+            <a href="<?php echo $maps_url; ?>" target="_blank" rel="noopener" class="tt-flip-card-link" title="Ver en Google Maps">
+              <div class="tt-flip-card">
+                <div class="tt-flip-inner">
+                  <div class="tt-flip-face tt-map-card">
+                    <div class="tt-map-bg"></div>
+                    <div class="tt-map-road" style="top: 22%; left: -15%; width: 130%; height: 9px;"></div>
+                    <div class="tt-map-road" style="top: 66%; left: -15%; width: 130%; height: 7px;"></div>
+                    <div class="tt-map-pin"><i class="bi bi-geo-alt-fill"></i></div>
+                    <div class="tt-map-info">
+                      <div class="fw-bold"><i class="bi bi-shop me-1 text-gold"></i><?php echo htmlspecialchars($sd->name); ?></div>
+                      <div class="small text-white-50"><i class="bi bi-geo-alt me-1"></i><?php echo htmlspecialchars($sd->address); ?></div>
+                      <div class="small text-white-50"><i class="bi bi-telephone me-1"></i><?php echo htmlspecialchars($sd->phone); ?></div>
+                      <div class="tt-flip-hint small mt-2"><i class="bi bi-arrow-repeat me-1"></i>Toca para girar · ver mapa</div>
+                    </div>
+                  </div>
+                  <div class="tt-flip-face tt-flip-back">
+                    <img src="<?php echo $sede_img; ?>" alt="Foto de <?php echo htmlspecialchars($sd->name); ?>" class="tt-flip-img" loading="lazy">
+                    <div class="tt-flip-caption"><i class="bi bi-google me-1"></i>VER EN GOOGLE MAPS <i class="bi bi-box-arrow-up-right ms-1"></i></div>
+                  </div>
+                </div>
               </div>
-            </div>
+            </a>
           </div>
           <?php endforeach; ?>
           <?php if(count($sedes)==0): ?>
@@ -465,7 +486,8 @@ function openSedeModal() {
 
 function updateGrid() {
   $("#product-grid-container").html('<div class="tt-grid-loading"><div class="tt-grid-ring"></div><p class="tt-hand">buscando platillos...</p></div>');
-  $.post("./?action=cart&opt=search", { q: currentSearch, cat_id: currentCatId }, function(data) {
+  const sid = getSelectedSede() ? getSelectedSede().id : 0;
+  $.post("./?action=cart&opt=search", { q: currentSearch, cat_id: currentCatId, sede_id: sid }, function(data) {
     $("#product-grid-container").html(data);
   }).fail(function() {
     $("#product-grid-container").html('<div class="text-center py-5"><i class="bi bi-exclamation-triangle text-warning h1"></i><p class="h4 mt-2">Hubo un error al cargar los productos.</p></div>');
@@ -644,6 +666,15 @@ $(document).ready(function() {
   $(".sede-option").click(function() {
     selectSedeCard($(this).data("id"));
   });
+
+  // Tarjetas giratorias de sedes: primer toque gira, segundo abre Google Maps
+  $(".tt-flip-card-link").on("click", function(e) {
+    var inner = $(this).find(".tt-flip-inner");
+    if (!inner.hasClass("flipped")) {
+      e.preventDefault();
+      inner.addClass("flipped");
+    }
+  });
   $("#btn_confirm_sede").click(function() {
     const sel = $(".sede-option.selected");
     if (sel.length === 0) {
@@ -654,6 +685,7 @@ $(document).ready(function() {
     setSedeUI();
     $("#modal-sede").modal("hide");
     updateCheckoutUI();
+    updateGrid();
     if (sedeModalReturnToCheckout) {
       sedeModalReturnToCheckout = false;
       setTimeout(function() { $("#modal-checkout").modal("show"); }, 350);
@@ -664,6 +696,8 @@ $(document).ready(function() {
   setSedeUI();
   if (!getSelectedSede()) {
     setTimeout(function() { openSedeModal(); }, 600);
+  } else {
+    updateGrid();
   }
 
   // Category AJAX Toggle

@@ -14,12 +14,15 @@ if(isset($_POST["cat_id"]) && $_POST["cat_id"]!=""){
 $query = "";
 if(isset($_POST["q"])){ $query = $_POST["q"]; }
 
+$sede_id = 0;
+if(isset($_POST["sede_id"]) && $_POST["sede_id"]!=""){ $sede_id = intval($_POST["sede_id"]); }
+
 if($cat_id>0){
-  $products = ProductData::getPublicsByCategoryId($cat_id);
+  $products = ProductData::getPublicsByCategoryId($cat_id,$sede_id);
 } else if($query!=""){
-  $products = ProductData::getLike($query);
+  $products = ProductData::getLike($query,$sede_id);
 } else {
-  $products = ProductData::getFeatureds();
+  $products = ProductData::getFeatureds($sede_id);
 }
 ?>
 
@@ -41,9 +44,13 @@ if($cat_id>0){
       <div class="pc-body">
         <h3 class="pc-name" title="<?php echo htmlspecialchars($p->name); ?>"><?php echo htmlspecialchars($p->name); ?></h3>
         <div class="pc-meta">
-          <span class="pc-price-pill"><?php echo $coin_symbol.number_format($p->price,2,".",","); ?></span>
+          <?php $show_price = ($p->price_llevar!="" && floatval($p->price_llevar)>0) ? floatval($p->price_llevar) : floatval($p->price); ?>
+          <span class="pc-price-pill"><?php echo $coin_symbol.number_format($show_price,2,".",","); ?></span>
+          <?php if($p->price_llevar!="" && floatval($p->price_llevar)>0): ?>
+          <span class="pc-price-dine">comer aquí <?php echo $coin_symbol.number_format(floatval($p->price),2,".",","); ?></span>
+          <?php endif; ?>
           <?php if($bcv_rate>0): ?>
-          <span class="pc-price-bs">≈ <?php echo $bs_symbol.number_format($p->price*$bcv_rate,2,".",","); ?></span>
+          <span class="pc-price-bs">≈ <?php echo $bs_symbol.number_format($show_price*$bcv_rate,2,".",","); ?></span>
           <?php endif; ?>
         </div>
       </div>

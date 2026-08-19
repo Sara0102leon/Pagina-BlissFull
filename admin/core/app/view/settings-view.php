@@ -292,7 +292,7 @@ $settings = ConfigurationData::getAll();
       <div class="card-header">
         <h3 class="card-title">Agregar Sede</h3>
       </div>
-      <form method="post" action="./?action=settings&opt=addsede">
+      <form method="post" action="./?action=settings&opt=addsede" enctype="multipart/form-data">
         <div class="card-body">
           <div class="row g-2">
             <div class="col-md-4">
@@ -306,6 +306,15 @@ $settings = ConfigurationData::getAll();
             </div>
             <div class="col-md-1">
               <button type="submit" class="btn btn-success w-100">Agregar</button>
+            </div>
+            <div class="col-md-4">
+              <input type="text" name="maps" class="form-control" placeholder="Google Maps: dirección, coordenadas o enlace completo (https://www.google.com/maps/place/...)">
+            </div>
+            <div class="col-md-4">
+              <input type="file" name="image" class="form-control" accept="image/*">
+            </div>
+            <div class="col-md-4 d-flex align-items-center text-muted small">
+              Foto de la sede (se ve al girar la tarjeta en la página).
             </div>
           </div>
           <p class="text-muted small mb-0 mt-2">El WhatsApp de la sede se usa en el envío del pedido. Ej: +584121234567</p>
@@ -333,10 +342,15 @@ $settings = ConfigurationData::getAll();
             <?php foreach($sedes as $sd):?>
               <tr>
                 <td>
-                  <form method="post" action="./?action=settings&opt=updsede" class="d-flex gap-2 align-items-center flex-wrap">
+                  <form method="post" action="./?action=settings&opt=updsede" class="d-flex gap-2 align-items-center flex-wrap" enctype="multipart/form-data">
                     <input type="hidden" name="id" value="<?php echo $sd->id; ?>">
                     <input type="text" name="name" class="form-control" value="<?php echo htmlspecialchars($sd->name); ?>" required style="min-width:180px;">
                     <input type="text" name="address" class="form-control" value="<?php echo htmlspecialchars($sd->address); ?>" placeholder="Dirección" style="min-width:180px;">
+                    <?php if($sd->image!="" && file_exists("storage/sedes/".$sd->image)): ?>
+                    <img src="storage/sedes/<?php echo $sd->image; ?>" alt="foto sede" style="width:52px; height:52px; object-fit:cover; border-radius:10px;" class="border">
+                    <?php endif; ?>
+                    <input type="file" name="image" class="form-control" accept="image/*" style="max-width:220px;">
+                    <input type="text" name="maps" class="form-control" value="<?php echo htmlspecialchars($sd->maps); ?>" placeholder="Google Maps (query de dirección)" style="min-width:220px;">
                 </td>
                 <td>
                   <input type="text" name="phone" class="form-control" value="<?php echo htmlspecialchars($sd->phone); ?>" required style="min-width:140px;">
@@ -550,14 +564,26 @@ $h_close_cfg = ConfigurationData::getByPreffix("horario_close");
 
 <?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="ingredients" || isset($_GET["opt"]) && $_GET["opt"]=="extras"):?>
 <?php
-$extras = ProductExtraData::getAll();
+$extras_groups = ProductExtraData::getGroups();
 $products = ProductData::getAll();
+$groups_info = array();
+foreach($extras_groups as $g){
+  $rows = ProductExtraData::getByGroup($g->group_key);
+  $global = ProductExtraData::groupHasGlobal($rows);
+  $pids = ProductExtraData::productIdsFromGroup($rows);
+  $groups_info[$g->group_key] = array("g"=>$g,"global"=>$global,"pids"=>$pids);
+}
+$extra_products_json = array();
+foreach($products as $pr){
+  $img = "storage/products/".$pr->image;
+  $extra_products_json[] = array("id"=>intval($pr->id),"name"=>$pr->name,"img"=>$pr->image!="" && file_exists($img)?$img:"");
+}
 ?>
 <div class="page-header d-print-none">
   <div class="container-xl">
     <div class="row g-2 align-items-center">
       <div class="col">
-        <h2 class="page-title">Ingredientes</h2>
+        <h2 class="page-title">Ingredientes / Extras</h2>
       </div>
     </div>
   </div>
@@ -569,33 +595,32 @@ $products = ProductData::getAll();
       <div class="card-header">
         <h3 class="card-title">Agregar Ingrediente</h3>
       </div>
-      <form method="post" action="./?action=settings&opt=addextra">
-        <div class="card-body">
-          <div class="row g-2">
-            <div class="col-md-3">
-              <input type="text" name="name" class="form-control" placeholder="Nombre del ingrediente" required>
-            </div>
-            <div class="col-md-3">
-              <div class="input-group">
-                <span class="input-group-text">$</span>
-                <input type="text" name="price" class="form-control" placeholder="Precio" required>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <select name="product_id" class="form-select">
-                <option value="">-- Aplica a TODOS los productos --</option>
-                <?php foreach($products as $pr):?>
-                <option value="<?php echo $pr->id; ?>"><?php echo htmlspecialchars($pr->name); ?></option>
-                <?php endforeach;?>
-              </select>
-            </div>
-            <div class="col-md-2">
-              <button type="submit" class="btn btn-success w-100">Agregar</button>
+      <div class="card-body">
+        <form method="post" action="./?action=settings&opt=addextra" id="form-add-extra" class="row g-2 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label">Nombre del ingrediente</label>
+            <input type="text" name="name" class="form-control" placeholder="Ej: Jamón" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Precio</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input type="text" name="price" class="form-control" placeholder="3.00" required>
             </div>
           </div>
-          <p class="text-muted small mb-0 mt-2">Ej: Jamón (3$), Extra de queso (5$). Si dejas "Aplica a TODOS" el ingrediente se ofrece en todos los productos.</p>
-        </div>
-      </form>
+          <div class="col-md-4">
+            <label class="form-label">Productos donde aplica</label>
+            <button type="button" class="btn btn-outline-primary w-100 btn-pick-products" data-form="#form-add-extra">
+              <i class="bi bi-check2-square me-1"></i>Seleccionar productos (<span class="picker-label">TODOS</span>)
+            </button>
+            <input type="hidden" name="products" value="">
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-success w-100">Agregar</button>
+          </div>
+          <p class="text-muted small mb-0 mt-1 col-12">Ej: Jamón (3$), Extra de queso (5$). Marca con un check los productos que ofrecerán este ingrediente; los que queden sin marcar no podrán pedirlo.</p>
+        </form>
+      </div>
     </div>
     <div class="card">
       <div class="card-status-top bg-primary"></div>
@@ -603,43 +628,36 @@ $products = ProductData::getAll();
         <h3 class="card-title">Ingredientes Registrados</h3>
       </div>
       <div class="card-body">
-        <?php if(count($extras)>0):?>
+        <?php if(count($groups_info)>0):?>
         <div class="table-responsive">
           <table class="table card-table table-vcenter">
             <thead>
               <tr>
                 <th>Ingrediente</th>
                 <th>Precio</th>
-                <th>Aplica a</th>
+                <th>Productos donde aplica</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-            <?php foreach($extras as $e):?>
+            <?php foreach($groups_info as $gk => $info):?>
+              <?php $g = $info["g"]; $label = $info["global"] ? "TODOS los productos" : (count($info["pids"])>0 ? count($info["pids"])." producto".(count($info["pids"])>1?"s":"") : "Ninguno"); $pids_csv = implode(",", $info["pids"]); ?>
               <tr>
-                <td>
-                  <form method="post" action="./?action=settings&opt=updingredient" class="d-flex gap-2 align-items-center">
-                    <input type="hidden" name="id" value="<?php echo $e->id; ?>">
-                    <input type="text" name="name" class="form-control" value="<?php echo htmlspecialchars($e->name); ?>" required>
-                </td>
+                <td><input type="text" class="form-control" value="<?php echo htmlspecialchars($g->name); ?>" data-row-name="<?php echo htmlspecialchars($gk); ?>" required></td>
                 <td>
                   <div class="input-group">
                     <span class="input-group-text">$</span>
-                    <input type="text" name="price" class="form-control" value="<?php echo $e->price; ?>" required style="min-width:90px;">
+                    <input type="text" class="form-control" value="<?php echo $g->price; ?>" data-row-price="<?php echo htmlspecialchars($gk); ?>" required style="min-width:90px;">
                   </div>
                 </td>
                 <td>
-                  <select name="product_id" class="form-select">
-                    <option value="">-- TODOS --</option>
-                    <?php foreach($products as $pr):?>
-                    <option value="<?php echo $pr->id; ?>" <?php if($e->product_id==$pr->id){ echo "selected";} ?>><?php echo htmlspecialchars($pr->name); ?></option>
-                    <?php endforeach;?>
-                  </select>
+                  <button type="button" class="btn btn-outline-primary btn-sm btn-pick-products" data-form="<?php echo htmlspecialchars($gk); ?>" data-global="<?php echo $info["global"] ? "1" : "0"; ?>" data-pids="<?php echo htmlspecialchars($pids_csv); ?>">
+                    <i class="bi bi-check2-square me-1"></i><span class="picker-label"><?php echo $label; ?></span>
+                  </button>
                 </td>
                 <td class="text-end text-nowrap">
-                  <button type="submit" class="btn btn-warning btn-sm"><i class="bi bi-check-lg"></i> Guardar</button>
-                  </form>
-                  <a href="./?action=settings&opt=delextra&id=<?php echo $e->id; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Eliminar este ingrediente?');"><i class="bi bi-trash"></i></a>
+                  <button type="button" class="btn btn-warning btn-sm btn-extra-save" data-form="<?php echo htmlspecialchars($gk); ?>"><i class="bi bi-check-lg"></i> Guardar</button>
+                  <a href="./?action=settings&opt=delextra&group_key=<?php echo htmlspecialchars($gk); ?>" class="btn btn-danger btn-sm" onclick="return confirm('Eliminar este ingrediente de todos los productos?');"><i class="bi bi-trash"></i></a>
                 </td>
               </tr>
             <?php endforeach;?>
@@ -653,4 +671,114 @@ $products = ProductData::getAll();
     </div>
   </div>
 </div>
+
+<!-- Modal selector de productos -->
+<div class="modal fade" id="productsPickerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-check2-square me-1"></i>Productos donde aplica el ingrediente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted small">Marca los productos que ofrecerán este ingrediente. Sin marcar = el producto no puede pedirlo.</p>
+        <div class="d-flex gap-2 mb-3">
+          <button type="button" class="btn btn-sm btn-outline-primary" id="products-check-all"><i class="bi bi-check-all me-1"></i>Marcar todos</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="products-uncheck-all"><i class="bi bi-x-circle me-1"></i>Desmarcar todos</button>
+        </div>
+        <div class="row g-1" id="products-picker-list"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-link" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="products-picker-save"><i class="bi bi-check-lg me-1"></i>Guardar selección</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var EXTRA_PRODUCTS = <?php echo json_encode($extra_products_json); ?>;
+var EXTRA_PICKER_KEY = null;
+
+function openProductsPicker(key, checkedIds){
+  EXTRA_PICKER_KEY = key;
+  var html = "";
+  EXTRA_PRODUCTS.forEach(function(p){
+    var checked = checkedIds.indexOf(p.id) !== -1;
+    html += '<div class="col-6 col-md-6">';
+    html += '<label class="form-check d-flex align-items-center gap-2 border rounded p-2 mb-1">';
+    html += '<input class="form-check-input mt-0 pick-item" type="checkbox" value="' + p.id + '"' + (checked ? " checked" : "") + '>';
+    if(p.img){ html += '<img src="./' + p.img + '" style="width:38px;height:38px;object-fit:cover;border-radius:6px;">'; }
+    else { html += '<span class="d-inline-flex align-items-center justify-content-center text-muted bg-light rounded" style="width:38px;height:38px;"><i class="bi bi-image"></i></span>'; }
+    html += '<span class="small text-truncate" style="max-width:170px;">' + p.name + '</span>';
+    html += '</label></div>';
+  });
+  $("#products-picker-list").html(html);
+  $("#productsPickerModal").modal("show");
+}
+
+function rowPids($btn){
+  var ids = [];
+  var pids = String($btn.data("pids") || "");
+  if(pids !== ""){
+    pids.split(",").forEach(function(x){ if(x !== ""){ ids.push(parseInt(x)); } });
+  } else if(String($btn.data("global")) === "1"){
+    EXTRA_PRODUCTS.forEach(function(p){ ids.push(p.id); });
+  }
+  return ids;
+}
+
+function saveExtraProducts(key, ids, $lbl){
+  var nm = $('input[data-row-name="' + key + '"]').val();
+  var pc = $('input[data-row-price="' + key + '"]').val();
+  $.post("./?action=settings&opt=updextraprods", { group_key: key, name: nm, price: pc, products: ids.join(",") }, function(){
+    var lbl = ids.length === EXTRA_PRODUCTS.length ? "TODOS los productos" : (ids.length > 0 ? ids.length + " producto" + (ids.length > 1 ? "s" : "") : "Ninguno");
+    if($lbl){ $lbl.text(lbl); }
+    var $btn = $('[data-form="' + key + '"]');
+    $btn.attr("data-pids", ids.join(",")).attr("data-global", ids.length === EXTRA_PRODUCTS.length ? "1" : "0");
+  }).fail(function(){ alert("No se pudo guardar la selección de productos."); });
+}
+
+$(function(){
+  $(".btn-pick-products").on("click", function(){
+    var key = String($(this).data("form"));
+    if(key === "#form-add-extra"){
+      var hid = $("#form-add-extra input[name='products']").val();
+      var checkedIds = [];
+      if(hid !== ""){
+        hid.split(",").forEach(function(x){ if(x !== ""){ checkedIds.push(parseInt(x)); } });
+      } else {
+        EXTRA_PRODUCTS.forEach(function(p){ checkedIds.push(p.id); });
+      }
+      openProductsPicker(key, checkedIds);
+    } else {
+      openProductsPicker(key, rowPids($(this)));
+    }
+  });
+
+  $("#products-check-all").click(function(){ $("#products-picker-list .pick-item").prop("checked", true); });
+  $("#products-uncheck-all").click(function(){ $("#products-picker-list .pick-item").prop("checked", false); });
+
+  $("#products-picker-save").click(function(){
+    var ids = [];
+    $("#products-picker-list .pick-item:checked").each(function(){ ids.push($(this).val()); });
+    if(!EXTRA_PICKER_KEY){ $("#productsPickerModal").modal("hide"); return; }
+    if(EXTRA_PICKER_KEY === "#form-add-extra"){
+      $("#form-add-extra input[name='products']").val(ids.join(","));
+      var lblNew = ids.length === EXTRA_PRODUCTS.length ? "TODOS los productos" : (ids.length > 0 ? ids.length + " producto" + (ids.length > 1 ? "s" : "") : "Ninguno");
+      $("#form-add-extra .picker-label").text(lblNew);
+    } else {
+      saveExtraProducts(EXTRA_PICKER_KEY, ids, $('[data-form="' + EXTRA_PICKER_KEY + '"]').find(".picker-label"));
+    }
+    $("#productsPickerModal").modal("hide");
+  });
+
+  $(".btn-extra-save").click(function(){
+    var key = String($(this).data("form"));
+    var $btn = $('[data-form="' + key + '"]');
+    saveExtraProducts(key, rowPids($btn), $btn.find(".picker-label"));
+    Swal.fire({ icon:"success", title:"Guardado", text:"Ingrediente actualizado", timer:1200, showConfirmButton:false });
+  });
+});
+</script>
 <?php endif; ?>

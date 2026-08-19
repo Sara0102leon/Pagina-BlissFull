@@ -542,7 +542,9 @@ body {
   white-space: nowrap;
 }
 
-.pc-price-bs { color: var(--tt-muted); font-size: 0.72rem; font-weight: 600; }
+.pc-price-bs { color: var(--tt-muted); font-size: 0.72rem; font-weight: 600; width: 100%; }
+
+.pc-price-dine { color: var(--tt-muted); font-size: 0.72rem; font-weight: 600; background: rgba(255,255,255,0.05); padding: 0.25rem 0.6rem; border-radius: 1rem; border: 1px dashed rgba(224,169,109,0.35); }
 
 .pc-footer {
   display: flex;
@@ -725,6 +727,62 @@ body {
   padding: 1rem 1.1rem;
   background: linear-gradient(0deg, rgba(10, 10, 10, 0.92), rgba(10, 10, 10, 0.55) 65%, transparent);
 }
+
+/* ================= FLIP CARDS SEDES (3D) ================= */
+.tt-flip-card-link {
+  display: block;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+.tt-flip-card {
+  perspective: 1200px;
+  height: 100%;
+}
+.tt-flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.tt-flip-card:hover .tt-flip-inner,
+.tt-flip-inner.flipped { transform: rotateY(180deg); }
+.tt-flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.tt-flip-face.tt-map-card { min-height: 0; }
+.tt-flip-back {
+  transform: rotateY(180deg);
+  background: #000000;
+  border: 1px solid rgba(255, 183, 3, 0.2);
+  border-radius: 20px;
+  overflow: hidden;
+}
+.tt-flip-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.tt-flip-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.65rem 1rem;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.45));
+  color: #e0a96d;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-align: center;
+  font-size: 0.85rem;
+}
+.tt-flip-hint { color: var(--tt-gold); opacity: 0.85; }
 
 /* ================= RESERVATIONS STRIP ================= */
 .tt-reserve {

@@ -44,6 +44,8 @@ insert into unit (name) value ("Pizza Familiar 40 cm");
 insert into unit (name) value ("Pizza Pequeña 25 cm");
 insert into unit (name) value ("Extra");
 insert into unit (name) value ("Litro y medio");
+insert into unit (name) value ("Plato");
+insert into unit (name) value ("Focaccia");
 
 
 
@@ -59,6 +61,11 @@ create table category (
 insert into category (name,short_name,is_active) value ("Pizzas","pizzas",1);
 insert into category (name,short_name,is_active) value ("Extras","extras",1);
 insert into category (name,short_name,is_active) value ("Bebidas","bebidas",1);
+insert into category (name,short_name,is_active) value ("Pizza Gigante","pizzag",1);
+insert into category (name,short_name,is_active) value ("Pizza Familiar","pizzaf",1);
+insert into category (name,short_name,is_active) value ("Pizza Pequeña","pizzap",1);
+insert into category (name,short_name,is_active) value ("Pastas","pastas",1);
+insert into category (name,short_name,is_active) value ("Focaccia","focaccia",1);
 
 
 create table product (
@@ -79,6 +86,7 @@ create table product (
 	price float ,
 	price_llevar float ,
 	category_id int ,
+	sede_id int ,
 	unit_id int ,
 	/** for SEO **/
 	meta_title varchar(100),
@@ -200,7 +208,8 @@ create table product_extra (
 	id int not null auto_increment primary key,
 	product_id int,
 	name varchar(200),
-	price decimal(10,2) default 0
+	price decimal(10,2) default 0,
+	group_key varchar(40)
 );
 
 create table sede (
@@ -208,6 +217,8 @@ create table sede (
 	name varchar(200) not null,
 	address varchar(500),
 	phone varchar(20) not null,
+	image varchar(255) default '',
+	maps varchar(500) default '',
 	is_active boolean default 1,
 	created_at datetime default current_timestamp
 );
@@ -215,7 +226,8 @@ create table sede (
 insert into sede (name, address, phone) values
 ("Blissfull Villa Roca", "Villa Roca (sucursal principal)", "+584120000001"),
 ("Blissfull Cabudare", "Cabudare (sucursal)", "+584120000002"),
-("Blissfull Agua Viva", "Agua Viva (sucursal)", "+584120000003");
+("Blissfull Agua Viva", "Agua Viva (sucursal)", "+584120000003"),
+("Blissfull Metrópolis", "Metrópolis, Barquisimeto (sucursal)", "+584120000004");
 
 insert into delivery_zone (name, price) values
 ("Villa Roca 1, 2, 3 / Roca Terra", 1.00),
@@ -224,22 +236,22 @@ insert into delivery_zone (name, price) values
 ("Barquisimeto - Este hasta Calle 40", 2.00),
 ("Barquisimeto - Resto", 3.50);
 
-insert into product_extra (product_id, name, price) values
-(NULL, "Jamón", 3.00),
-(NULL, "Maíz", 3.00),
-(NULL, "Pepperoni", 3.00),
-(NULL, "Tocineta", 3.00),
-(NULL, "Champiñón", 3.00),
-(NULL, "Aceitunas negras", 3.00),
-(NULL, "Pimentón", 3.00),
-(NULL, "Cebolla", 3.00),
-(NULL, "Anchoas", 3.00),
-(NULL, "Piña", 3.00),
-(NULL, "Tomate", 3.00),
-(NULL, "Albahaca", 3.00),
-(NULL, "Salchicha", 3.00),
-(NULL, "Camarones", 3.00),
-(NULL, "Extra de queso", 5.00);
+insert into product_extra (group_key, product_id, name, price) values
+("g16", NULL, "Jamón", 3.00),
+("g17", NULL, "Maíz", 3.00),
+("g18", NULL, "Pepperoni", 3.00),
+("g19", NULL, "Tocineta", 3.00),
+("g20", NULL, "Champiñón", 3.00),
+("g21", NULL, "Aceitunas negras", 3.00),
+("g22", NULL, "Pimentón", 3.00),
+("g23", NULL, "Cebolla", 3.00),
+("g24", NULL, "Anchoas", 3.00),
+("g25", NULL, "Piña", 3.00),
+("g26", NULL, "Tomate", 3.00),
+("g27", NULL, "Albahaca", 3.00),
+("g28", NULL, "Salchicha", 3.00),
+("g29", NULL, "Camarones", 3.00),
+("g30", NULL, "Extra de queso", 5.00);
 
 
 create table slide (

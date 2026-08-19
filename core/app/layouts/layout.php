@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="assets/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="assets/css/style.css">
     <!-- Dark Theme Tito Burger (cargado al final para sobreescribir Tabler/Bootstrap) -->
-    <link rel="stylesheet" href="assets/css/custom-dark.css">
+    <link rel="stylesheet" href="assets/css/custom-dark.css?v=7">
     
     <script src="assets/jquery/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
