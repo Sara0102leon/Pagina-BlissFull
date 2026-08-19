@@ -67,25 +67,25 @@ foreach($horario_keys as $hk){
 
 <!-- Modal Selección de Sede -->
 <div class="modal modal-blur fade" id="modal-sede" tabindex="-1" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-  <div class="modal-dialog modal-dialog-centered" role="document">
+  <div class="modal-dialog modal-dialog-centered modal-lg tt-sede-modal" role="document">
     <div class="modal-content border-0 shadow-lg">
       <div class="modal-header" style="background: linear-gradient(135deg,#e0a96d,#b87e38); color: #000000;">
         <div>
-          <h5 class="modal-title fw-bold"><i class="bi bi-geo-alt-fill me-2"></i>¿Cuál sede te queda más cerca?</h5>
-          <div class="small opacity-75">Elige tu sucursal y tu pedido se enviará directo a su WhatsApp</div>
+          <h3 class="modal-title fw-bold"><i class="bi bi-geo-alt-fill me-2"></i>¿Cuál sede te queda más cerca?</h3>
+          <div class="fs-5 mt-1">Elige tu sucursal y tu pedido se enviará directo a su WhatsApp</div>
         </div>
       </div>
-      <div class="modal-body p-3">
+      <div class="modal-body p-4">
         <?php if(count($sedes)>0): ?>
-        <div class="form-hint mb-3">Toca la sede que te queda más cerca y continúa:</div>
+        <div class="form-hint mb-4">Toca la sede que te queda más cerca y continúa:</div>
         <div id="sede-list">
           <?php foreach($sedes as $sd): ?>
-          <label class="sede-option d-block mb-2" data-id="<?php echo $sd->id; ?>" data-name="<?php echo htmlspecialchars($sd->name); ?>" data-phone="<?php echo preg_replace('/\D/','',$sd->phone); ?>">
-            <div class="d-flex align-items-center gap-3 border rounded-3 p-3 shadow-sm sede-card">
-              <div class="sede-check"><i class="bi bi-check-circle-fill h4 mb-0"></i></div>
+          <label class="sede-option d-block mb-3" data-id="<?php echo $sd->id; ?>" data-name="<?php echo htmlspecialchars($sd->name); ?>" data-phone="<?php echo preg_replace('/\D/','',$sd->phone); ?>">
+            <div class="d-flex align-items-center gap-3 border rounded-3 p-4 shadow-sm sede-card">
+              <div class="sede-check"><i class="bi bi-check-circle-fill h2 mb-0"></i></div>
               <div class="flex-fill">
-                <div class="fw-bold h6 mb-0"><?php echo htmlspecialchars($sd->name); ?></div>
-                <div class="text-muted small"><?php echo htmlspecialchars($sd->address); ?></div>
+                <div class="fw-bold h4 mb-1"><?php echo htmlspecialchars($sd->name); ?></div>
+                <div class="text-muted fs-6"><?php echo htmlspecialchars($sd->address); ?></div>
               </div>
             </div>
           </label>
@@ -96,7 +96,7 @@ foreach($horario_keys as $hk){
         <?php endif; ?>
       </div>
       <div class="modal-footer d-flex flex-column gap-2 border-0">
-        <button type="button" id="btn_confirm_sede" class="btn btn-primary w-100 py-3 rounded-pill fw-bold" <?php echo count($sedes)==0?'disabled':''; ?>>
+        <button type="button" id="btn_confirm_sede" class="btn btn-primary w-100 py-4 rounded-pill fw-bold fs-5" <?php echo count($sedes)==0?'disabled':''; ?>>
           CONTINUAR A ESTA SEDE <i class="bi bi-arrow-right ms-2"></i>
         </button>
       </div>

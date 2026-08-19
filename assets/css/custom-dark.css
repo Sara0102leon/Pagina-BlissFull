@@ -918,6 +918,26 @@ body {
 #sede-list .sede-card .text-muted { color: var(--tt-muted) !important; }
 #sede-list .sede-card:hover { border-color: var(--tt-gold) !important; }
 
+/* ================= MODAL SEDE ACCESIBLE (GRANDE Y VISIBLE) ================= */
+#modal-sede.tt-sede-modal { --bs-modal-width: 680px; }
+#modal-sede.tt-sede-modal .modal-header { padding: 1.75rem 2rem; }
+#modal-sede.tt-sede-modal .modal-title { font-size: 2rem !important; color: #000000; }
+#modal-sede.tt-sede-modal .modal-body { padding: 1.75rem 2rem !important; }
+#modal-sede.tt-sede-modal .form-hint { font-size: 1.35rem; color: var(--tt-gold); }
+#modal-sede.tt-sede-modal .sede-card {
+  border-radius: 1.1rem !important;
+  padding: 1.4rem 1.6rem !important;
+  border-color: rgba(255, 183, 3, 0.35) !important;
+}
+#modal-sede.tt-sede-modal .sede-card .h4 { font-size: 1.65rem !important; }
+#modal-sede.tt-sede-modal .sede-card .fs-6 { font-size: 1.1rem !important; }
+#modal-sede.tt-sede-modal .sede-check i { font-size: 2.6rem; }
+#modal-sede.tt-sede-modal .sede-option.selected .sede-card {
+  border-color: var(--tt-gold) !important;
+  background: rgba(255, 183, 3, 0.14) !important;
+  box-shadow: 0 10px 28px rgba(255, 159, 28, 0.28) !important;
+}
+
 /* ================= FORMS ================= */
 .form-control, .form-select {
   background-color: rgba(255, 255, 255, 0.05);
