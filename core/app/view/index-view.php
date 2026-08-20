@@ -68,7 +68,7 @@ if($flotante_pdata){
     if(trim((string)$flotante_pdata->tipo_division)!=""){
       $flotante_payload["sabores"] = tt_build_sabores(0);
     } else {
-      $flotante_payload = tt_build_extras_payload($flotante_pdata->description, $flotante_pdata->free_ingredients, $extras_tmp);
+      $flotante_payload = tt_build_extras_payload($flotante_pdata->description, $flotante_pdata->free_ingredients, $extras_tmp, $flotante_pdata->house_ingredients);
       $flotante_payload["division"] = trim((string)$flotante_pdata->tipo_division);
     }
   }
@@ -593,7 +593,7 @@ let pendingIngredients = [];
 let pendingDivision = 0;
 let pendingSabores = [];
 let pendingSel = [];
-let pendingMain = -1;
+let pendingFreeExtra = 0;
 
 function openExtrasModal(pid, pname, dataJson) {
   if (typeof showStoreClosedAlert === "function" && showStoreClosedAlert()) { return; }
@@ -607,7 +607,7 @@ function openExtrasModal(pid, pname, dataJson) {
   pendingDivision = data.division === "2_estaciones" ? 2 : (data.division === "4_estaciones" ? 4 : 0);
   pendingSabores = data.sabores || [];
   pendingSel = data.sel || [];
-  pendingMain = (data.main === undefined || data.main === null) ? -1 : parseInt(data.main, 10);
+  pendingFreeExtra = Math.max(0, pendingFree - pendingSel.length);
   $("#extras_modal_title").text(pname);
 
   const desc = String(data.desc || "").trim();
@@ -618,7 +618,11 @@ function openExtrasModal(pid, pname, dataJson) {
   // Mensaje de reformulación (solo pizzas normales con cupo gratis)
   const $reform = $("#extras_reform_msg");
   if (pendingDivision === 0 && pendingIngredients.length > 0 && pendingFree > 0) {
-    $reform.html('<i class="bi bi-info-circle me-1"></i>Puedes reformular los ingredientes de tu pizza: como máximo ' + pendingFree + ' sin costo, a partir del ' + (pendingFree + 1) + ' tienen un coste adicional. El ingrediente principal no se puede cambiar.');
+    const extraFree = pendingFree - pendingSel.length;
+    const reformTxt = extraFree > 0
+      ? 'Los ingredientes que ya trae tu pizza no se pueden quitar. Puedes agregar hasta ' + extraFree + ' gratis de tu preferencia; los demás tienen un coste adicional.'
+      : 'Los ingredientes que ya trae tu pizza no se pueden quitar. Puedes agregar más de tu preferencia, pero tienen un coste adicional.';
+    $reform.html('<i class="bi bi-info-circle me-1"></i>' + reformTxt);
     $reform.removeClass("d-none");
   } else {
     $reform.addClass("d-none").html("");
@@ -630,8 +634,8 @@ function openExtrasModal(pid, pname, dataJson) {
       ? "Elige el sabor de cada mitad de tu pizza gigante: cada mitad trae todos los ingredientes de esa pizza."
       : "Elige el sabor de cada cuarto de tu pizza gigante: cada cuarto trae todos los ingredientes de esa pizza.";
   } else if (pendingIngredients.length > 0) {
-    hint = pendingFree > 0
-      ? "Elige tus ingredientes: los primeros " + pendingFree + " van sin costo, los demás tienen un coste adicional."
+    hint = pendingFreeExtra > 0
+      ? "Elige tus ingredientes: los primeros " + pendingFreeExtra + " van sin costo, los demás tienen un coste adicional."
       : "Elige los ingredientes adicionales para tu producto:";
   } else if (pendingExtras.length > 0) {
     hint = "Elige los extras para tu producto:";
@@ -653,22 +657,20 @@ function openExtrasModal(pid, pname, dataJson) {
       html += '<div class="sabor-ing mb-3" data-block="' + b + '"></div>';
     }
   } else if (pendingIngredients.length > 0) {
-    html += '<div class="fw-bold mb-2"><i class="bi bi-egg-fried me-1 text-gold"></i>INGREDIENTES' + (pendingFree > 0 ? ' <span id="free_badge" class="badge bg-success rounded-pill">' + pendingFree + ' gratis</span>' : "") + '</div>';
+    html += '<div class="fw-bold mb-2"><i class="bi bi-egg-fried me-1 text-gold"></i>INGREDIENTES' + (pendingFreeExtra > 0 ? ' <span id="free_badge" class="badge bg-success rounded-pill">' + pendingFreeExtra + ' gratis</span>' : "") + '</div>';
     pendingIngredients.forEach(function(e, i) {
       const isHouse = pendingSel.indexOf(i) !== -1;
-      const isMain = i === pendingMain;
-      let checkAttr = isHouse ? "checked" : "";
-      if (isMain) { checkAttr += " disabled"; }
-      const tagHtml = isMain
-        ? ' <span class="badge bg-warning rounded-pill ms-1" title="Viene incluido y no se puede cambiar"><i class="bi bi-lock-fill me-1"></i>incluido</span>'
-        : (isHouse ? ' <span class="badge bg-success-lt rounded-pill ms-1 text-success">incluido</span>' : "");
-      html += '<div class="d-flex justify-content-between align-items-center mb-2">';
-      html += '<label class="form-check mb-0 extra-opt ing-opt' + (isMain ? ' opacity-75' : '') + '">';
-      html += '<input class="form-check-input" type="checkbox" data-price="' + e.price + '" data-idx="' + i + '" data-sec="ing"' + checkAttr + '>';
-      html += '<span class="form-check-label">' + e.name + tagHtml + ' <span class="ing-price" data-idx="' + i + '">(+$' + e.price.toFixed(2) + ')</span></span>';
-      html += '</label>';
-      if (isHouse) { html += qtyBoxHtml(i); }
-      html += '</div>';
+      if (isHouse) {
+        html += '<div class="d-flex justify-content-between align-items-center mb-2">';
+        html += '<span class="text-muted">' + e.name + '</span>';
+        html += extraBtnHtml(i, e.price);
+        html += '</div>';
+      } else {
+        html += '<label class="form-check mb-2 extra-opt ing-opt">';
+        html += '<input class="form-check-input" type="checkbox" data-price="' + e.price + '" data-idx="' + i + '" data-sec="ing">';
+        html += '<span class="form-check-label">' + e.name + ' <span class="ing-price" data-idx="' + i + '">(+$' + e.price.toFixed(2) + ')</span></span>';
+        html += '</label>';
+      }
     });
   }
   if (pendingExtras.length > 0) {
@@ -685,12 +687,9 @@ function openExtrasModal(pid, pname, dataJson) {
   $("#modal-extras").modal("show");
 }
 
-function qtyBoxHtml(qkey) {
-  return '<span class="qty-box d-inline-flex align-items-center gap-1 ms-1">' +
-    '<button type="button" class="qty-btn btn btn-sm btn-outline-secondary px-2" data-qkey="' + qkey + '" data-qop="-">−</button>' +
-    '<span class="qty-val fw-bold small" data-qkey="' + qkey + '">0</span>' +
-    '<button type="button" class="qty-btn btn btn-sm btn-outline-secondary px-2" data-qkey="' + qkey + '" data-qop="+">+</button>' +
-    '</span>';
+function extraBtnHtml(ekey, price) {
+  const p = parseFloat(price) || 0;
+  return '<button type="button" class="extra-btn btn btn-sm btn-outline-warning rounded-pill px-2" data-ekey="' + ekey + '">Pedir extra ' + fmt(p) + '</button>';
 }
 
 function renderSaborIng(block, si) {
@@ -702,30 +701,28 @@ function renderSaborIng(block, si) {
   h += '</div>';
   sb.ingredients.forEach(function(g, gi) {
     h += '<div class="d-flex justify-content-between align-items-center mb-1 small">' +
-      '<span>' + g.name + '</span>' +
-      '<span class="d-inline-flex align-items-center gap-1">' +
-      '<span class="text-success fw-bold">incluido</span>' + qtyBoxHtml(block + "-" + gi) +
-      '</span></div>';
+      '<span class="text-muted">' + g.name + '</span>' +
+      extraBtnHtml(block + "-" + gi, g.price) +
+      '</div>';
   });
   $box.html(h);
 }
 
-function onQtyBtn() {
-  const key = $(this).data("qkey");
-  const op = $(this).data("qop");
-  const $val = $(".qty-val[data-qkey='" + key + "']");
-  let v = parseInt($val.text(), 10) || 0;
-  v = op === "+" ? v + 1 : Math.max(0, v - 1);
-  $val.text(v);
+function onExtraBtn() {
+  const on = $(this).data("on") === 1;
+  if (on) {
+    $(this).data("on", 0).text("Pedir extra").removeClass("btn-warning").addClass("btn-outline-warning");
+  } else {
+    $(this).data("on", 1).text("Extra pedido").removeClass("btn-outline-warning").addClass("btn-warning");
+  }
   updateExtrasTotal();
 }
 
-function extraQtys() {
+function extraToggles() {
   const out = [];
-  $(".qty-val").each(function() {
-    const v = parseInt($(this).text(), 10) || 0;
-    if (v <= 0) { return; }
-    const key = String($(this).data("qkey"));
+  $(".extra-btn").each(function() {
+    if ($(this).data("on") !== 1) { return; }
+    const key = String($(this).data("ekey"));
     let name = "", price = 0;
     if (key.indexOf("-") === -1) {
       const e = pendingIngredients[parseInt(key, 10)];
@@ -744,7 +741,7 @@ function extraQtys() {
       name = sb.name + ": " + g.name + " extra";
       price = parseFloat(g.price);
     }
-    out.push({ name: name, price: price, qty: v });
+    out.push({ name: name, price: price });
   });
   return out;
 }
@@ -752,7 +749,7 @@ function extraQtys() {
 function refreshIngPriceLabels() {
   let granted = 0;
   const checkedCount = $(".ing-opt input:checked").length;
-  const quotaFull = pendingFree > 0 && checkedCount >= pendingFree;
+  const quotaFull = pendingFreeExtra > 0 && checkedCount >= pendingFreeExtra;
   $(".ing-opt").each(function() {
     const cb = $(this).find("input");
     if (!cb.length) { return; }
@@ -760,14 +757,14 @@ function refreshIngPriceLabels() {
     const e = pendingIngredients[parseInt(cb.data("idx"))];
     if (!priceEl.length || !e) { return; }
     if (cb.is(":checked")) {
-      if (granted < pendingFree) {
+      if (granted < pendingFreeExtra) {
         priceEl.html('<span class="text-success fw-bold">GRATIS</span>');
         granted++;
       } else {
         priceEl.html('<span class="text-danger fw-bold">(+$' + e.price.toFixed(2) + ')</span>');
       }
     } else {
-      if (quotaFull || pendingFree === 0) {
+      if (quotaFull || pendingFreeExtra === 0) {
         priceEl.html('<span class="text-danger fw-bold">(+$' + e.price.toFixed(2) + ')</span>');
       } else {
         priceEl.html('<span class="text-success fw-bold">GRATIS</span>');
@@ -775,14 +772,14 @@ function refreshIngPriceLabels() {
     }
   });
   const fb = $("#free_badge");
-  if (fb.length && pendingFree > 0) { fb.text(granted + "/" + pendingFree + " gratis"); }
+  if (fb.length && pendingFreeExtra > 0) { fb.text(granted + "/" + pendingFreeExtra + " gratis"); }
 }
 
 function updateExtrasTotal() {
   let total = 0;
   const ingIdx = [];
   $(".ing-opt input:checked").each(function(){ ingIdx.push(parseInt($(this).data("idx"))); });
-  for (let i = pendingFree; i < ingIdx.length; i++) {
+  for (let i = pendingFreeExtra; i < ingIdx.length; i++) {
     const e = pendingIngredients[ingIdx[i]];
     if (e) { total += parseFloat(e.price); }
   }
@@ -790,7 +787,7 @@ function updateExtrasTotal() {
     if ($(this).data("sec") === "ing") { return; }
     total += parseFloat($(this).data("price"));
   });
-  extraQtys().forEach(function(x){ total += x.price * x.qty; });
+  extraToggles().forEach(function(x){ total += x.price; });
   $("#extras_total").text(fmt(total));
   refreshIngPriceLabels();
 }
@@ -808,21 +805,22 @@ function confirmExtras() {
       const sb = pendingSabores[parseInt(checked.data("sabor"), 10)];
       sel.push({ name: blockName + " " + b + ": " + sb.name, price: 0, div: 1 });
     }
-    extraQtys().forEach(function(x){ sel.push({ name: x.name, price: x.price * x.qty, div: 1 }); });
+    extraToggles().forEach(function(x){ sel.push({ name: x.name, price: x.price, div: 1 }); });
   } else {
     const ingIdx = [];
     $(".ing-opt input:checked").each(function(){ ingIdx.push(parseInt($(this).data("idx"))); });
     for (let i = 0; i < ingIdx.length; i++) {
       const e = pendingIngredients[ingIdx[i]];
       if (!e) { continue; }
-      sel.push({ name: e.name, price: i < pendingFree ? 0 : parseFloat(e.price) });
+      const included = pendingSel.indexOf(ingIdx[i]) !== -1;
+      sel.push({ name: e.name, price: included ? 0 : (i < pendingFreeExtra ? 0 : parseFloat(e.price)), div: included ? 1 : 0 });
     }
     $(".extra-opt input:checked").each(function(){
       if ($(this).data("sec") === "ing") { return; }
       const e = pendingExtras[parseInt($(this).data("idx"))];
       if (e) { sel.push({ name: e.name, price: parseFloat(e.price) }); }
     });
-    extraQtys().forEach(function(x){ sel.push({ name: x.name, price: x.price * x.qty }); });
+    extraToggles().forEach(function(x){ sel.push({ name: x.name, price: x.price }); });
   }
   $("#modal-extras").modal("hide");
   addToCart(pendingExtrasPid, pendingExtrasName, JSON.stringify(sel));
@@ -985,7 +983,7 @@ $(document).ready(function() {
       renderSaborIng(parseInt($(this).data("block"), 10), parseInt($(this).data("sabor"), 10));
       updateExtrasTotal();
     })
-    .on("click", ".qty-btn", onQtyBtn);
+    .on("click", ".extra-btn", onExtraBtn);
   $("#btn_confirm_extras").click(confirmExtras);
 
   // Pickup Toggle

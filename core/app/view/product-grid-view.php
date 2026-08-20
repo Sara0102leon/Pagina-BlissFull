@@ -54,7 +54,7 @@ if($cat_id>0 && $sede_id>0 && in_array($cat_id, array(5,6))){
       $pizza_edit_json["sabores"] = tt_build_sabores($sede_id);
     } else {
       // Pizza normal: ingredientes de la casa detectados por la descripción
-      $pizza_edit_json = tt_build_extras_payload($p->description, $p->free_ingredients, $extras);
+      $pizza_edit_json = tt_build_extras_payload($p->description, $p->free_ingredients, $extras, $p->house_ingredients);
       $pizza_edit_json["division"] = trim((string)$p->tipo_division);
     }
   }

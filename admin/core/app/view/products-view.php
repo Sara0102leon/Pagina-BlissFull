@@ -230,6 +230,26 @@ $(function(){
             <label class="form-label">Ingredientes gratis <span class="text-muted small">(cuÃ¡ntos ingredientes van incluidos sin costo; el resto se cobra. Ej: 3 en la pizza familiar)</span></label>
             <input type="number" min="0" step="1" class="form-control" placeholder="0" name="free_ingredients" value="0">
           </div>
+          <?php $house_catalog = array();
+          foreach(ProductExtraData::getAll() as $pe){
+            if(intval($pe->is_ingredient)==1 && trim($pe->name)!=""){
+              $house_catalog[strtr(mb_strtolower(trim($pe->name)), array("á"=>"a","é"=>"e","í"=>"i","ó"=>"o","ú"=>"u","ñ"=>"n"))] = $pe->name;
+            }
+          }
+          ksort($house_catalog); ?>
+          <div class="mb-3">
+            <label class="form-label">Ingredientes que trae el producto <span class="text-muted small">(se premarcan como incluidos en el menÃº del pÃºblico y no se pueden quitar; si no marcas ninguno se detectan solos desde la descripciÃ³n)</span></label>
+            <div class="row g-2">
+              <?php foreach($house_catalog as $hkey => $hname): ?>
+              <div class="col-6 col-md-4 col-lg-3">
+                <label class="form-check">
+                  <input class="form-check-input" type="checkbox" name="house_ingredients[]" value="<?php echo htmlspecialchars($hname); ?>">
+                  <span class="form-check-label"><?php echo htmlspecialchars($hname); ?></span>
+                </label>
+              </div>
+              <?php endforeach; ?>
+            </div>
+          </div>
           <div class="mb-3">
             <label class="form-label">Imagen</label>
             <input type="file" class="form-control" name="image">
@@ -381,6 +401,33 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
           <div class="mb-3">
             <label class="form-label">Ingredientes gratis <span class="text-muted small">(cuÃ¡ntos ingredientes van incluidos sin costo; el resto se cobra. Ej: 3 en la pizza familiar)</span></label>
             <input type="number" min="0" step="1" class="form-control" placeholder="0" name="free_ingredients" value="<?php echo intval($product->free_ingredients); ?>">
+          </div>
+          <?php $house_catalog = array();
+          foreach(ProductExtraData::getAll() as $pe){
+            if(intval($pe->is_ingredient)==1 && trim($pe->name)!=""){
+              $house_catalog[strtr(mb_strtolower(trim($pe->name)), array("á"=>"a","é"=>"e","í"=>"i","ó"=>"o","ú"=>"u","ñ"=>"n"))] = $pe->name;
+            }
+          }
+          ksort($house_catalog);
+          $house_current = array();
+          if(trim((string)$product->house_ingredients)!=""){
+            foreach(explode(",", $product->house_ingredients) as $hc){
+              $hcn = strtr(mb_strtolower(trim($hc)), array("á"=>"a","é"=>"e","í"=>"i","ó"=>"o","ú"=>"u","ñ"=>"n"));
+              $house_current[] = $hcn;
+            }
+          } ?>
+          <div class="mb-3">
+            <label class="form-label">Ingredientes que trae el producto <span class="text-muted small">(se premarcan como incluidos en el menÃº del pÃºblico y no se pueden quitar; si no marcas ninguno se detectan solos desde la descripciÃ³n)</span></label>
+            <div class="row g-2">
+              <?php foreach($house_catalog as $hkey => $hname): ?>
+              <div class="col-6 col-md-4 col-lg-3">
+                <label class="form-check">
+                  <input class="form-check-input" type="checkbox" name="house_ingredients[]" value="<?php echo htmlspecialchars($hname); ?>" <?php if(in_array($hkey, $house_current)){ echo "checked"; } ?>>
+                  <span class="form-check-label"><?php echo htmlspecialchars($hname); ?></span>
+                </label>
+              </div>
+              <?php endforeach; ?>
+            </div>
           </div>
           <?php if( $product->image!="" && file_exists($url)):?>
           <div class="mb-3">

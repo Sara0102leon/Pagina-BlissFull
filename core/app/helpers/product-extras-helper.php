@@ -42,7 +42,7 @@ function tt_house_ingredients($desc, $catalog){
   return $found;
 }
 
-function tt_build_extras_payload($desc, $free, $rows){
+function tt_build_extras_payload($desc, $free, $rows, $house_csv=""){
   $payload = array("desc"=>trim((string)$desc),"free"=>intval($free),"ingredients"=>array(),"extras"=>array(),"sel"=>array(),"main"=>-1);
   if(!is_array($rows)){ return $payload; }
 
@@ -61,7 +61,22 @@ function tt_build_extras_payload($desc, $free, $rows){
   $catalog = array();
   foreach($ing as $i => $it){ $catalog[$i] = array("name"=>$it["name"],"price"=>$it["price"],"_norm"=>tt_norm($it["name"])); }
 
-  $house_idx = tt_house_ingredients($desc, $catalog);
+  $house_idx = array();
+  $house_names = array();
+  if(trim((string)$house_csv)!=""){
+    foreach(explode(",", $house_csv) as $h){ $h = trim($h); if($h!=""){ $house_names[] = $h; } }
+  }
+  foreach($house_names as $hn){
+    $hnn = tt_norm($hn);
+    if($hnn==""){ continue; }
+    foreach($catalog as $ci => $cat){
+      if($cat["_norm"]==$hnn || (strlen($hnn)>=3 && (strpos($cat["_norm"],$hnn)!==false || strpos($hnn,$cat["_norm"])!==false))){
+        if(!in_array($ci, $house_idx)){ $house_idx[] = $ci; }
+        break;
+      }
+    }
+  }
+  if(count($house_idx)==0){ $house_idx = tt_house_ingredients($desc, $catalog); }
 
   $ordered = array();
   $house_set = array();
@@ -79,6 +94,7 @@ function tt_build_extras_payload($desc, $free, $rows){
   if(count($house_idx)>0){
     $payload["sel"] = range(0, count($house_idx)-1);
     $payload["main"] = 0;
+    $payload["free"] = count($house_idx);
   }
 
   $payload["extras"] = $extras_rows;
@@ -97,7 +113,7 @@ function tt_build_sabores($sede_id){
   foreach($prods as $p){
     if(trim((string)$p->tipo_division)!=""){ continue; }
     $extras = ProductExtraData::getByProductId($p->id);
-    $pay = tt_build_extras_payload($p->description, $p->free_ingredients, $extras);
+    $pay = tt_build_extras_payload($p->description, $p->free_ingredients, $extras, $p->house_ingredients);
     $sel = $pay["sel"];
     if(count($sel)==0){ continue; }
     $ing = array();

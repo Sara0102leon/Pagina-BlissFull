@@ -32,6 +32,8 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="add"){
 		$product->tipo_division = $td;
 		$product->allow_halves = ($td=="normal" ? 0 : 1);
 		$product->free_ingredients = isset($_POST["free_ingredients"]) ? intval($_POST["free_ingredients"]) : 0;
+		$hi = isset($_POST["house_ingredients"]) && is_array($_POST["house_ingredients"]) ? array_map("trim", $_POST["house_ingredients"]) : array();
+		$product->house_ingredients = implode(", ", array_filter($hi));
 
 		$product->add();
 		Core::redir("./?view=products&opt=all");
@@ -63,6 +65,8 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="upd"){
 		$product->tipo_division = $td;
 		$product->allow_halves = ($td=="normal" ? 0 : 1);
 		$product->free_ingredients = isset($_POST["free_ingredients"]) ? intval($_POST["free_ingredients"]) : 0;
+		$hi = isset($_POST["house_ingredients"]) && is_array($_POST["house_ingredients"]) ? array_map("trim", $_POST["house_ingredients"]) : array();
+		$product->house_ingredients = implode(", ", array_filter($hi));
 
 		$product->update();
 		$_SESSION["product_updated"]= 1;
