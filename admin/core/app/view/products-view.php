@@ -1,4 +1,4 @@
-<?php 
+﻿<?php 
 if(!isset($_SESSION["user_id"])){ Core::redir("./");}
 $user= UserData::getById($_SESSION["user_id"]);
 if($user==null){ Core::redir("./");}
@@ -53,7 +53,7 @@ if($user==null){ Core::redir("./");}
             </select>
           </div>
           <div class="col-auto">
-            <span class="text-muted small">Los productos de la vista "Todas las sedes" se muestran en el menú de todas las sucursales.</span>
+            <span class="text-muted small">Los productos de la vista "Todas las sedes" se muestran en el menÃº de todas las sucursales.</span>
           </div>
         </form>
       </div>
@@ -214,7 +214,7 @@ $(function(){
             </div>
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Fin de la oferta <span class="text-muted small">(opcional: después de esta fecha se cobra el precio normal)</span></label>
+                <label class="form-label">Fin de la oferta <span class="text-muted small">(opcional: despuÃ©s de esta fecha se cobra el precio normal)</span></label>
                 <input type="date" class="form-control" name="offer_finish">
               </div>
             </div>
@@ -227,7 +227,7 @@ $(function(){
             </div>
           </div>
           <div class="mb-3">
-            <label class="form-label">Ingredientes gratis <span class="text-muted small">(cuántos ingredientes van incluidos sin costo; el resto se cobra. Ej: 3 en la pizza familiar)</span></label>
+            <label class="form-label">Ingredientes gratis <span class="text-muted small">(cuÃ¡ntos ingredientes van incluidos sin costo; el resto se cobra. Ej: 3 en la pizza familiar)</span></label>
             <input type="number" min="0" step="1" class="form-control" placeholder="0" name="free_ingredients" value="0">
           </div>
           <div class="mb-3">
@@ -256,7 +256,7 @@ $(function(){
             </div>
           </div>
           <div class="mb-3">
-            <label class="form-label">Tipo de división <span class="text-muted small">(solo pizzas: el cliente elige el sabor de cada fracción; los ingredientes de la pizza son las opciones)</span></label>
+            <label class="form-label">Tipo de divisiÃ³n <span class="text-muted small">(solo pizzas: el cliente elige el sabor de cada fracciÃ³n; los ingredientes de la pizza son las opciones)</span></label>
             <select name="tipo_division" class="form-select">
               <option value="normal">Normal (el cliente arma su pizza con ingredientes)</option>
               <option value="2_estaciones">2 Estaciones (cliente elige 2 mitades)</option>
@@ -279,7 +279,7 @@ $(function(){
             <div class="col-md-4">
               <div class="mb-3">
                 <label class="form-label">Categoria</label>
-                <?php $categories = CategoryData::getAll(); ?>
+                <?php $categories = CategoryData::getActives(); ?>
                 <select name="category_id" class="form-select" required>
                   <option value="">-- SELECCIONE CATEGORIA --</option>
                   <?php foreach($categories as $cat):?>
@@ -290,7 +290,7 @@ $(function(){
             </div>
             <div class="col-md-4">
               <div class="mb-3">
-                <label class="form-label">Sede <span class="text-muted small">(menú por sucursal)</span></label>
+                <label class="form-label">Sede <span class="text-muted small">(menÃº por sucursal)</span></label>
                 <?php $sedes_form = SedeData::getAll(); ?>
                 <select name="sede_id" class="form-select">
                   <option value="">-- TODAS LAS SEDES --</option>
@@ -366,7 +366,7 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
             </div>
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Fin de la oferta <span class="text-muted small">(opcional: después de esta fecha se cobra el precio normal)</span></label>
+                <label class="form-label">Fin de la oferta <span class="text-muted small">(opcional: despuÃ©s de esta fecha se cobra el precio normal)</span></label>
                 <input type="date" class="form-control" value="<?php echo $product->offer_finish; ?>" name="offer_finish">
               </div>
             </div>
@@ -379,7 +379,7 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
             </div>
           </div>
           <div class="mb-3">
-            <label class="form-label">Ingredientes gratis <span class="text-muted small">(cuántos ingredientes van incluidos sin costo; el resto se cobra. Ej: 3 en la pizza familiar)</span></label>
+            <label class="form-label">Ingredientes gratis <span class="text-muted small">(cuÃ¡ntos ingredientes van incluidos sin costo; el resto se cobra. Ej: 3 en la pizza familiar)</span></label>
             <input type="number" min="0" step="1" class="form-control" placeholder="0" name="free_ingredients" value="<?php echo intval($product->free_ingredients); ?>">
           </div>
           <?php if( $product->image!="" && file_exists($url)):?>
@@ -414,7 +414,7 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
           </div>
           <?php $td_val = isset($product->tipo_division) ? trim((string)$product->tipo_division) : "normal"; ?>
           <div class="mb-3">
-            <label class="form-label">Tipo de división <span class="text-muted small">(solo pizzas: el cliente elige el sabor de cada fracción; los ingredientes de la pizza son las opciones)</span></label>
+            <label class="form-label">Tipo de divisiÃ³n <span class="text-muted small">(solo pizzas: el cliente elige el sabor de cada fracciÃ³n; los ingredientes de la pizza son las opciones)</span></label>
             <select name="tipo_division" class="form-select">
               <option value="normal" <?php if($td_val=="normal"){ echo "selected"; } ?>>Normal (el cliente arma su pizza con ingredientes)</option>
               <option value="2_estaciones" <?php if($td_val=="2_estaciones"){ echo "selected"; } ?>>2 Estaciones (cliente elige 2 mitades)</option>
@@ -437,7 +437,7 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
             <div class="col-md-4">
               <div class="mb-3">
                 <label class="form-label">Categoria</label>
-                <?php $categories = CategoryData::getAll(); ?>
+                <?php $categories = CategoryData::getActives(); ?>
                 <select name="category_id" class="form-select" required>
                   <option value="">-- SELECCIONE CATEGORIA --</option>
                   <?php foreach($categories as $cat):?>
@@ -448,7 +448,7 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
             </div>
             <div class="col-md-4">
               <div class="mb-3">
-                <label class="form-label">Sede <span class="text-muted small">(menú por sucursal)</span></label>
+                <label class="form-label">Sede <span class="text-muted small">(menÃº por sucursal)</span></label>
                 <?php $sedes_form = SedeData::getAll(); ?>
                 <select name="sede_id" class="form-select">
                   <option value="">-- TODAS LAS SEDES --</option>

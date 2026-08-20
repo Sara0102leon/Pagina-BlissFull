@@ -1,4 +1,4 @@
-<?php 
+﻿<?php 
 if(!isset($_SESSION["user_id"])){ Core::redir("./");}
 $user= UserData::getById($_SESSION["user_id"]);
 if($user==null){ Core::redir("./");}
@@ -8,12 +8,12 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
   <div class="container-xl">
     <div class="row g-2 align-items-center">
       <div class="col">
-        <h2 class="page-title">Lista de Categorías</h2>
+        <h2 class="page-title">Lista de CategorÃ­as</h2>
       </div>
       <div class="col-auto ms-auto d-print-none">
         <div class="btn-list">
           <a href="./?view=categories&opt=new" class="btn btn-primary">
-            <i class='bi bi-plus'></i> Nueva Categoría
+            <i class='bi bi-plus'></i> Nueva CategorÃ­a
           </a>
         </div>
       </div>
@@ -25,11 +25,11 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
     <div class="card">
       <div class="card-status-top bg-primary"></div>
       <div class="card-header">
-        <h3 class="card-title">Categorías</h3>
+        <h3 class="card-title">CategorÃ­as</h3>
       </div>
       <div class="card-body">
     <?php
-    $categories = CategoryData::getAll();
+    $categories = CategoryData::getActives();
     if(count($categories)>0):?>
       <div class="table-responsive">
         <table class="table card-table table-vcenter text-nowrap datatable">
@@ -59,7 +59,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
         </table>
         </div>
     <?php else:?>
-        <p class="alert alert-warning mb-0">No hay categorías.</p>
+        <p class="alert alert-warning mb-0">No hay categorÃ­as.</p>
     <?php endif; ?>
       </div>
     </div>
@@ -71,7 +71,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
   <div class="container-xl">
     <div class="row g-2 align-items-center">
       <div class="col">
-        <h2 class="page-title">Agregar Categoría</h2>
+        <h2 class="page-title">Agregar CategorÃ­a</h2>
       </div>
     </div>
   </div>
@@ -81,7 +81,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
     <div class="card">
       <div class="card-status-top bg-success"></div>
       <div class="card-header">
-        <h3 class="card-title">Nueva Categoría</h3>
+        <h3 class="card-title">Nueva CategorÃ­a</h3>
       </div>
       <div class="card-body">
         <form method="post" action="./?action=categories&opt=add">
@@ -98,7 +98,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
             </label>
           </div>
           <div class="form-footer mt-4">
-            <button type="submit" class="btn btn-primary w-100">Agregar Categoría</button>
+            <button type="submit" class="btn btn-primary w-100">Agregar CategorÃ­a</button>
           </div>
         </form>
       </div>
@@ -112,7 +112,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
   <div class="container-xl">
     <div class="row g-2 align-items-center">
       <div class="col">
-        <h2 class="page-title">Editar Categoría</h2>
+        <h2 class="page-title">Editar CategorÃ­a</h2>
       </div>
     </div>
   </div>
@@ -122,7 +122,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
     <div class="card">
       <div class="card-status-top bg-info"></div>
       <div class="card-header">
-        <h3 class="card-title">Editar Categoría</h3>
+        <h3 class="card-title">Editar CategorÃ­a</h3>
       </div>
       <div class="card-body">
         <form method="post" action="./?action=categories&opt=upd">
@@ -140,7 +140,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
             </label>
           </div>
           <div class="form-footer mt-4">
-            <button type="submit" class="btn btn-success w-100">Actualizar Categoría</button>
+            <button type="submit" class="btn btn-success w-100">Actualizar CategorÃ­a</button>
           </div>
         </form>
       </div>
