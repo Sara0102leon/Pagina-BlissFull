@@ -190,7 +190,7 @@
               <!-- Sede Selection Badge -->
               <a href="#" class="nav-link px-2 d-flex align-items-center gap-1 small fw-bold" id="btn-change-sede" title="Cambiar sede">
                 <i class="bi bi-geo-alt-fill text-gold"></i>
-                <span id="header-sede-name" class="d-none d-md-inline">Elegir sede</span>
+                <span id="header-sede-name" class="d-inline">Elegir sede</span>
                 <i class="bi bi-chevron-down extra-small d-none d-md-inline"></i>
               </a>
             </div>
@@ -399,6 +399,28 @@
       .extra-small { font-size: 0.75rem; line-height: 1.2; }
     </style>
     <script src="./dist/js/tabler.min.js" defer></script>
+    <script>
+    // Shím de compatibilidad: Bootstrap 5 (Tabler) no trae el plugin jQuery .modal()
+    // que usan los scripts del menú. Reimplementa show/hide sobre la API nativa.
+    (function($){
+      if ($.fn.modal) { return; }
+      $.fn.modal = function(cmd, opts){
+        return this.each(function(){
+          var el = this;
+          if (!window.bootstrap || typeof window.bootstrap.Modal === "undefined") { return; }
+          var inst = window.bootstrap.Modal.getInstance(el);
+          if (cmd === "show" || cmd === "toggle") {
+            if (!inst) { inst = new window.bootstrap.Modal(el, opts || {}); }
+            inst.show();
+          } else if (cmd === "hide") {
+            if (inst) { inst.hide(); }
+          } else if (cmd === "dispose") {
+            if (inst) { inst.dispose(); }
+          }
+        });
+      };
+    })(jQuery);
+    </script>
     <script>
     // Oculta la pantalla de carga cuando la página termina de cargar
     (function() {
