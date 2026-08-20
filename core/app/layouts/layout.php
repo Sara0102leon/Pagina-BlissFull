@@ -174,6 +174,7 @@
       $h_close_d = date("g:i A", strtotime($horario_close_raw));
       $horario_display = $h_open_d." - ".$h_close_d;
     }
+    $horario_open_display = date("g:i A", strtotime($h_open_str));
     ?>
     <div class="page">
       <!-- Top Navbar (Sticky Minimal) -->
