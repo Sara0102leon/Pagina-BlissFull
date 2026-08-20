@@ -212,6 +212,10 @@ $(function(){
             </div>
           </div>
           <div class="mb-3">
+            <label class="form-label">Ingredientes gratis <span class="text-muted small">(cuántos ingredientes van incluidos sin costo; el resto se cobra. Ej: 3 en la pizza familiar)</span></label>
+            <input type="number" min="0" step="1" class="form-control" placeholder="0" name="free_ingredients" value="0">
+          </div>
+          <div class="mb-3">
             <label class="form-label">Imagen</label>
             <input type="file" class="form-control" name="image">
           </div>
@@ -339,6 +343,10 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
               <span class="input-group-text"><?php echo $coin; ?></span>
               <input type="text" class="form-control" placeholder="Precio al llevar" value="<?php echo $product->price_llevar; ?>" name="price_llevar">
             </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Ingredientes gratis <span class="text-muted small">(cuántos ingredientes van incluidos sin costo; el resto se cobra. Ej: 3 en la pizza familiar)</span></label>
+            <input type="number" min="0" step="1" class="form-control" placeholder="0" name="free_ingredients" value="<?php echo intval($product->free_ingredients); ?>">
           </div>
           <?php if( $product->image!="" && file_exists($url)):?>
           <div class="mb-3">

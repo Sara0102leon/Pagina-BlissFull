@@ -31,10 +31,18 @@ if($cat_id>0){
   <?php foreach($products as $p):
   $img = "admin/storage/products/".$p->image;
   if($p->image=="" || !file_exists($img)){ $img=$img_default; }
-  $extras = ProductExtraData::getByProductId($p->id);
-  $extras_json = array();
-  foreach($extras as $e){ $extras_json[] = array("name"=>$e->name,"price"=>floatval($e->price)); }
-  $extras_json_str = htmlspecialchars(json_encode($extras_json), ENT_QUOTES);
+  $pizza_edit_json = array("desc"=>trim((string)$p->description),"free"=>intval($p->free_ingredients),"ingredients"=>array(),"extras"=>array());
+  $no_edit_cats = array(5,6); // Pastas y Focaccia: por ahora sin extras/ingredientes
+  if(!in_array(intval($p->category_id), $no_edit_cats)){
+    $extras = ProductExtraData::getByProductId($p->id);
+    foreach($extras as $e){
+      $item = array("name"=>$e->name,"price"=>floatval($e->price));
+      if(intval($e->is_ingredient)==1){ $pizza_edit_json["ingredients"][] = $item; }
+      else { $pizza_edit_json["extras"][] = $item; }
+    }
+  }
+  $has_edit = count($pizza_edit_json["ingredients"])>0 || count($pizza_edit_json["extras"])>0;
+  $pizza_edit_json_str = htmlspecialchars(json_encode($pizza_edit_json), ENT_QUOTES);
   ?>
   <div class="col-12 col-sm-6 col-md-4 col-lg-3">
     <div class="tt-product-card">
@@ -47,7 +55,7 @@ if($cat_id>0){
           <?php $show_price = ($p->price_llevar!="" && floatval($p->price_llevar)>0) ? floatval($p->price_llevar) : floatval($p->price); ?>
           <span class="pc-price-pill"><?php echo $coin_symbol.number_format($show_price,2,".",","); ?></span>
           <?php if($p->price_llevar!="" && floatval($p->price_llevar)>0): ?>
-          <span class="pc-price-dine">comer aquí <?php echo $coin_symbol.number_format(floatval($p->price),2,".",","); ?></span>
+          <span class="pc-price-dine">comer en la sede <?php echo $coin_symbol.number_format(floatval($p->price),2,".",","); ?></span>
           <?php endif; ?>
           <?php if($bcv_rate>0): ?>
           <span class="pc-price-bs">≈ <?php echo $bs_symbol.number_format($show_price*$bcv_rate,2,".",","); ?></span>
@@ -55,8 +63,8 @@ if($cat_id>0){
         </div>
       </div>
       <div class="pc-footer">
-        <?php if(count($extras_json)>0): ?>
-        <button type="button" class="pc-add-btn" onclick="openExtrasModal(<?php echo $p->id; ?>, '<?php echo addslashes($p->name); ?>', '<?php echo $extras_json_str; ?>')" title="Agregar al carrito" aria-label="Agregar al carrito">
+        <?php if($has_edit): ?>
+        <button type="button" class="pc-add-btn" onclick="openExtrasModal(<?php echo $p->id; ?>, '<?php echo addslashes($p->name); ?>', '<?php echo $pizza_edit_json_str; ?>')" title="Agregar al carrito" aria-label="Agregar al carrito">
           <i class="bi bi-plus-lg"></i>
         </button>
         <?php else: ?>

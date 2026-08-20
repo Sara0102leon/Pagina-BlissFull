@@ -27,6 +27,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="add"){
 		if(isset($_POST["in_existence"])) { $product->in_existence=1; }else{ $product->in_existence=0; }
 		if(isset($_POST["is_featured"])) { $product->is_featured=1; }else{ $product->is_featured=0; }
 		if(isset($_POST["is_offert"])) { $product->is_offert=1; }else{ $product->is_offert=0; }
+		$product->free_ingredients = isset($_POST["free_ingredients"]) ? intval($_POST["free_ingredients"]) : 0;
 
 		$product->add();
 		Core::redir("./?view=products&opt=all");
@@ -53,6 +54,7 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="upd"){
 		if(isset($_POST["in_existence"])) { $product->in_existence=1; }else{ $product->in_existence=0; }
 		if(isset($_POST["is_featured"])) { $product->is_featured=1; }else{ $product->is_featured=0; }
 		if(isset($_POST["is_offert"])) { $product->is_offert=1; }else{ $product->is_offert=0; }
+		$product->free_ingredients = isset($_POST["free_ingredients"]) ? intval($_POST["free_ingredients"]) : 0;
 
 		$product->update();
 		$_SESSION["product_updated"]= 1;

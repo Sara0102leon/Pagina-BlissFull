@@ -120,7 +120,7 @@ foreach($buys as $b){ $sum_total += $b->getTotal(); }
         $finish_at = strtotime($_GET["finish_at"]);
         $labels = [];
         $values = [];
-        for($i=$start_at; $i<=$finish_at; $i+=(60*60*24)){
+        for($i=$start_at; $i<=$finish_at; $i=strtotime("+1 day", $i)){
             $date = date("Y-m-d", $i);
             $labels[] = $date;
             $operations = BuyData::getAllByDate($date);
@@ -160,7 +160,10 @@ foreach($buys as $b){ $sum_total += $b->getTotal(); }
             grid: { strokeDashArray: 4, padding: { top: -20, right: 0, left: -4, bottom: -4 } },
             xaxis: {
               categories: <?php echo json_encode($labels); ?>,
-              type: 'datetime',
+              labels: { rotate: -45, style: { fontSize: '11px' } },
+            },
+            yaxis: {
+              labels: { formatter: function(v){ return v.toFixed(2); } }
             },
             colors: ["var(--tblr-primary)"],
           }).render();

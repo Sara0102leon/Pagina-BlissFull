@@ -618,6 +618,12 @@ foreach($products as $pr){
           <div class="col-md-2">
             <button type="submit" class="btn btn-success w-100">Agregar</button>
           </div>
+          <div class="col-12">
+            <label class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" name="is_ingredient" checked>
+              <span class="form-check-label">Es ingrediente (el cliente lo elige: los que van gratis se configuran en cada producto)</span>
+            </label>
+          </div>
           <p class="text-muted small mb-0 mt-1 col-12">Ej: Jamón (3$), Extra de queso (5$). Marca con un check los productos que ofrecerán este ingrediente; los que queden sin marcar no podrán pedirlo.</p>
         </form>
       </div>
@@ -636,6 +642,7 @@ foreach($products as $pr){
                 <th>Ingrediente</th>
                 <th>Precio</th>
                 <th>Productos donde aplica</th>
+                <th>Es ingrediente</th>
                 <th></th>
               </tr>
             </thead>
@@ -654,6 +661,11 @@ foreach($products as $pr){
                   <button type="button" class="btn btn-outline-primary btn-sm btn-pick-products" data-form="<?php echo htmlspecialchars($gk); ?>" data-global="<?php echo $info["global"] ? "1" : "0"; ?>" data-pids="<?php echo htmlspecialchars($pids_csv); ?>">
                     <i class="bi bi-check2-square me-1"></i><span class="picker-label"><?php echo $label; ?></span>
                   </button>
+                </td>
+                <td>
+                  <label class="form-check form-switch mb-0" title="Marcado = el cliente lo elige como ingrediente (gratis hasta la cantidad configurada en el producto); sin marcar = extra de pago">
+                    <input class="form-check-input row-is-ingredient" type="checkbox" data-form="<?php echo htmlspecialchars($gk); ?>" <?php if(intval($g->is_ingredient)==1){ echo "checked"; } ?>>
+                  </label>
                 </td>
                 <td class="text-end text-nowrap">
                   <button type="button" class="btn btn-warning btn-sm btn-extra-save" data-form="<?php echo htmlspecialchars($gk); ?>"><i class="bi bi-check-lg"></i> Guardar</button>
@@ -731,7 +743,8 @@ function rowPids($btn){
 function saveExtraProducts(key, ids, $lbl){
   var nm = $('input[data-row-name="' + key + '"]').val();
   var pc = $('input[data-row-price="' + key + '"]').val();
-  $.post("./?action=settings&opt=updextraprods", { group_key: key, name: nm, price: pc, products: ids.join(",") }, function(){
+  var ig = $('.row-is-ingredient[data-form="' + key + '"]').is(":checked") ? 1 : 0;
+  $.post("./?action=settings&opt=updextraprods", { group_key: key, name: nm, price: pc, products: ids.join(","), is_ingredient: ig }, function(){
     var lbl = ids.length === EXTRA_PRODUCTS.length ? "TODOS los productos" : (ids.length > 0 ? ids.length + " producto" + (ids.length > 1 ? "s" : "") : "Ninguno");
     if($lbl){ $lbl.text(lbl); }
     var $btn = $('[data-form="' + key + '"]');

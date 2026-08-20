@@ -46,7 +46,8 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="addextra"){
 		$all_ids = array();
 		foreach(ProductData::getAll() as $ap){ $all_ids[] = intval($ap->id); }
 		$group_key = "g".uniqid(mt_rand());
-		ProductExtraData::setGroup($group_key, trim($_POST["name"]), floatval($_POST["price"]), $products, $all_ids);
+		$is_ingredient = isset($_POST["is_ingredient"]) ? 1 : 0;
+		ProductExtraData::setGroup($group_key, trim($_POST["name"]), floatval($_POST["price"]), $products, $all_ids, $is_ingredient);
 	}
 	Core::redir("./?view=settings&opt=ingredients");
 }
@@ -59,7 +60,8 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="updextraprods"){
 		}
 		$all_ids = array();
 		foreach(ProductData::getAll() as $ap){ $all_ids[] = intval($ap->id); }
-		ProductExtraData::setGroup($_POST["group_key"], trim($_POST["name"]), floatval($_POST["price"]), $products, $all_ids);
+		$is_ingredient = isset($_POST["is_ingredient"]) ? 1 : 0;
+		ProductExtraData::setGroup($_POST["group_key"], trim($_POST["name"]), floatval($_POST["price"]), $products, $all_ids, $is_ingredient);
 	}
 	echo "ok";
 	exit;
@@ -107,7 +109,8 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="updingredient"){
 			}
 			$all_ids = array();
 			foreach(ProductData::getAll() as $ap){ $all_ids[] = intval($ap->id); }
-			ProductExtraData::setGroup($group_key, trim($_POST["name"]), floatval($_POST["price"]), $products, $all_ids);
+			$is_ingredient = isset($_POST["is_ingredient"]) ? 1 : 0;
+			ProductExtraData::setGroup($group_key, trim($_POST["name"]), floatval($_POST["price"]), $products, $all_ids, $is_ingredient);
 		}
 	}
 	Core::redir("./?view=settings&opt=ingredients");

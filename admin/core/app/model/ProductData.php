@@ -2,7 +2,7 @@
 class ProductData {
 	public static $tablename = "product";
 
-	public $id, $short_name, $code, $name, $description, $image, $price, $price_llevar, $link, $category_id, $unit_id, $sede_id, $is_public, $in_existence, $is_featured, $is_active, $created_at;
+	public $id, $short_name, $code, $name, $description, $image, $price, $price_llevar, $free_ingredients, $link, $category_id, $unit_id, $sede_id, $is_public, $in_existence, $is_featured, $is_active, $created_at;
 	public $offer_txt, $order_at, $meta_title, $meta_description, $meta_keywords, $is_offert;
 
 	public function __construct(){
@@ -24,8 +24,8 @@ class ProductData {
 	public function getUnit(){ return UnitData::getById($this->unit_id);}
 
 	public function add(){
-		$sql = "insert into ".self::$tablename." (short_name,code,name,description,image,price,price_llevar,link,category_id,unit_id,sede_id,is_public,in_existence,is_featured,is_offert,created_at) ";
-		$sql .= "value (\"$this->short_name\",\"$this->code\",\"$this->name\",\"$this->description\",\"$this->image\",\"$this->price\"," . ($this->price_llevar!="" ? "\"$this->price_llevar\"" : "NULL") . ",\"$this->link\",$this->category_id,$this->unit_id," . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",$this->is_public,$this->in_existence,$this->is_featured,$this->is_offert,$this->created_at)";
+		$sql = "insert into ".self::$tablename." (short_name,code,name,description,image,price,price_llevar,free_ingredients,link,category_id,unit_id,sede_id,is_public,in_existence,is_featured,is_offert,created_at) ";
+		$sql .= "value (\"$this->short_name\",\"$this->code\",\"$this->name\",\"$this->description\",\"$this->image\",\"$this->price\"," . ($this->price_llevar!="" ? "\"$this->price_llevar\"" : "NULL") . "," . intval($this->free_ingredients) . ",\"$this->link\",$this->category_id,$this->unit_id," . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",$this->is_public,$this->in_existence,$this->is_featured,$this->is_offert,$this->created_at)";
 		Executor::doit($sql);
 	}
 
@@ -40,7 +40,7 @@ class ProductData {
 	}
 
 	public function update(){
-		$sql = "update ".self::$tablename." set code=\"$this->code\",name=\"$this->name\",description=\"$this->description\",link=\"$this->link\",price=\"$this->price\",price_llevar=" . ($this->price_llevar!="" ? "\"$this->price_llevar\"" : "NULL") . ",in_existence=\"$this->in_existence\",is_public=\"$this->is_public\",is_featured=\"$this->is_featured\",unit_id=\"$this->unit_id\",category_id=\"$this->category_id\",sede_id=" . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",is_offert=\"$this->is_offert\" where id=$this->id";
+		$sql = "update ".self::$tablename." set code=\"$this->code\",name=\"$this->name\",description=\"$this->description\",link=\"$this->link\",price=\"$this->price\",price_llevar=" . ($this->price_llevar!="" ? "\"$this->price_llevar\"" : "NULL") . ",free_ingredients=" . intval($this->free_ingredients) . ",in_existence=\"$this->in_existence\",is_public=\"$this->is_public\",is_featured=\"$this->is_featured\",unit_id=\"$this->unit_id\",category_id=\"$this->category_id\",sede_id=" . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",is_offert=\"$this->is_offert\" where id=$this->id";
 		Executor::doit($sql);
 	}
 

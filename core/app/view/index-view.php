@@ -51,11 +51,18 @@ if($hero_img==$img_default && count($featured)>0){ $hero_img = "admin/storage/pr
 $flotante_extras_json = "[]";
 $flotante_extras_json_js = "[]";
 if($flotante_pdata){
-  $extras_tmp = ProductExtraData::getByProductId($flotante_pdata->id);
-  $extras_tmp2 = array();
-  foreach($extras_tmp as $e){ $extras_tmp2[] = array("name"=>$e->name,"price"=>floatval($e->price)); }
-  $flotante_extras_json = htmlspecialchars(json_encode($extras_tmp2), ENT_QUOTES);
-  $flotante_extras_json_js = json_encode($extras_tmp2, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
+  $flotante_payload = array("desc"=>trim((string)$flotante_pdata->description),"free"=>intval($flotante_pdata->free_ingredients),"ingredients"=>array(),"extras"=>array());
+  $flotante_no_edit_cats = array(5,6);
+  if(!in_array(intval($flotante_pdata->category_id), $flotante_no_edit_cats)){
+    $extras_tmp = ProductExtraData::getByProductId($flotante_pdata->id);
+    foreach($extras_tmp as $e){
+      $flotante_item = array("name"=>$e->name,"price"=>floatval($e->price));
+      if(intval($e->is_ingredient)==1){ $flotante_payload["ingredients"][] = $flotante_item; }
+      else { $flotante_payload["extras"][] = $flotante_item; }
+    }
+  }
+  $flotante_extras_json = htmlspecialchars(json_encode($flotante_payload), ENT_QUOTES);
+  $flotante_extras_json_js = json_encode($flotante_payload, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
 }
 $horarios = array();
 $horario_keys = array("lunes","martes","miercoles","jueves","viernes","sabado","domingo");
@@ -134,7 +141,7 @@ foreach($horario_keys as $hk){
          <div class="mb-3">
             <label class="form-label fw-bold">Zona de entrega</label>
             <select id="order_zone" class="form-select">
-              <option value="0" data-price="0">Comer aquí / Recoger en sucursal</option>
+              <option value="0" data-price="0">Comer en la sede / Recoger en sucursal</option>
               <?php foreach($zones as $z): ?>
               <option value="<?php echo $z->id; ?>" data-price="<?php echo $z->price; ?>"><?php echo htmlspecialchars($z->name); ?></option>
               <?php endforeach; ?>
@@ -206,8 +213,9 @@ foreach($horario_keys as $hk){
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div class="form-hint mb-3">Elige los ingredientes adicionales para tu producto:</div>
-        <div id="extras_list" class="mb-2"></div>
+        <div id="extras_desc" class="alert alert-soft-primary rounded-3 py-2 px-3 small d-none mb-3 border-0"></div>
+        <div id="extras_hint" class="form-hint mb-3"></div>
+        <div id="extra_sections"></div>
         <div class="bg-light rounded-3 p-3 mb-2">
           <div class="d-flex justify-content-between fw-bold">
             <span>Total del producto:</span><span id="extras_total">$0.00</span>
@@ -559,35 +567,87 @@ function clearCart() {
 }
 
 // ===== Extras Modal =====
-function openExtrasModal(pid, pname, extrasJson) {
+let pendingFree = 0;
+let pendingIngredients = [];
+
+function openExtrasModal(pid, pname, dataJson) {
   if (typeof showStoreClosedAlert === "function" && showStoreClosedAlert()) { return; }
   pendingExtrasPid = pid;
   pendingExtrasName = pname;
-  try { pendingExtras = JSON.parse(extrasJson || "[]"); } catch(e) { pendingExtras = []; }
-  $("#extras_modal_title").text("Extras - " + pname);
+  let data = {};
+  try { data = JSON.parse(dataJson || "{}"); } catch(e) { data = {}; }
+  pendingExtras = data.extras || [];
+  pendingIngredients = data.ingredients || [];
+  pendingFree = parseInt(data.free || 0, 10) || 0;
+  $("#extras_modal_title").text(pname);
+
+  const desc = String(data.desc || "").trim();
+  const $desc = $("#extras_desc");
+  if (desc) { $desc.text(desc).removeClass("d-none"); }
+  else { $desc.addClass("d-none").text(""); }
+
+  let hint = "";
+  if (pendingIngredients.length > 0) {
+    hint = pendingFree > 0
+      ? "Elige tus ingredientes: los primeros " + pendingFree + " van sin costo, los demás se cobran."
+      : "Elige los ingredientes adicionales para tu producto:";
+  } else if (pendingExtras.length > 0) {
+    hint = "Elige los extras para tu producto:";
+  }
+  $("#extras_hint").text(hint);
+
   let html = "";
-  pendingExtras.forEach(function(e, i) {
-    html += '<label class="form-check mb-2 extra-opt">';
-    html += '<input class="form-check-input" type="checkbox" data-price="' + e.price + '" data-idx="' + i + '">';
-    html += '<span class="form-check-label">' + e.name + ' <span class="text-primary fw-bold">(+$' + e.price.toFixed(2) + ')</span></span>';
-    html += '</label>';
-  });
-  $("#extras_list").html(html);
+  if (pendingIngredients.length > 0) {
+    html += '<div class="fw-bold mb-2"><i class="bi bi-egg-fried me-1 text-gold"></i>INGREDIENTES' + (pendingFree > 0 ? ' <span class="badge bg-success rounded-pill">' + pendingFree + ' gratis</span>' : "") + '</div>';
+    pendingIngredients.forEach(function(e, i) {
+      html += '<label class="form-check mb-2 extra-opt ing-opt">';
+      html += '<input class="form-check-input" type="checkbox" data-price="' + e.price + '" data-idx="' + i + '" data-sec="ing">';
+      html += '<span class="form-check-label">' + e.name + '</span>';
+      html += '</label>';
+    });
+  }
+  if (pendingExtras.length > 0) {
+    html += '<div class="fw-bold mb-2 mt-1"><i class="bi bi-plus-circle me-1 text-gold"></i>EXTRAS</div>';
+    pendingExtras.forEach(function(e, i) {
+      html += '<label class="form-check mb-2 extra-opt">';
+      html += '<input class="form-check-input" type="checkbox" data-price="' + e.price + '" data-idx="' + i + '" data-sec="ext">';
+      html += '<span class="form-check-label">' + e.name + ' <span class="text-primary fw-bold">(+$' + e.price.toFixed(2) + ')</span></span>';
+      html += '</label>';
+    });
+  }
+  $("#extra_sections").html(html);
   updateExtrasTotal();
   $("#modal-extras").modal("show");
 }
 
 function updateExtrasTotal() {
   let total = 0;
-  $(".extra-opt input:checked").each(function(){ total += parseFloat($(this).data("price")); });
+  const ingIdx = [];
+  $(".ing-opt input:checked").each(function(){ ingIdx.push(parseInt($(this).data("idx"))); });
+  for (let i = pendingFree; i < ingIdx.length; i++) {
+    const e = pendingIngredients[ingIdx[i]];
+    if (e) { total += parseFloat(e.price); }
+  }
+  $(".extra-opt input:checked").each(function(){
+    if ($(this).data("sec") === "ing") { return; }
+    total += parseFloat($(this).data("price"));
+  });
   $("#extras_total").text(fmt(total));
 }
 
 function confirmExtras() {
   const sel = [];
+  const ingIdx = [];
+  $(".ing-opt input:checked").each(function(){ ingIdx.push(parseInt($(this).data("idx"))); });
+  for (let i = 0; i < ingIdx.length; i++) {
+    const e = pendingIngredients[ingIdx[i]];
+    if (!e) { continue; }
+    sel.push({ name: e.name, price: i < pendingFree ? 0 : parseFloat(e.price) });
+  }
   $(".extra-opt input:checked").each(function(){
+    if ($(this).data("sec") === "ing") { return; }
     const e = pendingExtras[parseInt($(this).data("idx"))];
-    sel.push({ name: e.name, price: parseFloat(e.price) });
+    if (e) { sel.push({ name: e.name, price: parseFloat(e.price) }); }
   });
   $("#modal-extras").modal("hide");
   addToCart(pendingExtrasPid, pendingExtrasName, JSON.stringify(sel));
@@ -630,7 +690,7 @@ function updateCheckoutUI() {
   const isPM = paySel.data("pm") == 1;
 
   $("#ck_subtotal").text(fmt(t.subtotal));
-  $("#ck_delivery").text(delivery ? fmt(t.delivery) : "Comer aquí / Recoger");
+  $("#ck_delivery").text(delivery ? fmt(t.delivery) : "Comer en la sede / Recoger");
   $("#ck_total").text(fmt(t.total));
   $("#ck_total_bs").text(bcvRate > 0 ? fmtBs(t.total * bcvRate) : "Bs a confirmar");
 
@@ -648,8 +708,11 @@ function itemsWhatsAppText(items, delivery) {
     let unit = it.price;
     if(delivery && it.price_llevar > 0) { unit = it.price_llevar; }
     let extrasTxt = "";
-    (it.extras || []).forEach(function(e){ unit += parseFloat(e.price); extrasTxt += " + " + e.name; });
-    lines.push("- " + it.q + " x " + it.name + extrasTxt + " (" + fmt(unit) + ") = " + fmt(unit * it.q) + "%0A");
+    (it.extras || []).forEach(function(e){
+      unit += parseFloat(e.price);
+      extrasTxt += "    - " + e.name + (parseFloat(e.price) > 0 ? " (+" + fmt(parseFloat(e.price)) + ")" : " (gratis)") + "%0A";
+    });
+    lines.push("- " + it.q + " x " + it.name + "%0A" + extrasTxt + "    (" + fmt(unit) + ") = " + fmt(unit * it.q) + "%0A");
   });
   return lines.join("");
 }
@@ -728,7 +791,7 @@ $(document).ready(function() {
   });
 
   // Extras Modal Events
-  $("#extras_list").on("change", ".extra-opt input", updateExtrasTotal);
+  $("#extra_sections").on("change", ".extra-opt input", updateExtrasTotal);
   $("#btn_confirm_extras").click(confirmExtras);
 
   // Pickup Toggle

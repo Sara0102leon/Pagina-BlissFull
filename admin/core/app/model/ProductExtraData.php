@@ -2,7 +2,7 @@
 class ProductExtraData {
 	public static $tablename = "product_extra";
 
-	public $id, $product_id, $name, $price, $group_key;
+	public $id, $product_id, $name, $price, $group_key, $is_ingredient;
 
 	public function __construct(){
 		$this->id = null;
@@ -10,18 +10,19 @@ class ProductExtraData {
 		$this->name = "";
 		$this->price = "";
 		$this->group_key = "";
+		$this->is_ingredient = "0";
 	}
 
 	public function add(){
 		$product_id = ($this->product_id === "" || $this->product_id === null) ? "NULL" : intval($this->product_id);
-		$sql = "insert into ".self::$tablename." (product_id,name,price) ";
-		$sql .= "value ($product_id,\"$this->name\",\"$this->price\")";
+		$sql = "insert into ".self::$tablename." (product_id,name,price,is_ingredient) ";
+		$sql .= "value ($product_id,\"$this->name\",\"$this->price\"," . intval($this->is_ingredient) . ")";
 		Executor::doit($sql);
 	}
 
 	public function update(){
 		$product_id = ($this->product_id === "" || $this->product_id === null) ? "NULL" : intval($this->product_id);
-		$sql = "update ".self::$tablename." set name=\"$this->name\",price=\"$this->price\",product_id=$product_id where id=$this->id";
+		$sql = "update ".self::$tablename." set name=\"$this->name\",price=\"$this->price\",product_id=$product_id,is_ingredient=" . intval($this->is_ingredient) . " where id=$this->id";
 		Executor::doit($sql);
 	}
 
@@ -49,7 +50,7 @@ class ProductExtraData {
 	}
 
 	public static function getGroups(){
-		$sql = "select min(id) as id, group_key, name, price from ".self::$tablename." where group_key is not null and group_key<>'' group by group_key,name,price order by name asc";
+		$sql = "select min(id) as id, group_key, name, price, max(is_ingredient) as is_ingredient from ".self::$tablename." where group_key is not null and group_key<>'' group by group_key,name,price order by name asc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductExtraData());
 	}
@@ -76,7 +77,7 @@ class ProductExtraData {
 		Executor::doit($sql);
 	}
 
-	public static function setGroup($group_key,$name,$price,$product_ids,$all_products_ids){
+	public static function setGroup($group_key,$name,$price,$product_ids,$all_products_ids,$is_ingredient=0){
 		self::delGroup($group_key);
 		$pids = array();
 		if(is_array($product_ids)){
@@ -85,12 +86,13 @@ class ProductExtraData {
 		if(count($pids)>0 && count($pids)==count($all_products_ids)){
 			$pids = array(); // todos los productos marcados -> aplica a todos (fila global)
 		}
-		$sql = "insert into ".self::$tablename." (group_key,name,price,product_id) values ";
+		$ig = intval($is_ingredient);
+		$sql = "insert into ".self::$tablename." (group_key,name,price,product_id,is_ingredient) values ";
 		$vals = array();
 		if(count($pids)==0){
-			$vals[] = "(\"$group_key\",\"$name\",\"$price\",NULL)";
+			$vals[] = "(\"$group_key\",\"$name\",\"$price\",NULL,$ig)";
 		}else{
-			foreach($pids as $pid){ $vals[] = "(\"$group_key\",\"$name\",\"$price\",$pid)"; }
+			foreach($pids as $pid){ $vals[] = "(\"$group_key\",\"$name\",\"$price\",$pid,$ig)"; }
 		}
 		$sql .= implode(",",$vals);
 		Executor::doit($sql);

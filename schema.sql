@@ -85,6 +85,7 @@ create table product (
 	order_at datetime ,
 	price float ,
 	price_llevar float ,
+	free_ingredients int not null default 0 ,
 	category_id int ,
 	sede_id int ,
 	unit_id int ,
@@ -209,7 +210,8 @@ create table product_extra (
 	product_id int,
 	name varchar(200),
 	price decimal(10,2) default 0,
-	group_key varchar(40)
+	group_key varchar(40),
+	is_ingredient tinyint not null default 0
 );
 
 create table sede (
@@ -236,22 +238,23 @@ insert into delivery_zone (name, price) values
 ("Barquisimeto - Este hasta Calle 40", 2.00),
 ("Barquisimeto - Resto", 3.50);
 
-insert into product_extra (group_key, product_id, name, price) values
-("g16", NULL, "Jamón", 3.00),
-("g17", NULL, "Maíz", 3.00),
-("g18", NULL, "Pepperoni", 3.00),
-("g19", NULL, "Tocineta", 3.00),
-("g20", NULL, "Champiñón", 3.00),
-("g21", NULL, "Aceitunas negras", 3.00),
-("g22", NULL, "Pimentón", 3.00),
-("g23", NULL, "Cebolla", 3.00),
-("g24", NULL, "Anchoas", 3.00),
-("g25", NULL, "Piña", 3.00),
-("g26", NULL, "Tomate", 3.00),
-("g27", NULL, "Albahaca", 3.00),
-("g28", NULL, "Salchicha", 3.00),
-("g29", NULL, "Camarones", 3.00),
-("g30", NULL, "Extra de queso", 5.00);
+/* is_ingredient=1 -> se elige como ingrediente (gratis hasta product.free_ingredients); 0 -> extra de pago */
+insert into product_extra (group_key, product_id, name, price, is_ingredient) values
+("g16", NULL, "Jamón", 3.00, 1),
+("g17", NULL, "Maíz", 3.00, 1),
+("g18", NULL, "Pepperoni", 3.00, 1),
+("g19", NULL, "Tocineta", 3.00, 1),
+("g20", NULL, "Champiñón", 3.00, 1),
+("g21", NULL, "Aceitunas negras", 3.00, 1),
+("g22", NULL, "Pimentón", 3.00, 1),
+("g23", NULL, "Cebolla", 3.00, 1),
+("g24", NULL, "Anchoas", 3.00, 1),
+("g25", NULL, "Piña", 3.00, 1),
+("g26", NULL, "Tomate", 3.00, 1),
+("g27", NULL, "Albahaca", 3.00, 1),
+("g28", NULL, "Salchicha", 3.00, 1),
+("g29", NULL, "Camarones", 3.00, 1),
+("g30", NULL, "Extra de queso", 5.00, 0);
 
 
 create table slide (

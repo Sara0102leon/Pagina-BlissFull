@@ -38,13 +38,14 @@ $total = 0;
                 if($p->image=="" || !file_exists($img)){ $img=$img_default; }
                 $extras_sum = 0;
                 $extras_txt = array();
+                $extras_lines = "";
                 if(isset($s["extras"]) && count($s["extras"])>0){
-                  foreach($s["extras"] as $e){ $extras_sum += floatval($e["price"]); $extras_txt[] = $e["name"]; }
+                  foreach($s["extras"] as $e){ $extras_sum += floatval($e["price"]); $extras_txt[] = $e["name"]; $extras_lines .= "%0A    - ".htmlspecialchars($e["name"]).(floatval($e["price"])>0 ? " (+".$coin_symbol.number_format(floatval($e["price"]),2).")" : " (gratis)"); }
                 }
                 $unit = $p->price + $extras_sum;
                 $subtotal = $unit*$s["q"];
                 $total += $subtotal;
-                $items_text .= "- ".$s["q"]." x ".htmlspecialchars($p->name).(count($extras_txt)>0 ? " (+".htmlspecialchars(implode(", ", $extras_txt)).")" : "")." (".$coin_symbol.number_format($unit,2).") = ".$coin_symbol.number_format($subtotal,2)."%0A";
+                $items_text .= "- ".$s["q"]." x ".htmlspecialchars($p->name).$extras_lines."%0A    (".$coin_symbol.number_format($unit,2).") = ".$coin_symbol.number_format($subtotal,2)."%0A";
                 ?>
                 <tr>
                   <td class="px-4">
