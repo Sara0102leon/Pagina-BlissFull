@@ -17,11 +17,11 @@ class CategoryData {
 	}
 
 	public static function delById($id){
-		$sql = "delete from ".self::$tablename." where id=$id";
+		$sql = "update ".self::$tablename." set is_active=0 where id=$id";
 		Executor::doit($sql);
 	}
 	public function del(){
-		$sql = "delete from ".self::$tablename." where id=$this->id";
+		$sql = "update ".self::$tablename." set is_active=0 where id=$this->id";
 		Executor::doit($sql);
 	}
 
@@ -34,6 +34,12 @@ class CategoryData {
 		$sql = "select * from ".self::$tablename." where id=$id";
 		$query = Executor::doit($sql);
 		return Model::one($query[0],new CategoryData());
+	}
+
+	public static function getActives(){
+		$sql = "select * from ".self::$tablename." where is_active=1 order by id asc";
+		$query = Executor::doit($sql);
+		return Model::many($query[0],new CategoryData());
 	}
 
 	public static function getAll(){

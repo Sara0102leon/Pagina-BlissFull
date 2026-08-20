@@ -1,9 +1,9 @@
-<?php 
+﻿<?php 
 if(!isset($_SESSION["user_id"])){ Core::redir("./");}
 $user= UserData::getById($_SESSION["user_id"]);
 if($user==null){ Core::redir("./");}
 
-$num_categories = count(CategoryData::getAll());
+$num_categories = count(CategoryData::getActives());
 $num_products = count(ProductData::getAll());
 $num_clients = count(ClientData::getAll());
 $num_users = count(UserData::getAll());
@@ -87,7 +87,7 @@ $status = StatusData::getAll();
                 </span>
               </div>
               <div class="col">
-                <div class="font-weight-medium"><?php echo $num_categories; ?> Categorías</div>
+                <div class="font-weight-medium"><?php echo $num_categories; ?> CategorÃ­as</div>
                 <div class="text-secondary small">Organizadas</div>
               </div>
             </div>
@@ -135,7 +135,7 @@ $status = StatusData::getAll();
         <div class="card shadow-sm">
           <div class="card-body">
             <div class="d-flex align-items-center mb-3">
-                <h3 class="card-title mb-0">Resumen de Ventas (Últimos 30 días)</h3>
+                <h3 class="card-title mb-0">Resumen de Ventas (Ãšltimos 30 dÃ­as)</h3>
                 <div class="ms-auto">
                     <span class="badge bg-primary-lt">Total de Pedidos</span>
                 </div>
@@ -150,19 +150,19 @@ $status = StatusData::getAll();
 </div>
 
 <?php
-// Lógica para la gráfica de los últimos 30 días
+// LÃ³gica para la grÃ¡fica de los Ãºltimos 30 dÃ­as
 $start_date = date("Y-m-d", strtotime("-30 days"));
 $end_date = date("Y-m-d");
 $buys_chart = BuyData::getByRange($start_date . " 00:00:00", $end_date . " 23:59:59");
 
 $data_points = [];
-// Inicializar los 30 días con 0
+// Inicializar los 30 dÃ­as con 0
 for($i=30; $i>=0; $i--){
     $d = date("Y-m-d", strtotime("-$i days"));
     $data_points[$d] = 0;
 }
 
-// Llenar con datos reales (conteo de ventas por día)
+// Llenar con datos reales (conteo de ventas por dÃ­a)
 foreach($buys_chart as $b){
     $day = date("Y-m-d", strtotime($b->created_at));
     if(isset($data_points[$day])){
