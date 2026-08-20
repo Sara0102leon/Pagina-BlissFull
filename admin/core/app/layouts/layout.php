@@ -304,6 +304,6 @@ $sys_open = $sys_active!="" ? " show" : "";
       }
     </script>
     <!-- Guía interactiva del panel (tour con spotlight) -->
-    <script src="assets/js/admin-tour.js?v=3"></script>
+    <script src="assets/js/admin-tour.js?v=4"></script>
   </body>
 </html>
