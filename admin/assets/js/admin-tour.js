@@ -140,20 +140,37 @@
       var hole = document.getElementById("tt-tour-hole");
       var pop = document.getElementById("tt-tour-pop");
       if (!hole || !pop) { return; }
-      hole.style.left = rect.left - 6 + "px";
-      hole.style.top = rect.top - 6 + "px";
-      hole.style.width = rect.width + 12 + "px";
-      hole.style.height = rect.height + 12 + "px";
+      var margin = 12;
       var pw = pop.offsetWidth;
       var ph = pop.offsetHeight;
+      // Hueco: si el elemento es más grande que la pantalla, encógete al viewport
+      var showW = rect.width + 12;
+      var showH = rect.height + 12;
+      var showLeft = rect.left - 6;
+      var showTop = rect.top - 6;
+      if (showW > window.innerWidth - margin * 2) { showLeft = margin; showW = window.innerWidth - margin * 2; }
+      if (showH > window.innerHeight - margin * 2) { showTop = margin; showH = window.innerHeight - margin * 2; }
+      hole.style.left = showLeft + "px";
+      hole.style.top = showTop + "px";
+      hole.style.width = showW + "px";
+      hole.style.height = showH + "px";
+      // Panel: centrado horizontal, siempre dentro del viewport
       var x = rect.left + rect.width / 2 - pw / 2;
-      x = Math.max(12, Math.min(x, window.innerWidth - pw - 12));
-      var y = rect.bottom + 16;
-      pop.classList.remove("on-top");
-      if (y + ph > window.innerHeight - 12 && rect.top - ph - 16 > 12) {
-        y = rect.top - ph - 16;
-        pop.classList.add("on-top");
+      x = Math.max(margin, Math.min(x, window.innerWidth - pw - margin));
+      var y = rect.bottom + 14;
+      var onTop = false;
+      if (y + ph > window.innerHeight - margin) {
+        var yTop = rect.top - ph - 14;
+        if (yTop < margin) {
+          // Sin espacio ni abajo ni arriba: centrar el panel sobre el elemento
+          y = Math.max(margin, (window.innerHeight - ph) / 2);
+          onTop = true;
+        } else {
+          y = yTop;
+          onTop = true;
+        }
       }
+      pop.classList.toggle("on-top", onTop);
       pop.style.left = x + "px";
       pop.style.top = y + "px";
     }, 350);
