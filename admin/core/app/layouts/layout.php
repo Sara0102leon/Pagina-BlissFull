@@ -28,6 +28,8 @@ $sys_open = $sys_active!="" ? " show" : "";
     <link rel="stylesheet" href="assets/bootstrap-icons/bootstrap-icons.css">
     <!-- Admin Jobie Style (cargado al final para sobreescribir Tabler) -->
     <link rel="stylesheet" href="assets/css/admin-custom.css?v=8">
+    <!-- Guía interactiva del panel (tour con spotlight) -->
+    <link rel="stylesheet" href="assets/css/admin-tour.css?v=3">
     <script src="assets/jquery/jquery.min.js"></script>
     <script src="assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -132,6 +134,11 @@ $sys_open = $sys_active!="" ? " show" : "";
 
           <?php if($is_auth): ?>
           <div class="app-header-right">
+            <!-- Botón Guía del panel -->
+            <button type="button" class="icon-btn me-2" id="btn-tour-guide" title="Guía del panel: aprende a usar cada módulo" aria-label="Guía del panel">
+              <i class="bi bi-question-lg"></i>
+            </button>
+
             <div class="nav-item dropdown me-2" id="notif-wrap">
               <a href="#" class="icon-btn" data-bs-toggle="dropdown" aria-label="Notificaciones" title="Pedidos pendientes de pago">
                 <i class="bi bi-bell"></i>
@@ -297,5 +304,7 @@ $sys_open = $sys_active!="" ? " show" : "";
         setInterval(loadNotifications, 20000);
       }
     </script>
+    <!-- Guía interactiva del panel (tour con spotlight) -->
+    <script src="assets/js/admin-tour.js?v=3"></script>
   </body>
 </html>

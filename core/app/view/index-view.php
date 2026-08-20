@@ -600,9 +600,13 @@ function openExtrasModal(pid, pname, dataJson) {
   if (pendingIngredients.length > 0) {
     html += '<div class="fw-bold mb-2"><i class="bi bi-egg-fried me-1 text-gold"></i>INGREDIENTES' + (pendingFree > 0 ? ' <span class="badge bg-success rounded-pill">' + pendingFree + ' gratis</span>' : "") + '</div>';
     pendingIngredients.forEach(function(e, i) {
+      const isFree = i < pendingFree;
+      const priceHtml = isFree
+        ? '<span class="text-muted fw-bold ms-2">gratis</span>'
+        : '<span class="text-primary fw-bold ms-2">(+$' + e.price.toFixed(2) + ')</span>';
       html += '<label class="form-check mb-2 extra-opt ing-opt">';
       html += '<input class="form-check-input" type="checkbox" data-price="' + e.price + '" data-idx="' + i + '" data-sec="ing">';
-      html += '<span class="form-check-label">' + e.name + '</span>';
+      html += '<span class="form-check-label d-flex justify-content-between align-items-center">' + e.name + ' ' + priceHtml + '</span>';
       html += '</label>';
     });
   }
