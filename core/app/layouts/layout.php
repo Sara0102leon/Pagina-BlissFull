@@ -133,14 +133,47 @@
     $h_open_min = (int)explode(":",$horario_open_raw)[0]*60 + (int)explode(":",$horario_open_raw)[1];
     $h_close_min = (int)explode(":",$horario_close_raw)[0]*60 + (int)explode(":",$horario_close_raw)[1];
     $now_min = (int)date("G")*60 + (int)date("i");
+    // Determine today's schedule (per-day override takes priority)
+    $dia_actual = date("N"); // 1=Lunes .. 7=Domingo
+    $day_names = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
+    $dia_key = $day_names[$dia_actual-1];
+    $horario_hoy_raw = ConfigurationData::getByPreffix("horario_".$dia_key);
+    // Always use per-day schedule if set, otherwise general schedule
+    $usar_horario_hoy = false;
+    $h_open_str = $horario_open_raw;
+    $h_close_str = $horario_close_raw;
+    if($horario_hoy_raw && trim((string)$horario_hoy_raw->val)!=""){
+      $val = trim((string)$horario_hoy_raw->val);
+      $parts = preg_split("/\s*-\s*/", $val);
+      if(count($parts) >= 2 && trim($parts[0])!="" && trim($parts[1])!=""){
+        $h_open_str = trim($parts[0]);
+        $h_close_str = trim($parts[1]);
+        $usar_horario_hoy = true;
+      } else if(count($parts) == 1 && trim($parts[0])!=""){
+        // Solo escribieron la apertura: usar apertura del día + cierre general
+        $h_open_str = trim($parts[0]);
+        $usar_horario_hoy = true;
+      }
+    }
+    $h_open_parts = explode(":", $h_open_str);
+    $h_close_parts = explode(":", $h_close_str);
+    $h_open_min = (int)$h_open_parts[0]*60 + (int)(isset($h_open_parts[1]) ? $h_open_parts[1] : 0);
+    $h_close_min = (int)$h_close_parts[0]*60 + (int)(isset($h_close_parts[1]) ? $h_close_parts[1] : 0);
     if($h_close_min > $h_open_min){
       $store_closed = ($now_min < $h_open_min || $now_min >= $h_close_min);
     }else{
       $store_closed = !($now_min >= $h_open_min || $now_min < $h_close_min);
     }
-    $horario_open_display = date("g:i A", strtotime($horario_open_raw));
-    $horario_close_display = date("g:i A", strtotime($horario_close_raw));
-    $horario_display = $horario_open_display." - ".$horario_close_display;
+    // Display: use per-day schedule if set, otherwise general
+    if($usar_horario_hoy){
+      $h_open_d = date("g:i A", strtotime($h_open_str));
+      $h_close_d = date("g:i A", strtotime($h_close_str));
+      $horario_display = $h_open_d." - ".$h_close_d;
+    } else {
+      $h_open_d = date("g:i A", strtotime($horario_open_raw));
+      $h_close_d = date("g:i A", strtotime($horario_close_raw));
+      $horario_display = $h_open_d." - ".$h_close_d;
+    }
     ?>
     <div class="page">
       <!-- Top Navbar (Sticky Minimal) -->
