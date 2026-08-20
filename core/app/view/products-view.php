@@ -75,8 +75,16 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):
                   <h3 class="card-title h4 mb-2 fw-bold text-truncate"><?php echo htmlspecialchars($p->name); ?></h3>
                   <p class="text-muted small mb-3 text-truncate-2"><?php echo substr(strip_tags($p->description),0,60); ?>...</p>
                   
-                  <div class="d-flex align-items-center justify-content-between mt-auto">
-                    <div class="price-badge h3 mb-0"><?php echo $coin_symbol." ".number_format($p->price,2,".",","); ?></div>
+                  <?php if(ProductData::offerActive($p)): ?>
+                    <div class="d-flex align-items-center justify-content-between mt-auto">
+                      <div class="h3 mb-0">
+                        <span class="price-badge"><?php echo $coin_symbol." ".number_format(ProductData::getEffectivePrice($p),2,".",","); ?></span>
+                        <small class="text-muted text-decoration-line-through ms-2"><?php echo $coin_symbol." ".number_format($p->price,2,".",","); ?></small>
+                      </div>
+                    <?php else: ?>
+                    <div class="d-flex align-items-center justify-content-between mt-auto">
+                      <div class="price-badge h3 mb-0"><?php echo $coin_symbol." ".number_format($p->price,2,".",","); ?></div>
+                    <?php endif; ?>
                     <div class="d-flex gap-1">
                       <?php if($p->in_existence):?>
                         <?php if(!$in_cart):?>

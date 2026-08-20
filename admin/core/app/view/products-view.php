@@ -180,13 +180,7 @@ $(function(){
       <div class="card-body">
         <form method="post" enctype="multipart/form-data" action="./?action=products&opt=add">
           <div class="row row-cards">
-            <div class="col-md-4">
-              <div class="mb-3">
-                <label class="form-label">Codigo</label>
-                <input type="text" class="form-control" name="code" placeholder="Codigo">
-              </div>
-            </div>
-            <div class="col-md-8">
+            <div class="col-12">
               <div class="mb-3">
                 <label class="form-label">Nombre</label>
                 <input type="text" class="form-control" name="name" required placeholder="Nombre del producto">
@@ -202,6 +196,23 @@ $(function(){
             <div class="input-group">
               <span class="input-group-text"><?php echo $coin; ?></span>
               <input type="text" class="form-control" placeholder="Precio" required name="price">
+            </div>
+          </div>
+          <div class="row row-cards">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Precio en oferta <span class="text-muted small">(opcional: se muestra en vez del precio y el anterior queda tachado)</span></label>
+                <div class="input-group">
+                  <span class="input-group-text"><?php echo $coin; ?></span>
+                  <input type="text" class="form-control" placeholder="Precio de oferta" name="offer_price">
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Fin de la oferta <span class="text-muted small">(opcional: después de esta fecha se cobra el precio normal)</span></label>
+                <input type="date" class="form-control" name="offer_finish">
+              </div>
             </div>
           </div>
           <div class="mb-3">
@@ -313,13 +324,7 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
         <form method="post" enctype="multipart/form-data" action="./?action=products&opt=upd">
           <input type="hidden" name="id" value="<?php echo $product->id;?>">
           <div class="row row-cards">
-            <div class="col-md-4">
-              <div class="mb-3">
-                <label class="form-label">Codigo</label>
-                <input type="text" class="form-control" name="code" value="<?php echo $product->code; ?>" placeholder="Codigo">
-              </div>
-            </div>
-            <div class="col-md-8">
+            <div class="col-12">
               <div class="mb-3">
                 <label class="form-label">Nombre</label>
                 <input type="text" class="form-control" name="name" value="<?php echo $product->name; ?>" required placeholder="Nombre del producto">
@@ -335,6 +340,23 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
             <div class="input-group">
               <span class="input-group-text"><?php echo $coin; ?></span>
               <input type="text" class="form-control" placeholder="Precio" value="<?php echo $product->price; ?>" required name="price">
+            </div>
+          </div>
+          <div class="row row-cards">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Precio en oferta <span class="text-muted small">(opcional: se muestra en vez del precio y el anterior queda tachado)</span></label>
+                <div class="input-group">
+                  <span class="input-group-text"><?php echo $coin; ?></span>
+                  <input type="text" class="form-control" placeholder="Precio de oferta" value="<?php echo $product->offer_price; ?>" name="offer_price">
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Fin de la oferta <span class="text-muted small">(opcional: después de esta fecha se cobra el precio normal)</span></label>
+                <input type="date" class="form-control" value="<?php echo $product->offer_finish; ?>" name="offer_finish">
+              </div>
             </div>
           </div>
           <div class="mb-3">

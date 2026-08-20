@@ -2,7 +2,7 @@
 class BuyData {
 	public static $tablename = "buy";
 
-	public $id, $k, $code, $coupon_id, $client_id, $created_at, $paymethod_id, $delivery_zone_id, $sede_id, $capture, $note, $status_id, $name, $c;
+	public $id, $k, $code, $coupon_id, $client_id, $created_at, $paymethod_id, $delivery_zone_id, $sede_id, $capture, $note, $status_id, $name, $c, $m;
 
 	public function __construct(){
 		$this->id = null;
@@ -98,7 +98,7 @@ class BuyData {
 		$total=0;
 		foreach ($products as $px) {
 			$p = ProductData::getById($px->product_id);
-			$total+=($p->price + $px->getExtrasTotal())*$px->q;
+			$total+=(ProductData::getEffectivePrice($p) + $px->getExtrasTotal())*$px->q;
 		}
 		$zone = $this->getDeliveryZone();
 		if($zone){ $total += floatval($zone->price); }

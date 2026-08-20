@@ -52,10 +52,17 @@ if($cat_id>0){
       <div class="pc-body">
         <h3 class="pc-name" title="<?php echo htmlspecialchars($p->name); ?>"><?php echo htmlspecialchars($p->name); ?></h3>
         <div class="pc-meta">
+          <?php $tt_offer = ProductData::offerActive($p); ?>
+          <?php if($tt_offer): ?>
+          <?php $show_price = floatval($p->offer_price); $tt_old_price = ($p->price_llevar!="" && floatval($p->price_llevar)>0) ? floatval($p->price_llevar) : floatval($p->price); ?>
+          <span class="pc-price-pill"><?php echo $coin_symbol.number_format($show_price,2,".",","); ?> <i class="bi bi-fire text-danger"></i></span>
+          <span class="pc-price-old">antes <?php echo $coin_symbol.number_format($tt_old_price,2,".",","); ?></span>
+          <?php else: ?>
           <?php $show_price = ($p->price_llevar!="" && floatval($p->price_llevar)>0) ? floatval($p->price_llevar) : floatval($p->price); ?>
           <span class="pc-price-pill"><?php echo $coin_symbol.number_format($show_price,2,".",","); ?></span>
           <?php if($p->price_llevar!="" && floatval($p->price_llevar)>0): ?>
           <span class="pc-price-dine">comer en la sede <?php echo $coin_symbol.number_format(floatval($p->price),2,".",","); ?></span>
+          <?php endif; ?>
           <?php endif; ?>
           <?php if($bcv_rate>0): ?>
           <span class="pc-price-bs">≈ <?php echo $bs_symbol.number_format($show_price*$bcv_rate,2,".",","); ?></span>

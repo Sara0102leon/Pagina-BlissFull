@@ -546,6 +546,8 @@ body {
 
 .pc-price-dine { color: var(--tt-muted); font-size: 0.72rem; font-weight: 600; background: rgba(255,255,255,0.05); padding: 0.25rem 0.6rem; border-radius: 1rem; border: 1px dashed rgba(224,169,109,0.35); }
 
+.pc-price-old { color: var(--tt-muted); font-size: 0.72rem; font-weight: 700; text-decoration: line-through; text-decoration-thickness: 2px; text-decoration-color: var(--tt-red); background: rgba(255,255,255,0.05); padding: 0.25rem 0.6rem; border-radius: 1rem; }
+
 .pc-footer {
   display: flex;
   align-items: flex-end;

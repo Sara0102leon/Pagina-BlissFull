@@ -2,8 +2,26 @@
 class ProductData {
 	public static $tablename = "product";
 
-	public $id, $short_name, $code, $name, $description, $image, $price, $price_llevar, $free_ingredients, $link, $category_id, $unit_id, $sede_id, $is_public, $in_existence, $is_featured, $is_active, $created_at;
+	public $id, $short_name, $code, $name, $description, $image, $price, $price_llevar, $offer_price, $offer_finish, $free_ingredients, $link, $category_id, $unit_id, $sede_id, $is_public, $in_existence, $is_featured, $is_active, $created_at;
 	public $offer_txt, $order_at, $meta_title, $meta_description, $meta_keywords, $is_offert;
+
+	public static function generateCode(){
+		$alphabeth = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWYZ1234567890_-";
+		$code = "";
+		for($i=0;$i<11;$i++){ $code .= $alphabeth[rand(0,strlen($alphabeth)-1)]; }
+		return $code;
+	}
+
+	public static function offerActive($p){
+		if(!$p || intval($p->is_offert)!=1){ return false; }
+		if($p->offer_price=="" || $p->offer_price===null || floatval($p->offer_price)<=0){ return false; }
+		if($p->offer_finish=="" || $p->offer_finish===null){ return true; }
+		return date("Y-m-d") <= date("Y-m-d", strtotime($p->offer_finish));
+	}
+
+	public static function getEffectivePrice($p){
+		return self::offerActive($p) ? floatval($p->offer_price) : floatval($p->price);
+	}
 
 	public function __construct(){
 		$this->short_name = "";
@@ -24,8 +42,9 @@ class ProductData {
 	public function getUnit(){ return UnitData::getById($this->unit_id);}
 
 	public function add(){
-		$sql = "insert into ".self::$tablename." (short_name,code,name,description,image,price,price_llevar,free_ingredients,link,category_id,unit_id,sede_id,is_public,in_existence,is_featured,is_offert,created_at) ";
-		$sql .= "value (\"$this->short_name\",\"$this->code\",\"$this->name\",\"$this->description\",\"$this->image\",\"$this->price\"," . ($this->price_llevar!="" ? "\"$this->price_llevar\"" : "NULL") . "," . intval($this->free_ingredients) . ",\"$this->link\",$this->category_id,$this->unit_id," . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",$this->is_public,$this->in_existence,$this->is_featured,$this->is_offert,$this->created_at)";
+		if($this->code=="" || $this->code===null){ $this->code = self::generateCode(); }
+		$sql = "insert into ".self::$tablename." (short_name,code,name,description,image,price,price_llevar,offer_price,offer_finish,free_ingredients,link,category_id,unit_id,sede_id,is_public,in_existence,is_featured,is_offert,created_at) ";
+		$sql .= "value (\"$this->short_name\",\"$this->code\",\"$this->name\",\"$this->description\",\"$this->image\",\"$this->price\"," . ($this->price_llevar!="" ? "\"$this->price_llevar\"" : "NULL") . "," . ($this->offer_price!=""  ? "\"$this->offer_price\"" : "NULL") . "," . ($this->offer_finish!="" ? "\"$this->offer_finish\"" : "NULL") . "," . intval($this->free_ingredients) . ",\"$this->link\",$this->category_id,$this->unit_id," . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",$this->is_public,$this->in_existence,$this->is_featured,$this->is_offert,$this->created_at)";
 		Executor::doit($sql);
 	}
 
@@ -40,7 +59,7 @@ class ProductData {
 	}
 
 	public function update(){
-		$sql = "update ".self::$tablename." set code=\"$this->code\",name=\"$this->name\",description=\"$this->description\",link=\"$this->link\",price=\"$this->price\",price_llevar=" . ($this->price_llevar!="" ? "\"$this->price_llevar\"" : "NULL") . ",free_ingredients=" . intval($this->free_ingredients) . ",in_existence=\"$this->in_existence\",is_public=\"$this->is_public\",is_featured=\"$this->is_featured\",unit_id=\"$this->unit_id\",category_id=\"$this->category_id\",sede_id=" . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",is_offert=\"$this->is_offert\" where id=$this->id";
+		$sql = "update ".self::$tablename." set code=\"$this->code\",name=\"$this->name\",description=\"$this->description\",link=\"$this->link\",price=\"$this->price\",price_llevar=" . ($this->price_llevar!="" ? "\"$this->price_llevar\"" : "NULL") . ",offer_price=" . ($this->offer_price!="" ? "\"$this->offer_price\"" : "NULL") . ",offer_finish=" . ($this->offer_finish!="" ? "\"$this->offer_finish\"" : "NULL") . ",free_ingredients=" . intval($this->free_ingredients) . ",in_existence=\"$this->in_existence\",is_public=\"$this->is_public\",is_featured=\"$this->is_featured\",unit_id=\"$this->unit_id\",category_id=\"$this->category_id\",sede_id=" . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",is_offert=\"$this->is_offert\" where id=$this->id";
 		Executor::doit($sql);
 	}
 

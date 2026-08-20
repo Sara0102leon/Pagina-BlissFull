@@ -28,15 +28,15 @@ if(isset($_SESSION["cart"])){
           if(isset($s["extras"]) && count($s["extras"])>0){
             foreach($s["extras"] as $e){ $extras_sum += floatval($e["price"]); $extras_txt[] = $e["name"]; }
           }
-          $unit = $p->price + $extras_sum;
+          $unit = ProductData::getEffectivePrice($p) + $extras_sum;
           $subtotal = $unit*$s["q"];
           $total += $subtotal;
           $items_json[] = array(
             "id"=>intval($p->id),
             "name"=>$p->name,
             "q"=>intval($s["q"]),
-            "price"=>floatval($p->price),
-            "price_llevar"=>floatval($p->price_llevar),
+            "price"=>ProductData::getEffectivePrice($p),
+            "price_llevar"=>ProductData::offerActive($p) ? ProductData::getEffectivePrice($p) : floatval($p->price_llevar),
             "extras"=>isset($s["extras"])?$s["extras"]:array()
           );
           ?>

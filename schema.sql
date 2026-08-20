@@ -85,6 +85,8 @@ create table product (
 	order_at datetime ,
 	price float ,
 	price_llevar float ,
+	offer_price float ,
+	offer_finish date ,
 	free_ingredients int not null default 0 ,
 	category_id int ,
 	sede_id int ,
