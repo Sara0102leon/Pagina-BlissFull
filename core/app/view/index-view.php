@@ -23,6 +23,15 @@ foreach($sedes as $sd){
   array_push($sede_json, array("id"=>$sd->id,"name"=>$sd->name,"address"=>$sd->address,"phone"=>$sd->phone,"delivery"=>$deliv_map));
 }
 $sede_json = json_encode($sede_json);
+function tt_cat_ic($cat_name){
+  $cn = mb_strtolower(trim($cat_name));
+  if(strpos($cn,"pasta") !== false){ return "egg-fried"; }
+  if(strpos($cn,"focaccia") !== false){ return "border-all"; }
+  if(strpos($cn,"bebida") !== false || strpos($cn,"refresco") !== false || strpos($cn,"jugo") !== false){ return "cup-straw"; }
+  if(strpos($cn,"fria") !== false){ return "snow"; }
+  if(strpos($cn,"pizza") !== false){ return "pie-chart-fill"; }
+  return "circle-half";
+}
 $base_url = (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"]!="off" ? "https" : "http")."://".$_SERVER["HTTP_HOST"];
 $script_dir = str_replace("\\","/",dirname($_SERVER["SCRIPT_NAME"]));
 if(strpos($script_dir,"/core")!==false){ $script_dir = substr($script_dir,0,strpos($script_dir,"/core")); }
@@ -320,8 +329,8 @@ foreach($horario_keys as $hk){
           <div class="d-flex align-items-center gap-2 justify-content-center flex-wrap">
             <button type="button" class="btn-category-ajax active" data-cat=""><i class="bi bi-star-fill me-1"></i> Destacados</button>
             <?php foreach($categories as $cat): ?>
-            <button type="button" class="btn-category-ajax text-nowrap" data-cat="<?php echo $cat->id; ?>">
-              <?php echo htmlspecialchars($cat->name); ?>
+            <button type="button" class="btn-category-ajax text-nowrap" data-cat="<?php echo $cat->id; ?>" data-ic="<?php echo tt_cat_ic($cat->name); ?>">
+              <i class="bi bi-<?php echo tt_cat_ic($cat->name); ?> cat-ic"></i> <?php echo htmlspecialchars($cat->name); ?>
             </button>
             <?php endforeach; ?>
           </div>
@@ -380,8 +389,10 @@ foreach($horario_keys as $hk){
           <?php foreach($sedes as $sd):
           $sede_img = $img_default;
           if($sd->image!=""){
+            $sp_fotos = "fotosedes/".$sd->image;
             $sp_path = "admin/storage/sedes/".$sd->image;
-            if(file_exists($sp_path)){ $sede_img = $sp_path; }
+            if(file_exists($sp_fotos)){ $sede_img = $sp_fotos; }
+            elseif(file_exists($sp_path)){ $sede_img = $sp_path; }
           }
           $mapsq = $sd->maps!="" ? $sd->maps : $sd->address;
           $maps_url = preg_match('/^https?:\/\//i', $mapsq)
@@ -478,6 +489,13 @@ function selectSedeCard(id) {
   $(".sede-option[data-id='" + id + "']").addClass("selected");
 }
 
+function switchSedeNow(id) {
+  localStorage.setItem("blissfull_sede_id", String(id));
+  $.post("./?action=cart&opt=clear&ajax=1", {}, function() {
+    window.location.reload();
+  });
+}
+
 let sedeModalReturnToCheckout = false;
 
 function openSedeModal() {
@@ -569,6 +587,7 @@ function clearCart() {
 // ===== Extras Modal =====
 let pendingFree = 0;
 let pendingIngredients = [];
+let pendingDivision = 0;
 
 function openExtrasModal(pid, pname, dataJson) {
   if (typeof showStoreClosedAlert === "function" && showStoreClosedAlert()) { return; }
@@ -579,6 +598,7 @@ function openExtrasModal(pid, pname, dataJson) {
   pendingExtras = data.extras || [];
   pendingIngredients = data.ingredients || [];
   pendingFree = parseInt(data.free || 0, 10) || 0;
+  pendingDivision = data.division === "2_estaciones" ? 2 : (data.division === "4_estaciones" ? 4 : 0);
   $("#extras_modal_title").text(pname);
 
   const desc = String(data.desc || "").trim();
@@ -587,7 +607,13 @@ function openExtrasModal(pid, pname, dataJson) {
   else { $desc.addClass("d-none").text(""); }
 
   let hint = "";
-  if (pendingIngredients.length > 0) {
+  if (pendingDivision > 0 && pendingIngredients.length > 0) {
+    hint = pendingFree > 0
+      ? "Elige el sabor de cada fracción: los primeros " + pendingFree + " van sin costo, los demás se cobran."
+      : (pendingDivision === 2
+        ? "Elige cada mitad de tu pizza: una hawaiana, la otra de queso, como prefieras."
+        : "Elige el sabor de cada cuarto de tu pizza, como prefieras.");
+  } else if (pendingIngredients.length > 0) {
     hint = pendingFree > 0
       ? "Elige tus ingredientes: los primeros " + pendingFree + " van sin costo, los demás se cobran."
       : "Elige los ingredientes adicionales para tu producto:";
@@ -597,12 +623,24 @@ function openExtrasModal(pid, pname, dataJson) {
   $("#extras_hint").text(hint);
 
   let html = "";
-  if (pendingIngredients.length > 0) {
-    html += '<div class="fw-bold mb-2"><i class="bi bi-egg-fried me-1 text-gold"></i>INGREDIENTES' + (pendingFree > 0 ? ' <span class="badge bg-success rounded-pill">' + pendingFree + ' gratis</span>' : "") + '</div>';
+  if (pendingDivision > 0 && pendingIngredients.length > 0) {
+    const blockName = pendingDivision === 2 ? "MITAD" : "CUARTO";
+    const fracName = pendingDivision === 2 ? "mitad" : "cuarto";
+    for (let b = 1; b <= pendingDivision; b++) {
+      html += '<div class="fw-bold mb-2 mt-1"><i class="bi bi-pie-chart-fill me-1 text-gold"></i>' + blockName + ' ' + b + ' <span class="small text-muted fw-normal">(' + fracName + ' ' + b + ' de ' + pendingDivision + ')</span></div>';
+      pendingIngredients.forEach(function(e, i) {
+        html += '<label class="form-check mb-2 div-opt" data-block="' + b + '" data-idx="' + i + '">';
+        html += '<input class="form-check-input" type="radio" name="div_' + b + '" data-price="' + e.price + '" data-sec="div" data-block="' + b + '" data-idx="' + i + '">';
+        html += '<span class="form-check-label">' + e.name + ' <span class="div-price" data-block="' + b + '" data-idx="' + i + '">(+$' + e.price.toFixed(2) + ')</span></span>';
+        html += '</label>';
+      });
+    }
+  } else if (pendingIngredients.length > 0) {
+    html += '<div class="fw-bold mb-2"><i class="bi bi-egg-fried me-1 text-gold"></i>INGREDIENTES' + (pendingFree > 0 ? ' <span id="free_badge" class="badge bg-success rounded-pill">' + pendingFree + ' gratis</span>' : "") + '</div>';
     pendingIngredients.forEach(function(e, i) {
       html += '<label class="form-check mb-2 extra-opt ing-opt">';
       html += '<input class="form-check-input" type="checkbox" data-price="' + e.price + '" data-idx="' + i + '" data-sec="ing">';
-      html += '<span class="form-check-label">' + e.name + '</span>';
+      html += '<span class="form-check-label">' + e.name + ' <span class="ing-price" data-idx="' + i + '">(+$' + e.price.toFixed(2) + ')</span></span>';
       html += '</label>';
     });
   }
@@ -620,6 +658,35 @@ function openExtrasModal(pid, pname, dataJson) {
   $("#modal-extras").modal("show");
 }
 
+function refreshIngPriceLabels() {
+  let granted = 0;
+  const checkedCount = $(".ing-opt input:checked").length;
+  const quotaFull = pendingFree > 0 && checkedCount >= pendingFree;
+  $(".ing-opt").each(function() {
+    const cb = $(this).find("input");
+    if (!cb.length) { return; }
+    const priceEl = $(this).find(".ing-price");
+    const e = pendingIngredients[parseInt(cb.data("idx"))];
+    if (!priceEl.length || !e) { return; }
+    if (cb.is(":checked")) {
+      if (granted < pendingFree) {
+        priceEl.html('<span class="text-success fw-bold">GRATIS</span>');
+        granted++;
+      } else {
+        priceEl.html('<span class="text-danger fw-bold">(+$' + e.price.toFixed(2) + ')</span>');
+      }
+    } else {
+      if (quotaFull) {
+        priceEl.html('<span class="text-danger fw-bold">(+$' + e.price.toFixed(2) + ')</span>');
+      } else {
+        priceEl.html('<span class="text-success fw-bold">GRATIS</span>');
+      }
+    }
+  });
+  const fb = $("#free_badge");
+  if (fb.length && pendingFree > 0) { fb.text(granted + "/" + pendingFree + " gratis"); }
+}
+
 function updateExtrasTotal() {
   let total = 0;
   const ingIdx = [];
@@ -632,7 +699,40 @@ function updateExtrasTotal() {
     if ($(this).data("sec") === "ing") { return; }
     total += parseFloat($(this).data("price"));
   });
+  const divIdx = [];
+  $(".div-opt input:checked").each(function(){ divIdx.push(parseInt($(this).data("idx"))); });
+  for (let d = pendingFree; d < divIdx.length; d++) {
+    const e = pendingIngredients[divIdx[d]];
+    if (e) { total += parseFloat(e.price); }
+  }
   $("#extras_total").text(fmt(total));
+  refreshIngPriceLabels();
+  refreshDivPriceLabels();
+}
+
+function refreshDivPriceLabels() {
+  const checkedArr = $(".div-opt input:checked");
+  const quotaFull = pendingFree > 0 && checkedArr.length >= pendingFree;
+  $(".div-opt").each(function() {
+    const cb = $(this).find("input");
+    const priceEl = $(this).find(".div-price");
+    const e = pendingIngredients[parseInt(cb.data("idx"))];
+    if (!cb.length || !priceEl.length || !e) { return; }
+    if (cb.is(":checked")) {
+      const pos = checkedArr.index(cb);
+      if (pos >= 0 && pos < pendingFree) {
+        priceEl.html('<span class="text-success fw-bold">GRATIS</span>');
+      } else {
+        priceEl.html('<span class="text-danger fw-bold">(+$' + e.price.toFixed(2) + ')</span>');
+      }
+    } else {
+      if (quotaFull) {
+        priceEl.html('<span class="text-danger fw-bold">(+$' + e.price.toFixed(2) + ')</span>');
+      } else {
+        priceEl.html('<span class="text-success fw-bold">GRATIS</span>');
+      }
+    }
+  });
 }
 
 function confirmExtras() {
@@ -648,6 +748,16 @@ function confirmExtras() {
     if ($(this).data("sec") === "ing") { return; }
     const e = pendingExtras[parseInt($(this).data("idx"))];
     if (e) { sel.push({ name: e.name, price: parseFloat(e.price) }); }
+  });
+  const divName = pendingDivision === 2 ? "Mitad" : "Cuarto";
+  const divChecked = $(".div-opt input:checked");
+  divChecked.each(function(){
+    const h = pendingIngredients[parseInt($(this).data("idx"))];
+    const b = parseInt($(this).data("block"));
+    if (h) {
+      const pos = divChecked.index(this);
+      sel.push({ name: divName + " " + b + ": " + h.name, price: pos < pendingFree ? 0 : parseFloat(h.price), div: 1 });
+    }
   });
   $("#modal-extras").modal("hide");
   addToCart(pendingExtrasPid, pendingExtrasName, JSON.stringify(sel));
@@ -710,7 +820,8 @@ function itemsWhatsAppText(items, delivery) {
     let extrasTxt = "";
     (it.extras || []).forEach(function(e){
       unit += parseFloat(e.price);
-      extrasTxt += "    - " + e.name + (parseFloat(e.price) > 0 ? " (+" + fmt(parseFloat(e.price)) + ")" : " (gratis)") + "%0A";
+      if (parseFloat(e.price) > 0) { extrasTxt += "    - " + e.name + " (+" + fmt(parseFloat(e.price)) + ")%0A"; }
+      else if (e.div === 1) { extrasTxt += "    - " + e.name + " (gratis)%0A"; }
     });
     lines.push("- " + it.q + " x " + it.name + "%0A" + extrasTxt + "    (" + fmt(unit) + ") = " + fmt(unit * it.q) + "%0A");
   });
@@ -744,7 +855,16 @@ $(document).ready(function() {
       Swal.fire({ icon: "warning", title: "Elige una sede", text: "Selecciona la sede que te queda más cerca para continuar.", confirmButtonColor: "#b87e38" });
       return;
     }
+    const prevSede = localStorage.getItem("blissfull_sede_id");
+    const nextSede = String(sel.data("id"));
+    const sedeChanged = !prevSede || prevSede !== nextSede;
     localStorage.setItem("blissfull_sede_id", sel.data("id"));
+    if (sedeChanged) {
+      $.post("./?action=cart&opt=clear&ajax=1", {}, function() {
+        window.location.reload();
+      });
+      return;
+    }
     setSedeUI();
     $("#modal-sede").modal("hide");
     updateCheckoutUI();
@@ -769,7 +889,8 @@ $(document).ready(function() {
     $(this).addClass("active");
     currentCatId = $(this).data("cat");
     const name = $(this).text().trim();
-    $("#grid-title").html(currentCatId === "" ? '<i class="bi bi-star-fill me-1"></i> Destacados' : '<i class="bi bi-folder2-open me-1"></i> ' + name);
+    const ic = $(this).data("ic") || "pie-chart-fill";
+    $("#grid-title").html(currentCatId === "" ? '<i class="bi bi-star-fill me-1"></i> Destacados' : '<i class="bi bi-' + ic + ' text-gold me-1"></i> ' + name);
     updateGrid();
   });
 
@@ -783,15 +904,17 @@ $(document).ready(function() {
       if(currentSearch !== "") {
         $("#grid-title").html('<i class="bi bi-search me-1"></i> Buscando: ' + currentSearch);
       } else {
-        const activeName = $(".btn-category-ajax.active").text().trim();
-        $("#grid-title").html(currentCatId === "" ? '<i class="bi bi-star-fill me-1"></i> Destacados' : '<i class="bi bi-folder2-open me-1"></i> ' + activeName);
+        const activeBtn = $(".btn-category-ajax.active");
+        const activeName = activeBtn.text().trim();
+        const activeIc = activeBtn.data("ic") || "pie-chart-fill";
+        $("#grid-title").html(currentCatId === "" ? '<i class="bi bi-star-fill me-1"></i> Destacados' : '<i class="bi bi-' + activeIc + ' text-gold me-1"></i> ' + activeName);
       }
       updateGrid();
     }, 400); 
   });
 
   // Extras Modal Events
-  $("#extra_sections").on("change", ".extra-opt input", updateExtrasTotal);
+  $("#extra_sections").on("change", ".extra-opt input, .half-opt input", updateExtrasTotal);
   $("#btn_confirm_extras").click(confirmExtras);
 
   // Pickup Toggle

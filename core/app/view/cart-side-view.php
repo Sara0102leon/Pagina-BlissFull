@@ -26,7 +26,7 @@ if(isset($_SESSION["cart"])){
           $extras_sum = 0;
           $extras_txt = array();
           if(isset($s["extras"]) && count($s["extras"])>0){
-            foreach($s["extras"] as $e){ $extras_sum += floatval($e["price"]); $extras_txt[] = $e["name"]; }
+            foreach($s["extras"] as $e){ $extras_sum += floatval($e["price"]); if(floatval($e["price"])>0 || (isset($e["div"]) && intval($e["div"])==1)){ $extras_txt[] = $e["name"]; } }
           }
           $unit = ProductData::getEffectivePrice($p) + $extras_sum;
           $subtotal = $unit*$s["q"];

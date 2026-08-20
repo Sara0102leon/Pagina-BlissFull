@@ -40,7 +40,7 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
               <th>Metodo de pago</th>
               <th>Estado</th>
               <th>Fecha</th>
-              <th></th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -81,6 +81,8 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
                     <button type="button" class="btn btn-primary btn-sm btn-status-change <?php echo ($st!=2 && $st!=4)?'disabled opacity-50':''; ?>" data-id="<?php echo $b->id;?>" data-status="5" title="Finalizado (requiere pagado)" <?php echo ($st!=2 && $st!=4)?'disabled':''; ?>><i class="bi bi-check-lg"></i></button>
                     <button type="button" class="btn btn-danger btn-sm btn-status-change <?php echo $st>=2?'disabled opacity-50':''; ?>" data-id="<?php echo $b->id;?>" data-status="3" title="Cancelar (solo si aún no ha pagado)" <?php echo $st>=2?'disabled':''; ?>><i class="bi bi-x-lg"></i></button>
                   </div>
+                <?php elseif($b->status_id==5):?>
+                  <span class="badge bg-success text-white"><i class="bi bi-check-lg me-1"></i>Finalizado</span>
                 <?php else:?>
                   <i class="bi bi-check-lg text-success"></i>
                 <?php endif;?>
@@ -186,8 +188,8 @@ $ivatxt = ConfigurationData::getByPreffix("general_iva_txt")->val;
         <div class="table-responsive">
           <table class="table table-bordered">
             <thead>
-              <tr>
-                <th></th>
+<tr>
+              <th></th>
                 <th>Codigo</th>
                 <th>Producto</th>
                 <th>Cant.</th>

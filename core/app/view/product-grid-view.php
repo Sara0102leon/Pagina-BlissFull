@@ -26,12 +26,25 @@ if($cat_id>0){
 }
 ?>
 
+<?php
+$aviso_sede = null;
+$aviso_cat_nombre = "";
+if($cat_id>0 && $sede_id>0 && in_array($cat_id, array(5,6))){
+  $q2 = Executor::doit("select sede_id from product where category_id=$cat_id and is_public=1 and is_active=1 and sede_id is not null limit 1");
+  $r2 = Model::one($q2[0], new ProductData());
+  if($r2 && intval($r2->sede_id)>0 && $r2->sede_id!=$sede_id){
+    $aviso_sede = SedeData::getById($r2->sede_id);
+    $aviso_cat_nombre = ($cat_id==5) ? "Pastas" : "Focaccias";
+  }
+}
+?>
+
 <?php if(count($products)>0):?>
 <div class="row g-4">
   <?php foreach($products as $p):
   $img = "admin/storage/products/".$p->image;
   if($p->image=="" || !file_exists($img)){ $img=$img_default; }
-  $pizza_edit_json = array("desc"=>trim((string)$p->description),"free"=>intval($p->free_ingredients),"ingredients"=>array(),"extras"=>array());
+  $pizza_edit_json = array("desc"=>trim((string)$p->description),"free"=>intval($p->free_ingredients),"division"=>trim((string)$p->tipo_division),"ingredients"=>array(),"extras"=>array());
   $no_edit_cats = array(5,6); // Pastas y Focaccia: por ahora sin extras/ingredientes
   if(!in_array(intval($p->category_id), $no_edit_cats)){
     $extras = ProductExtraData::getByProductId($p->id);
@@ -51,6 +64,10 @@ if($cat_id>0){
       </div>
       <div class="pc-body">
         <h3 class="pc-name" title="<?php echo htmlspecialchars($p->name); ?>"><?php echo htmlspecialchars($p->name); ?></h3>
+        <?php if(intval($p->sede_id)>0):
+        $p_sede = SedeData::getById($p->sede_id); ?>
+        <div class="pc-sede-note"><i class="bi bi-geo-alt-fill me-1"></i>Solo disponible en <?php echo htmlspecialchars($p_sede?$p_sede->name:"la sede"); ?></div>
+        <?php endif; ?>
         <div class="pc-meta">
           <?php $tt_offer = ProductData::offerActive($p); ?>
           <?php if($tt_offer): ?>
@@ -85,8 +102,17 @@ if($cat_id>0){
 <?php endforeach; ?>
 </div>
 <?php else:?>
+<?php if($aviso_sede): ?>
+<div class="tt-sede-aviso text-center px-3 py-5">
+  <div class="tt-sede-aviso-icon mb-2"><i class="bi bi-shop"></i></div>
+  <h3 class="h2 tt-display mb-2">SOLO EN <span class="text-gold"><?php echo htmlspecialchars($aviso_sede->name); ?></span></h3>
+  <p class="text-muted mb-2">Las <?php echo htmlspecialchars(mb_strtolower($aviso_cat_nombre)); ?> se preparan únicamente en la sede <b><?php echo htmlspecialchars($aviso_sede->name); ?></b>. Para pedirlas, cambia tu sede:</p>
+  <button type="button" class="btn btn-warning rounded-pill fw-bold px-4 py-2" onclick="switchSedeNow(<?php echo intval($aviso_sede->id); ?>)">CAMBIAR A <?php echo htmlspecialchars(mb_strtoupper($aviso_sede->name)); ?></button>
+</div>
+<?php else: ?>
 <div class="text-center py-5">
    <i class="bi bi-search h1 text-muted"></i>
    <p class="h3">No encontramos productos.</p>
 </div>
+<?php endif; ?>
 <?php endif; ?>

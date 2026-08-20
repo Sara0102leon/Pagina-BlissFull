@@ -251,6 +251,14 @@ $(function(){
               </label>
             </div>
           </div>
+          <div class="mb-3">
+            <label class="form-label">Tipo de división <span class="text-muted small">(solo pizzas: el cliente elige el sabor de cada fracción; los ingredientes de la pizza son las opciones)</span></label>
+            <select name="tipo_division" class="form-select">
+              <option value="normal">Normal (el cliente arma su pizza con ingredientes)</option>
+              <option value="2_estaciones">2 Estaciones (cliente elige 2 mitades)</option>
+              <option value="4_estaciones">4 Estaciones (cliente elige 4 cuartos)</option>
+            </select>
+          </div>
           <div class="row row-cards">
             <div class="col-md-4">
               <div class="mb-3">
@@ -399,6 +407,15 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
                 <span class="form-check-label">Producto en Oferta</span>
               </label>
             </div>
+          </div>
+          <?php $td_val = isset($product->tipo_division) ? trim((string)$product->tipo_division) : "normal"; ?>
+          <div class="mb-3">
+            <label class="form-label">Tipo de división <span class="text-muted small">(solo pizzas: el cliente elige el sabor de cada fracción; los ingredientes de la pizza son las opciones)</span></label>
+            <select name="tipo_division" class="form-select">
+              <option value="normal" <?php if($td_val=="normal"){ echo "selected"; } ?>>Normal (el cliente arma su pizza con ingredientes)</option>
+              <option value="2_estaciones" <?php if($td_val=="2_estaciones"){ echo "selected"; } ?>>2 Estaciones (cliente elige 2 mitades)</option>
+              <option value="4_estaciones" <?php if($td_val=="4_estaciones"){ echo "selected"; } ?>>4 Estaciones (cliente elige 4 cuartos)</option>
+            </select>
           </div>
           <div class="row row-cards">
             <div class="col-md-4">

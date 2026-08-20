@@ -2,10 +2,10 @@
 $current_view = isset($_GET["view"]) ? $_GET["view"] : "";
 $admin_titles = array(
   "home"=>"Dashboard","sells"=>"Ventas","sellreport"=>"Reportes de Ventas",
-  "products"=>"Productos","categories"=>"CategorÃ­as","clients"=>"Clientes",
-  "slider"=>"Slider","users"=>"Usuarios","settings"=>"ConfiguraciÃ³n",
+  "products"=>"Productos","categories"=>"Categorías","clients"=>"Clientes",
+  "slider"=>"Slider","users"=>"Usuarios","settings"=>"Configuración",
   "spends"=>"Gastos","persons"=>"Personas","forms"=>"Formularios",
-  "table"=>"Tablas","login"=>"Iniciar SesiÃ³n"
+  "table"=>"Tablas","login"=>"Iniciar Sesión"
 );
 $page_title = isset($admin_titles[$current_view]) ? $admin_titles[$current_view] : "Panel Administrativo";
 $is_auth = isset($_SESSION["user_id"]);
@@ -28,6 +28,8 @@ $sys_open = $sys_active!="" ? " show" : "";
     <link rel="stylesheet" href="assets/bootstrap-icons/bootstrap-icons.css">
     <!-- Admin Jobie Style (cargado al final para sobreescribir Tabler) -->
     <link rel="stylesheet" href="assets/css/admin-custom.css?v=8">
+    <!-- Guía interactiva del panel (tour con spotlight) -->
+    <link rel="stylesheet" href="assets/css/admin-tour.css?v=3">
     <script src="assets/jquery/jquery.min.js"></script>
     <script src="assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -62,7 +64,7 @@ $sys_open = $sys_active!="" ? " show" : "";
         </a>
 
         <nav class="sidebar-nav">
-          <div class="sidebar-section-title">MenÃº Principal</div>
+          <div class="sidebar-section-title">Menú Principal</div>
 
           <a class="sidebar-item<?php echo ($current_view=="" || $current_view=="home") ? " active" : ""; ?>" href="./">
             <i class="bi bi-grid-fill"></i><span>Dashboard</span>
@@ -77,7 +79,7 @@ $sys_open = $sys_active!="" ? " show" : "";
             <i class="bi bi-box-seam"></i><span>Productos</span>
           </a>
           <a class="sidebar-item<?php echo $current_view=="categories" ? " active" : ""; ?>" href="./?view=categories&opt=all">
-            <i class="bi bi-tags"></i><span>CategorÃ­as</span>
+            <i class="bi bi-tags"></i><span>Categorías</span>
           </a>
           <a class="sidebar-item<?php echo $current_view=="clients" ? " active" : ""; ?>" href="./?view=clients&opt=all">
             <i class="bi bi-people"></i><span>Clientes</span>
@@ -95,7 +97,7 @@ $sys_open = $sys_active!="" ? " show" : "";
               <a class="sidebar-subitem<?php echo $current_view=="users" ? " active" : ""; ?>" href="./?view=users&opt=all"><i class="bi bi-person-badge"></i> Usuarios</a>
               <a class="sidebar-subitem<?php echo ($current_view=="settings" && (!isset($_GET["opt"]) || $_GET["opt"]=="all")) ? " active" : ""; ?>" href="./?view=settings&opt=all"><i class="bi bi-sliders"></i> Ajustes</a>
               <a class="sidebar-subitem<?php echo ($current_view=="settings" && isset($_GET["opt"]) && $_GET["opt"]=="sedes") ? " active" : ""; ?>" href="./?view=settings&opt=sedes"><i class="bi bi-shop"></i> Sedes</a>
-              <a class="sidebar-subitem<?php echo ($current_view=="settings" && isset($_GET["opt"]) && $_GET["opt"]=="payment") ? " active" : ""; ?>" href="./?view=settings&opt=payment"><i class="bi bi-credit-card"></i> MÃ©todos de Pago</a>
+              <a class="sidebar-subitem<?php echo ($current_view=="settings" && isset($_GET["opt"]) && $_GET["opt"]=="payment") ? " active" : ""; ?>" href="./?view=settings&opt=payment"><i class="bi bi-credit-card"></i> Métodos de Pago</a>
               <a class="sidebar-subitem<?php echo ($current_view=="settings" && isset($_GET["opt"]) && $_GET["opt"]=="units") ? " active" : ""; ?>" href="./?view=settings&opt=units"><i class="bi bi-rulers"></i> Unidades</a>
               <a class="sidebar-subitem<?php echo ($current_view=="settings" && isset($_GET["opt"]) && $_GET["opt"]=="ingredients") ? " active" : ""; ?>" href="./?view=settings&opt=ingredients"><i class="bi bi-egg-fried"></i> Ingredientes</a>
             </div>
@@ -113,7 +115,7 @@ $sys_open = $sys_active!="" ? " show" : "";
       <div class="app-main">
         <header class="app-header">
           <?php if($is_auth): ?>
-          <button type="button" class="icon-btn" id="btnSidebarToggle" aria-label="Abrir menÃº">
+          <button type="button" class="icon-btn" id="btnSidebarToggle" aria-label="Abrir menú">
             <i class="bi bi-list"></i>
           </button>
           <?php else: ?>
@@ -132,6 +134,11 @@ $sys_open = $sys_active!="" ? " show" : "";
 
           <?php if($is_auth): ?>
           <div class="app-header-right">
+            <!-- Botón Guía del panel -->
+            <button type="button" class="icon-btn me-2" id="btn-tour-guide" title="Guía del panel: aprende a usar cada módulo" aria-label="Guía del panel">
+              <i class="bi bi-question-lg"></i>
+            </button>
+
             <div class="nav-item dropdown me-2" id="notif-wrap">
               <a href="#" class="icon-btn" data-bs-toggle="dropdown" aria-label="Notificaciones" title="Pedidos pendientes de pago">
                 <i class="bi bi-bell"></i>
@@ -159,7 +166,7 @@ $sys_open = $sys_active!="" ? " show" : "";
                 </span>
               </a>
               <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                <a href="./?view=settings&opt=all" class="dropdown-item">ConfiguraciÃ³n</a>
+                <a href="./?view=settings&opt=all" class="dropdown-item">Configuración</a>
                 <div class="dropdown-divider"></div>
                 <a href="./?action=access&opt=logout" class="dropdown-item text-danger">Salir</a>
               </div>
@@ -210,7 +217,6 @@ $sys_open = $sys_active!="" ? " show" : "";
       .tt-admin-loader-text { color: #e0a96d; font-weight: 600; margin: 0; letter-spacing: 0.04em; }
     </style>
     <script src="./dist/libs/apexcharts/dist/apexcharts.min.js" defer></script>
-    <script src="./dist/js/tabler.min.js" defer></script>
     <script type="text/javascript">
       $(document).ready(function(){
         $(".datatable").DataTable();
@@ -297,5 +303,7 @@ $sys_open = $sys_active!="" ? " show" : "";
         setInterval(loadNotifications, 20000);
       }
     </script>
+    <!-- Guía interactiva del panel (tour con spotlight) -->
+    <script src="assets/js/admin-tour.js?v=3"></script>
   </body>
 </html>

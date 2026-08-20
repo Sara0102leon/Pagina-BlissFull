@@ -726,7 +726,7 @@ function openProductsPicker(key, checkedIds){
     html += '</label></div>';
   });
   $("#products-picker-list").html(html);
-  $("#productsPickerModal").modal("show");
+  bootstrap.Modal.getOrCreateInstance(document.getElementById("productsPickerModal")).show();
 }
 
 function rowPids($btn){
@@ -775,7 +775,7 @@ $(function(){
   $("#products-picker-save").click(function(){
     var ids = [];
     $("#products-picker-list .pick-item:checked").each(function(){ ids.push($(this).val()); });
-    if(!EXTRA_PICKER_KEY){ $("#productsPickerModal").modal("hide"); return; }
+    if(!EXTRA_PICKER_KEY){ bootstrap.Modal.getOrCreateInstance(document.getElementById("productsPickerModal")).hide(); return; }
     if(EXTRA_PICKER_KEY === "#form-add-extra"){
       $("#form-add-extra input[name='products']").val(ids.join(","));
       var lblNew = ids.length === EXTRA_PRODUCTS.length ? "TODOS los productos" : (ids.length > 0 ? ids.length + " producto" + (ids.length > 1 ? "s" : "") : "Ninguno");
@@ -783,7 +783,7 @@ $(function(){
     } else {
       saveExtraProducts(EXTRA_PICKER_KEY, ids, $('[data-form="' + EXTRA_PICKER_KEY + '"]').find(".picker-label"));
     }
-    $("#productsPickerModal").modal("hide");
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("productsPickerModal")).hide();
   });
 
   $(".btn-extra-save").click(function(){

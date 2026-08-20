@@ -27,6 +27,10 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="add"){
 		if(isset($_POST["in_existence"])) { $product->in_existence=1; }else{ $product->in_existence=0; }
 		if(isset($_POST["is_featured"])) { $product->is_featured=1; }else{ $product->is_featured=0; }
 		if(isset($_POST["is_offert"])) { $product->is_offert=1; }else{ $product->is_offert=0; }
+		$td = isset($_POST["tipo_division"]) ? trim($_POST["tipo_division"]) : "normal";
+		if(!in_array($td, array("normal","2_estaciones","4_estaciones"))){ $td = "normal"; }
+		$product->tipo_division = $td;
+		$product->allow_halves = ($td=="normal" ? 0 : 1);
 		$product->free_ingredients = isset($_POST["free_ingredients"]) ? intval($_POST["free_ingredients"]) : 0;
 
 		$product->add();
@@ -54,6 +58,10 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="upd"){
 		if(isset($_POST["in_existence"])) { $product->in_existence=1; }else{ $product->in_existence=0; }
 		if(isset($_POST["is_featured"])) { $product->is_featured=1; }else{ $product->is_featured=0; }
 		if(isset($_POST["is_offert"])) { $product->is_offert=1; }else{ $product->is_offert=0; }
+		$td = isset($_POST["tipo_division"]) ? trim($_POST["tipo_division"]) : "normal";
+		if(!in_array($td, array("normal","2_estaciones","4_estaciones"))){ $td = "normal"; }
+		$product->tipo_division = $td;
+		$product->allow_halves = ($td=="normal" ? 0 : 1);
 		$product->free_ingredients = isset($_POST["free_ingredients"]) ? intval($_POST["free_ingredients"]) : 0;
 
 		$product->update();

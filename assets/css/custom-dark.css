@@ -440,6 +440,11 @@ body {
   white-space: nowrap;
   transition: 0.2s;
 }
+.btn-category-ajax .cat-ic {
+  font-size: 0.9rem;
+  color: var(--tt-gold);
+  margin-right: 0.35rem;
+}
 .btn-category-ajax:hover {
   color: #ffffff;
   border-color: rgba(255, 183, 3, 0.55);
@@ -530,6 +535,36 @@ body {
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
+.pc-sede-note {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--tt-gold);
+  background: rgba(255, 183, 3, 0.08);
+  border: 1px solid rgba(255, 183, 3, 0.25);
+  border-radius: 6px;
+  padding: 0.15rem 0.45rem;
+  margin-bottom: 0.5rem;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+}
+
+.tt-sede-aviso {
+  background: linear-gradient(135deg, rgba(184, 126, 56, 0.12), rgba(224, 169, 109, 0.06));
+  border: 1px dashed rgba(224, 169, 109, 0.45);
+  border-radius: 16px;
+  color: #f5e9d8;
+}
+
+.tt-sede-aviso-icon {
+  font-size: 2.6rem;
+  color: var(--tt-gold);
+  line-height: 1;
+}
+
+.tt-sede-aviso p { max-width: 480px; margin-left: auto; margin-right: auto; }
 
 .pc-price-pill {
   background: linear-gradient(135deg, #e0a96d, #b87e38);

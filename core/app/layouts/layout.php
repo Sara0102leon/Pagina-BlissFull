@@ -118,6 +118,18 @@
     $horario_close_raw = ConfigurationData::getByPreffix("horario_close")?ConfigurationData::getByPreffix("horario_close")->val:"23:00";
     $horario_open_raw = $horario_open_raw=="" ? "11:00" : $horario_open_raw;
     $horario_close_raw = $horario_close_raw=="" ? "23:00" : $horario_close_raw;
+    $map_dia_en = array("sunday"=>"domingo","monday"=>"lunes","tuesday"=>"martes","wednesday"=>"miercoles","thursday"=>"jueves","friday"=>"viernes","saturday"=>"sabado");
+    $hoy_key = strtolower(date("l"));
+    if(isset($map_dia_en[$hoy_key])){
+      $dia_cfg = ConfigurationData::getByPreffix("horario_".$map_dia_en[$hoy_key]);
+      if($dia_cfg && $dia_cfg->val!="" && strpos($dia_cfg->val,"-")!==false){
+        $dia_parts = array_map("trim", explode("-", $dia_cfg->val));
+        if(isset($dia_parts[0]) && $dia_parts[0]!="" && isset($dia_parts[1]) && $dia_parts[1]!=""){
+          $horario_open_raw = $dia_parts[0];
+          $horario_close_raw = $dia_parts[1];
+        }
+      }
+    }
     $h_open_min = (int)explode(":",$horario_open_raw)[0]*60 + (int)explode(":",$horario_open_raw)[1];
     $h_close_min = (int)explode(":",$horario_close_raw)[0]*60 + (int)explode(":",$horario_close_raw)[1];
     $now_min = (int)date("G")*60 + (int)date("i");
@@ -136,7 +148,7 @@
         <div class="container-xl">
           <div class="navbar-brand pe-0 pe-md-3">
             <a href="./" class="text-decoration-none d-flex align-items-center">
-              <img src="fotos%20para%20logos/LOGO%20HORIZONTAL.png" alt="Alianzas Blissful" class="brand-logo">
+              <img src="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/assets/img/logo.png" alt="Alianzas Blissful" class="brand-logo">
             </a>
           </div>
 
@@ -284,7 +296,7 @@
           <div class="container-xl">
             <div class="row g-4">
               <div class="col-md-5 col-lg-4 mb-4 mb-md-0">
-                <img src="fotos%20para%20logos/LOGO%20HORIZONTAL.png" alt="Alianzas Blissful" class="brand-logo mb-3" style="filter: brightness(1);">
+                <img src="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/assets/img/logo.png" alt="Alianzas Blissful" class="brand-logo mb-3" style="filter: brightness(1);">
                 <p class="text-white-50 small mb-3">Disfruta de la mejor experiencia gastronómica desde tu celular. Escanea, ordena y disfruta.</p>
                 <div class="d-flex gap-2">
                    <a href="#" class="social-icon" title="Facebook"><i class="bi bi-facebook"></i></a>
