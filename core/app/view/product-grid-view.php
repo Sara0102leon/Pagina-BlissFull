@@ -1,4 +1,5 @@
 ﻿<?php 
+require_once __DIR__."/../helpers/product-extras-helper.php";
 $coin_symbol = ConfigurationData::getByPreffix("general_coin")?ConfigurationData::getByPreffix("general_coin")->val:"$";
 $img_default = ConfigurationData::getByPreffix("general_img_default")?ConfigurationData::getByPreffix("general_img_default")->val:"assets/img/default.png";
 $bcv_rate = 0;
@@ -44,17 +45,20 @@ if($cat_id>0 && $sede_id>0 && in_array($cat_id, array(5,6))){
   <?php foreach($products as $p):
   $img = "admin/storage/products/".$p->image;
   if($p->image=="" || !file_exists($img)){ $img=$img_default; }
-  $pizza_edit_json = array("desc"=>trim((string)$p->description),"free"=>intval($p->free_ingredients),"division"=>trim((string)$p->tipo_division),"ingredients"=>array(),"extras"=>array());
+  $pizza_edit_json = array("desc"=>trim((string)$p->description),"free"=>intval($p->free_ingredients),"division"=>trim((string)$p->tipo_division),"sabores"=>array(),"ingredients"=>array(),"extras"=>array(),"sel"=>array(),"main"=>-1);
   $no_edit_cats = array(5,6); // Pastas y Focaccia: por ahora sin extras/ingredientes
   if(!in_array(intval($p->category_id), $no_edit_cats)){
     $extras = ProductExtraData::getByProductId($p->id);
-    foreach($extras as $e){
-      $item = array("name"=>$e->name,"price"=>floatval($e->price));
-      if(intval($e->is_ingredient)==1){ $pizza_edit_json["ingredients"][] = $item; }
-      else { $pizza_edit_json["extras"][] = $item; }
+    if(trim((string)$p->tipo_division)!=""){
+      // Estaciones: modal de sabores completos de pizza gigante
+      $pizza_edit_json["sabores"] = tt_build_sabores($sede_id);
+    } else {
+      // Pizza normal: ingredientes de la casa detectados por la descripción
+      $pizza_edit_json = tt_build_extras_payload($p->description, $p->free_ingredients, $extras);
+      $pizza_edit_json["division"] = trim((string)$p->tipo_division);
     }
   }
-  $has_edit = count($pizza_edit_json["ingredients"])>0 || count($pizza_edit_json["extras"])>0;
+  $has_edit = count($pizza_edit_json["ingredients"])>0 || count($pizza_edit_json["extras"])>0 || count($pizza_edit_json["sabores"])>0;
   $pizza_edit_json_str = htmlspecialchars(json_encode($pizza_edit_json), ENT_QUOTES);
   ?>
   <div class="col-12 col-sm-6 col-md-4 col-lg-3">
