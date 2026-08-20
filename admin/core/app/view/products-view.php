@@ -135,6 +135,10 @@ $(function(){
       placeholder = "Resultado";
     }
 
+    if(!window.Swal){
+      if(confirm("\u00bfEliminar '" + name + "'?\n\nSe ocultar\u00e1 del men\u00fa y del panel.")){ window.location.href = href; }
+      return;
+    }
     Swal.fire({
       title: "\u00bfEliminar producto?",
       html: 'Se eliminar\u00e1 <b>' + name + '</b> del men\u00fa y del panel.<br><br>' + title,

@@ -305,5 +305,7 @@ $sys_open = $sys_active!="" ? " show" : "";
     </script>
     <!-- Guía interactiva del panel (tour con spotlight) -->
     <script src="assets/js/admin-tour.js?v=4"></script>
+    <!-- Confirmación genérica de borrados (respaldos nativos si no hay Swal) -->
+    <script src="assets/js/tt-confirm-delete.js"></script>
   </body>
 </html>
