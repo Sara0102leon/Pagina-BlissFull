@@ -49,13 +49,14 @@ if($cat_id>0 && $sede_id>0 && in_array($cat_id, array(5,6))){
   $no_edit_cats = array(5,6); // Pastas y Focaccia: por ahora sin extras/ingredientes
   if(!in_array(intval($p->category_id), $no_edit_cats)){
     $extras = ProductExtraData::getByProductId($p->id);
-    if(trim((string)$p->tipo_division)!=""){
+    $tipo = trim((string)$p->tipo_division);
+    if($tipo === "2_estaciones" || $tipo === "4_estaciones"){
       // Estaciones: modal de sabores completos de pizza gigante
       $pizza_edit_json["sabores"] = tt_build_sabores($sede_id);
     } else {
       // Pizza normal: ingredientes de la casa detectados por la descripción
       $pizza_edit_json = tt_build_extras_payload($p->description, $p->free_ingredients, $extras, $p->house_ingredients);
-      $pizza_edit_json["division"] = trim((string)$p->tipo_division);
+      $pizza_edit_json["division"] = $tipo;
     }
   }
   $has_edit = count($pizza_edit_json["ingredients"])>0 || count($pizza_edit_json["extras"])>0 || count($pizza_edit_json["sabores"])>0;
