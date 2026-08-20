@@ -2,7 +2,7 @@
 class ProductData {
 	public static $tablename = "product";
 
-	public $id, $short_name, $code, $name, $description, $image, $price, $price_llevar, $offer_price, $offer_finish, $free_ingredients, $allow_halves, $tipo_division, $link, $category_id, $unit_id, $sede_id, $is_public, $in_existence, $is_featured, $is_active, $created_at;
+	public $id, $short_name, $code, $name, $description, $image, $price, $price_llevar, $offer_price, $offer_finish, $free_ingredients, $house_ingredients, $allow_halves, $tipo_division, $link, $category_id, $unit_id, $sede_id, $is_public, $in_existence, $is_featured, $is_active, $created_at;
 	public $offer_txt, $order_at, $meta_title, $meta_description, $meta_keywords, $is_offert;
 
 	public static function generateCode(){
