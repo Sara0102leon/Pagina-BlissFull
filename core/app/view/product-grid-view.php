@@ -59,7 +59,7 @@ if($cat_id>0 && $sede_id>0 && in_array($cat_id, array(5,6))){
       $pizza_edit_json["division"] = $tipo;
     }
   }
-  $has_edit = count($pizza_edit_json["ingredients"])>0 || count($pizza_edit_json["extras"])>0 || count($pizza_edit_json["sabores"])>0;
+  $has_edit = count($pizza_edit_json["ingredients"])>0 || count($pizza_edit_json["extras"])>0 || count($pizza_edit_json["sabores"]??[])>0;
   $pizza_edit_json_str = htmlspecialchars(json_encode($pizza_edit_json), ENT_QUOTES);
   ?>
   <div class="col-12 col-sm-6 col-md-4 col-lg-3">
