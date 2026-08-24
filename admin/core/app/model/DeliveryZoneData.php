@@ -33,5 +33,10 @@ class DeliveryZoneData {
 		return Model::many($query[0],new DeliveryZoneData());
 	}
 
+	public function update(){
+		$sql = "update ".self::$tablename." set name=\"$this->name\",price=\"$this->price\" where id=$this->id";
+		Executor::doit($sql);
+	}
+
 }
 ?>

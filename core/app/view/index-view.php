@@ -149,15 +149,21 @@ foreach($horario_keys as $hk){
               <span class="form-check-label fw-bold">PASARÉ A RECOGER EN LA SUCURSAL</span>
             </label>
          </div>
-         <div class="mb-3">
+<div class="mb-3">
             <label class="form-label fw-bold">Zona de entrega</label>
-            <select id="order_zone" class="form-select">
-              <option value="0" data-price="0">Comer en la sede / Recoger en sucursal</option>
+            <div class="d-flex flex-column gap-2">
+              <label class="form-check">
+                <input class="form-check-input" type="radio" name="order_zone" id="order_zone_0" value="0" data-price="0" checked>
+                <span class="form-check-label">Comer en la sede / Recoger en sucursal <span class="text-muted small fw-normal">(gratis)</span></span>
+              </label>
               <?php foreach($zones as $z): ?>
-              <option value="<?php echo $z->id; ?>" data-price="<?php echo $z->price; ?>"><?php echo htmlspecialchars($z->name); ?></option>
+              <label class="form-check">
+                <input class="form-check-input" type="radio" name="order_zone" id="order_zone_<?php echo $z->id; ?>" value="<?php echo $z->id; ?>" data-price="<?php echo $z->price; ?>">
+                <span class="form-check-label"><?php echo htmlspecialchars($z->name); ?> <span class="text-primary fw-bold ms-2">+<?php echo $coin_symbol.number_format($z->price,2,".",","); ?></span></span>
+              </label>
               <?php endforeach; ?>
-            </select>
-         </div>
+            </div>
+          </div>
          <div class="mb-0" id="address_container">
             <label class="form-label fw-bold">Dirección de Entrega</label>
             <textarea id="order_address" class="form-control" rows="2" placeholder="Calle, número, cruzamientos..."></textarea>
@@ -845,7 +851,7 @@ function computeTotals(items, delivery, deliveryPrice) {
 
 function deliveryPriceFor(sede, zoneId) {
   if (!zoneId || zoneId === "0") return 0;
-  const zoneOpt = $("#order_zone option[value='" + zoneId + "']");
+  const zoneOpt = $("input[name='order_zone'][value='" + zoneId + "']");
   const zoneDefault = zoneOpt.length ? (parseFloat(zoneOpt.data("price")) || 0) : 0;
   if (sede && sede.delivery && sede.delivery[zoneId] !== undefined) {
     return parseFloat(sede.delivery[zoneId]) || 0;
@@ -855,7 +861,7 @@ function deliveryPriceFor(sede, zoneId) {
 
 function updateCheckoutUI() {
   const isPickup = $("#order_pickup").is(":checked");
-  const zoneSel = $("#order_zone").val();
+  const zoneSel = $("input[name='order_zone']:checked").val();
   const delivery = !isPickup && zoneSel !== "0";
   const deliveryPrice = delivery ? deliveryPriceFor(getSelectedSede(), zoneSel) : 0;
   const t = computeTotals(getCartItems(), delivery, deliveryPrice);
@@ -990,16 +996,17 @@ $(document).ready(function() {
   $("#order_pickup").change(function() {
     if($(this).is(":checked")) {
       $("#address_container").fadeOut();
-      $("#order_zone").val("0").prop("disabled", true);
+      $("input[name='order_zone'][value='0']").prop("checked", true);
+      $("input[name='order_zone']").prop("disabled", true);
     } else {
       $("#address_container").fadeIn();
-      $("#order_zone").prop("disabled", false);
+      $("input[name='order_zone']").prop("disabled", false);
     }
     updateCheckoutUI();
   });
 
   // Zone / Payment Method
-  $("#order_zone").change(updateCheckoutUI);
+  $("input[name='order_zone']").change(updateCheckoutUI);
   $(".payment-method").change(updateCheckoutUI);
 
   // Refresh totals when checkout opens
@@ -1037,7 +1044,7 @@ $(document).ready(function() {
     const phone = $("#order_phone").val().trim();
     let address = $("#order_address").val().trim();
     const isPickup = $("#order_pickup").is(":checked");
-    const zoneSel = $("#order_zone").val();
+    const zoneSel = $("input[name='order_zone']:checked").val();
     const paymethodId = $(".payment-method:checked").val();
     const paymethodName = $(".payment-method:checked").data("name");
     const isPM = $(".payment-method:checked").data("pm") == 1;

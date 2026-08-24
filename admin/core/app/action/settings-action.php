@@ -30,11 +30,11 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="addzone"){
 		$z->price = floatval($_POST["price"]);
 		$z->add();
 	}
-	Core::redir("./?view=settings&opt=zones");
+	Core::redir("./?view=settings&opt=sedes&tab=zonas");
 }
 else if(isset($_GET["opt"]) && $_GET["opt"]=="delzone"){
 	DeliveryZoneData::delById($_GET["id"]);
-	Core::redir("./?view=settings&opt=zones");
+	Core::redir("./?view=settings&opt=sedes&tab=zonas");
 }
 else if(isset($_GET["opt"]) && $_GET["opt"]=="addextra"){
 	if(isset($_POST["name"]) && $_POST["name"]!=""){
@@ -197,5 +197,42 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="changepass"){
 		}
 		Core::redir("./?view=settings&opt=password");
 	}
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="addzone"){
+	if(isset($_POST["name"]) && $_POST["name"]!=""){
+		$z = new DeliveryZoneData();
+		$z->name = $_POST["name"];
+		$z->price = floatval($_POST["price"]);
+		$z->add();
+	}
+	Core::redir("./?view=settings&opt=sedes&tab=zonas");
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="delzone"){
+	DeliveryZoneData::delById($_GET["id"]);
+	Core::redir("./?view=settings&opt=sedes&tab=zonas");
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="updzone"){
+	if(isset($_POST["id"]) && isset($_POST["name"]) && $_POST["name"]!=""){
+		$z = DeliveryZoneData::getById($_POST["id"]);
+		$z->name = $_POST["name"];
+		$z->price = floatval($_POST["price"]);
+		$z->add(); // DeliveryZoneData::add() does insert, need update method
+	}
+	Core::redir("./?view=settings&opt=sedes&tab=zonas");
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="updsedezone"){
+	if(isset($_POST["sede_id"]) && isset($_POST["zone_id"])){
+		$sede_id = intval($_POST["sede_id"]);
+		$zone_id = intval($_POST["zone_id"]);
+		$disabled = isset($_POST["disabled"]);
+		if($disabled){
+			// Delete the record = no delivery for this sede+zone
+			Executor::doit("DELETE FROM sede_delivery_zone WHERE sede_id=$sede_id AND delivery_zone_id=$zone_id");
+		}else{
+			$price = floatval($_POST["price"]);
+			SedeDeliveryZoneData::save($sede_id, $zone_id, $price);
+		}
+	}
+	Core::redir("./?view=settings&opt=sedes&tab=zonas");
 }
 ?>

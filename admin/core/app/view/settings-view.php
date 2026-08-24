@@ -282,6 +282,13 @@ $settings = ConfigurationData::getAll();
       <div class="col">
         <h2 class="page-title">Sedes</h2>
       </div>
+      <div class="col-auto ms-auto d-print-none">
+        <div class="btn-list">
+          <a href="./?view=settings&opt=sedes" class="btn btn-outline-warning">
+            <i class="bi bi-geo-alt"></i> Zonas de Delivery
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -408,12 +415,94 @@ $settings = ConfigurationData::getAll();
           </form>
           <?php endforeach; ?>
         <?php endif;?>
+</div>
+        </div>
       </div>
     </div>
+    <?php endif; ?>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-status-top bg-warning"></div>
+      <div class="card-header">
+        <h3 class="card-title">Zonas de Delivery</h3>
+      </div>
+      <form method="post" action="./?action=settings&opt=addzone" class="card-body row g-2 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label">Nombre de la zona</label>
+          <input type="text" name="name" class="form-control" placeholder="Ej: Zona Centro, Zona Norte" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Precio base ($)</label>
+          <input type="number" step="0.01" min="0" name="price" class="form-control" placeholder="0.00" required>
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-warning w-100"><i class="bi bi-plus-lg"></i> Agregar zona</button>
+        </div>
+      </form>
+    </div>
+    <div class="card mb-3">
+      <div class="card-status-top bg-info"></div>
+      <div class="card-header">
+        <h3 class="card-title">Precios por Sede y Zona</h3>
+      </div>
+      <div class="card-body">
+        <?php if(count($sedes)==0):?>
+          <p class="alert alert-warning mb-0">Primero agrega una sede.</p>
+        <?php elseif(count($zones)==0):?>
+          <p class="alert alert-warning mb-0">No hay zonas de entrega registradas.</p>
+        <?php else:?>
+          <div class="table-responsive">
+            <table class="table card-table table-vcenter">
+              <thead>
+                <tr>
+                  <th style="min-width:180px;">Zona de Delivery</th>
+                  <th class="text-center">Precio base</th>
+                  <?php foreach($sedes as $sd): ?>
+                  <th class="text-center" style="min-width:140px;"><?php echo htmlspecialchars($sd->name); ?></th>
+                  <?php endforeach; ?>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach($zones as $z): ?>
+                <tr>
+                  <td>
+                    <form method="post" action="./?action=settings&opt=updzone" class="d-flex gap-2 align-items-center flex-wrap">
+                      <input type="hidden" name="id" value="<?php echo $z->id; ?>">
+                      <input type="text" name="name" class="form-control" value="<?php echo htmlspecialchars($z->name); ?>" required style="min-width:160px;">
+                      <input type="number" step="0.01" min="0" name="price" class="form-control" value="<?php echo number_format($z->price,2,".",""); ?>" style="max-width:100px;">
+                      <button type="submit" class="btn btn-warning btn-sm"><i class="bi bi-check-lg"></i></button>
+                    </form>
+                    <a href="./?action=settings&opt=delzone&id=<?php echo $z->id; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Eliminar esta zona de delivery?');"><i class="bi bi-trash"></i></a>
+                  </td>
+                  <td class="text-center"><?php echo number_format($z->price,2,".",","); ?></td>
+                  <?php foreach($sedes as $sd): ?>
+                  <?php $sp = SedeDeliveryZoneData::getPrice($sd->id, $z->id); $hasPrice = $sp !== null; $val = $hasPrice ? number_format(floatval($sp),2,".","") : number_format($z->price,2,".",""); ?>
+                  <td class="text-center">
+                    <form method="post" action="./?action=settings&opt=updsedezone" class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
+                      <input type="hidden" name="sede_id" value="<?php echo $sd->id; ?>">
+                      <input type="hidden" name="zone_id" value="<?php echo $z->id; ?>">
+                      <div class="form-check form-switch me-2">
+                        <input class="form-check-input" type="checkbox" name="disabled" value="1" <?php echo !$hasPrice ? "checked" : ""; ?>>
+                        <label class="form-check-label small text-muted">Sin delivery</label>
+                      </div>
+                      <input type="number" step="0.01" min="0" name="price" class="form-control form-control-sm text-center" value="<?php echo $val; ?>" style="max-width:90px;" <?php echo !$hasPrice ? "disabled" : ""; ?>>
+                      <button type="submit" class="btn btn-warning btn-sm"><i class="bi bi-check-lg"></i></button>
+                    </form>
+                  </td>
+                  <?php endforeach; ?>
+                </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+        <?php endif;?>
+      </div>
+</div>
   </div>
 </div>
-
-<?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="horarios"):?>
+?>
+<?php if(isset($_GET["opt"]) && $_GET["opt"]=="horarios"):?>
 <?php
 $days = array(
   "horario_lunes" => "Lunes",
