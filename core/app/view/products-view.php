@@ -67,7 +67,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):
                   <a href="./?view=products&opt=open&id=<?php echo $p->id; ?>">
                     <img src="<?php echo $img; ?>" class="card-img-top" style="height: 180px; object-fit: cover;">
                   </a>
-                  <?php if($p->is_offert): ?>
+                  <?php if(ProductData::offerActive($p)): ?>
                   <span class="badge bg-danger position-absolute top-0 end-0 m-2 rounded-pill px-2 py-1 small">OFERTA</span>
                   <?php endif; ?>
                </div>

@@ -114,6 +114,8 @@ function tt_build_sabores($sede_id){
     if(trim((string)$p->tipo_division)!=""){ continue; }
     $extras = ProductExtraData::getByProductId($p->id);
     $pay = tt_build_extras_payload($p->description, $p->free_ingredients, $extras, $p->house_ingredients);
+    // Solo pizzas con ingredientes fijos (las "elige tu preferencia" quedan fuera)
+    if(count($pay["sel"])==0){ continue; }
     // Para estaciones: TODOS los ingredientes de la pizza base son el sabor
     // No filtramos por sel; usamos todos los ingredientes de la pizza base
     $ing = array();

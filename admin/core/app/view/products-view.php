@@ -89,7 +89,7 @@ if($user==null){ Core::redir("./");}
                 <?php if($cat->in_existence):?><i class="bi bi-check-lg text-success"></i><?php else: ?><i class="bi bi-x-lg text-danger"></i><?php endif; ?>
               </td>
               <td>
-                <?php if($cat->is_offert):?><i class="bi bi-check-lg text-success"></i><?php else: ?><i class="bi bi-x-lg text-danger"></i><?php endif; ?>
+                <?php if(ProductData::offerActive($cat)):?><i class="bi bi-check-lg text-success"></i><?php else: ?><i class="bi bi-x-lg text-danger"></i><?php endif; ?>
               </td>
               <td>
                 <div class="btn-list flex-nowrap">
@@ -205,7 +205,7 @@ $(function(){
           <div class="row row-cards">
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Precio en oferta <span class="text-muted small">(opcional: se muestra en vez del precio y el anterior queda tachado)</span></label>
+                <label class="form-label">Precio en oferta <span class="text-muted small">(opcional: al colocarlo, el producto entra en oferta automáticamente y se muestra este precio con el anterior tachado)</span></label>
                 <div class="input-group">
                   <span class="input-group-text"><?php echo $coin; ?></span>
                   <input type="text" class="form-control" placeholder="Precio de oferta" name="offer_price">
@@ -295,14 +295,10 @@ $(function(){
                 <input class="form-check-input" type="checkbox" name="is_featured">
                 <span class="form-check-label">Producto Destacado</span>
               </label>
-              <label class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" name="is_offert">
-                <span class="form-check-label">Producto en Oferta</span>
-              </label>
             </div>
           </div>
           <div class="mb-3">
-            <label class="form-label">Tipo de divisiÃ³n <span class="text-muted small">(solo pizzas: el cliente elige el sabor de cada fracciÃ³n; los ingredientes de la pizza son las opciones)</span></label>
+            <label class="form-label">Tipo de divisiÃ³n <span class="text-muted small">(solo pizzas: si eliges 2 o 4 estaciones, el cliente escoge automáticamente entre las pizzas con ingredientes fijos)</span></label>
             <select name="tipo_division" class="form-select">
               <option value="normal">Normal (el cliente arma su pizza con ingredientes)</option>
               <option value="2_estaciones">2 Estaciones (cliente elige 2 mitades)</option>
@@ -310,19 +306,7 @@ $(function(){
             </select>
           </div>
           <div class="row row-cards">
-            <div class="col-md-4">
-              <div class="mb-3">
-                <label class="form-label">Unidad</label>
-                <?php $units = UnitData::getAll(); ?>
-                <select name="unit_id" class="form-select" required>
-                  <option value="">-- SELECCIONE UNIDAD --</option>
-                  <?php foreach($units as $cat):?>
-                  <option value="<?php echo $cat->id; ?>"><?php echo $cat->name; ?></option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
               <div class="mb-3">
                 <label class="form-label">Categoria</label>
                 <?php $categories = CategoryData::getActives(); ?>
@@ -403,7 +387,7 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
           <div class="row row-cards">
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Precio en oferta <span class="text-muted small">(opcional: se muestra en vez del precio y el anterior queda tachado)</span></label>
+                <label class="form-label">Precio en oferta <span class="text-muted small">(opcional: al colocarlo, el producto entra en oferta automáticamente y se muestra este precio con el anterior tachado)</span></label>
                 <div class="input-group">
                   <span class="input-group-text"><?php echo $coin; ?></span>
                   <input type="text" class="form-control" placeholder="Precio de oferta" value="<?php echo $product->offer_price; ?>" name="offer_price">
@@ -479,15 +463,11 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
                 <input class="form-check-input" type="checkbox" name="is_featured" <?php if($product->is_featured){ echo "checked";} ?>>
                 <span class="form-check-label">Producto Destacado</span>
               </label>
-              <label class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" name="is_offert" <?php if($product->is_offert){ echo "checked";} ?>>
-                <span class="form-check-label">Producto en Oferta</span>
-              </label>
             </div>
           </div>
           <?php $td_val = isset($product->tipo_division) ? trim((string)$product->tipo_division) : "normal"; ?>
           <div class="mb-3">
-            <label class="form-label">Tipo de divisiÃ³n <span class="text-muted small">(solo pizzas: el cliente elige el sabor de cada fracciÃ³n; los ingredientes de la pizza son las opciones)</span></label>
+            <label class="form-label">Tipo de divisiÃ³n <span class="text-muted small">(solo pizzas: si eliges 2 o 4 estaciones, el cliente escoge automáticamente entre las pizzas con ingredientes fijos)</span></label>
             <select name="tipo_division" class="form-select">
               <option value="normal" <?php if($td_val=="normal"){ echo "selected"; } ?>>Normal (el cliente arma su pizza con ingredientes)</option>
               <option value="2_estaciones" <?php if($td_val=="2_estaciones"){ echo "selected"; } ?>>2 Estaciones (cliente elige 2 mitades)</option>
@@ -495,19 +475,7 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
             </select>
           </div>
           <div class="row row-cards">
-            <div class="col-md-4">
-              <div class="mb-3">
-                <label class="form-label">Unidad</label>
-                <?php $units = UnitData::getAll(); ?>
-                <select name="unit_id" class="form-select" required>
-                  <option value="">-- SELECCIONE UNIDAD --</option>
-                  <?php foreach($units as $cat):?>
-                  <option value="<?php echo $cat->id; ?>" <?php if($product->unit_id==$cat->id){ echo "selected";} ?>><?php echo $cat->name; ?></option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
               <div class="mb-3">
                 <label class="form-label">Categoria</label>
                 <?php $categories = CategoryData::getActives(); ?>
@@ -519,7 +487,7 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
                 </select>
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
               <div class="mb-3">
                 <label class="form-label">Sede <span class="text-muted small">(menÃº por sucursal)</span></label>
                 <?php $sedes_form = SedeData::getAll(); ?>

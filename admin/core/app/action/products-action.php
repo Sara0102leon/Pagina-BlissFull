@@ -26,7 +26,8 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="add"){
 		if(isset($_POST["is_public"])) { $product->is_public=1; }else{ $product->is_public=0; }
 		if(isset($_POST["in_existence"])) { $product->in_existence=1; }else{ $product->in_existence=0; }
 		if(isset($_POST["is_featured"])) { $product->is_featured=1; }else{ $product->is_featured=0; }
-		if(isset($_POST["is_offert"])) { $product->is_offert=1; }else{ $product->is_offert=0; }
+		// La oferta se activa automáticamente al colocar un precio de oferta
+		$product->is_offert = ($product->offer_price!=="" && floatval($product->offer_price)>0) ? 1 : 0;
 		$td = isset($_POST["tipo_division"]) ? trim($_POST["tipo_division"]) : "normal";
 		if(!in_array($td, array("normal","2_estaciones","4_estaciones"))){ $td = "normal"; }
 		$product->tipo_division = $td;
@@ -65,7 +66,8 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="upd"){
 		if(isset($_POST["is_public"])) { $product->is_public=1; }else{ $product->is_public=0; }
 		if(isset($_POST["in_existence"])) { $product->in_existence=1; }else{ $product->in_existence=0; }
 		if(isset($_POST["is_featured"])) { $product->is_featured=1; }else{ $product->is_featured=0; }
-		if(isset($_POST["is_offert"])) { $product->is_offert=1; }else{ $product->is_offert=0; }
+		// La oferta se activa automáticamente al colocar un precio de oferta
+		$product->is_offert = ($product->offer_price!=="" && floatval($product->offer_price)>0) ? 1 : 0;
 		$td = isset($_POST["tipo_division"]) ? trim($_POST["tipo_division"]) : "normal";
 		if(!in_array($td, array("normal","2_estaciones","4_estaciones"))){ $td = "normal"; }
 		$product->tipo_division = $td;

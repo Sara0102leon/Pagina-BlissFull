@@ -663,12 +663,12 @@ function openExtrasModal(pid, pname, dataJson) {
       html += '<div class="sabor-ing mb-3" data-block="' + b + '"></div>';
     }
   } else if (pendingIngredients.length > 0) {
-    html += '<div class="fw-bold mb-2"><i class="bi bi-egg-fried me-1 text-gold"></i>INGREDIENTES' + (pendingFreeExtra > 0 ? ' <span id="free_badge" class="badge bg-success rounded-pill">' + pendingFreeExtra + ' gratis</span>' : "") + '</div>';
+    html += '<div class="fw-bold mb-2 tt-ing-head"><i class="bi bi-egg-fried me-1 text-gold"></i>INGREDIENTES' + (pendingFreeExtra > 0 ? ' <span id="free_badge" class="tt-free-badge rounded-pill">' + pendingFreeExtra + ' gratis</span>' : "") + '</div>';
     pendingIngredients.forEach(function(e, i) {
       const isHouse = pendingSel.indexOf(i) !== -1;
       if (isHouse) {
         html += '<div class="d-flex justify-content-between align-items-center mb-2">';
-        html += '<span class="text-muted">' + e.name + '</span>';
+        html += '<span class="tt-house-ing"><i class="bi bi-check-circle-fill me-1"></i>' + e.name + '</span>';
         html += extraBtnHtml(i, e.price);
         html += '</div>';
       } else {
@@ -764,7 +764,7 @@ function refreshIngPriceLabels() {
     if (!priceEl.length || !e) { return; }
     if (cb.is(":checked")) {
       if (granted < pendingFreeExtra) {
-        priceEl.html('<span class="text-success fw-bold">GRATIS</span>');
+        priceEl.html('<span class="tt-gratis-tag">GRATIS</span>');
         granted++;
       } else {
         priceEl.html('<span class="text-danger fw-bold">(+$' + e.price.toFixed(2) + ')</span>');
@@ -773,7 +773,7 @@ function refreshIngPriceLabels() {
       if (quotaFull || pendingFreeExtra === 0) {
         priceEl.html('<span class="text-danger fw-bold">(+$' + e.price.toFixed(2) + ')</span>');
       } else {
-        priceEl.html('<span class="text-success fw-bold">GRATIS</span>');
+        priceEl.html('<span class="tt-gratis-tag">GRATIS</span>');
       }
     }
   });

@@ -13,7 +13,7 @@ class ProductData {
 	}
 
 	public static function offerActive($p){
-		if(!$p || intval($p->is_offert)!=1){ return false; }
+		if(!$p){ return false; }
 		if($p->offer_price=="" || $p->offer_price===null || floatval($p->offer_price)<=0){ return false; }
 		if($p->offer_finish=="" || $p->offer_finish===null){ return true; }
 		return date("Y-m-d") <= date("Y-m-d", strtotime($p->offer_finish));
@@ -44,7 +44,7 @@ class ProductData {
 	public function add(){
 		if($this->code=="" || $this->code===null){ $this->code = self::generateCode(); }
 		$sql = "insert into ".self::$tablename." (short_name,code,name,description,image,price,price_llevar,offer_price,offer_finish,free_ingredients,house_ingredients,allow_halves,tipo_division,link,category_id,unit_id,sede_id,is_public,in_existence,is_featured,is_offert,created_at) ";
-		$sql .= "value (\"$this->short_name\",\"$this->code\",\"$this->name\",\"$this->description\",\"$this->image\",\"$this->price\"," . ($this->price_llevar!="" ? "\"$this->price_llevar\"" : "NULL") . "," . ($this->offer_price!=""  ? "\"$this->offer_price\"" : "NULL") . "," . ($this->offer_finish!="" ? "\"$this->offer_finish\"" : "NULL") . "," . intval($this->free_ingredients) . "," . ($this->house_ingredients!="" ? "\"$this->house_ingredients\"" : "NULL") . "," . intval($this->allow_halves) . ",\"" . ($this->tipo_division!="" ? $this->tipo_division : "normal") . "\",\"$this->link\",$this->category_id,$this->unit_id," . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",$this->is_public,$this->in_existence,$this->is_featured,$this->is_offert,$this->created_at)";
+		$sql .= "value (\"$this->short_name\",\"$this->code\",\"$this->name\",\"$this->description\",\"$this->image\",\"$this->price\"," . ($this->price_llevar!="" ? "\"$this->price_llevar\"" : "NULL") . "," . ($this->offer_price!=""  ? "\"$this->offer_price\"" : "NULL") . "," . ($this->offer_finish!="" ? "\"$this->offer_finish\"" : "NULL") . "," . intval($this->free_ingredients) . "," . ($this->house_ingredients!="" ? "\"$this->house_ingredients\"" : "NULL") . "," . intval($this->allow_halves) . ",\"" . ($this->tipo_division!="" ? $this->tipo_division : "normal") . "\",\"$this->link\",$this->category_id," . ($this->unit_id!="" ? "$this->unit_id" : "NULL") . "," . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",$this->is_public,$this->in_existence,$this->is_featured,$this->is_offert,$this->created_at)";
 		return Executor::doit($sql);
 	}
 
@@ -120,7 +120,7 @@ class ProductData {
 	}
 
 	public static function getOffers(){
-		$sql = "select * from ".self::$tablename." where is_offert=1 and is_active=1 order by created_at desc";
+		$sql = "select * from ".self::$tablename." where offer_price is not null and offer_price<>'' and offer_price>0 and is_active=1 order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}

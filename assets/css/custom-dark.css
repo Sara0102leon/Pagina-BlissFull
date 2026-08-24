@@ -1001,6 +1001,31 @@ body {
   background: #000000 !important;
   color: var(--tt-text) !important;
 }
+/* Ingredientes gratis: más visibles (verde oscuro, letras blancas, más grande) */
+#modal-extras .tt-ing-head { font-size: 1.2rem; color: #ffffff; }
+#modal-extras .tt-free-badge {
+  background: #0b5c2e !important;
+  color: #ffffff !important;
+  font-size: 1.05rem !important;
+  padding: 0.35em 0.9em;
+  letter-spacing: 0.02em;
+}
+#modal-extras .tt-house-ing {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+#modal-extras .tt-house-ing i { color: #16a34a; }
+#modal-extras .tt-gratis-tag {
+  color: #ffffff !important;
+  background: #0b5c2e;
+  border-radius: 0.5rem;
+  padding: 0.2em 0.7em;
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+#modal-extras .ing-opt .form-check-label { font-size: 1.05rem; color: #ffffff; }
+#modal-extras .ing-opt .ing-price { font-size: 1.05rem; }
 #modal-sede .modal-body,
 #modal-checkout .modal-body,
 #modal-extras .modal-body { background: #000000; }
