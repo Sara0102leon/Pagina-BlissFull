@@ -14,7 +14,6 @@ if($user==null){ Core::redir("./");}
       <div class="col-auto ms-auto d-print-none">
         <div class="btn-list">
           <a href="./?view=settings&opt=payment" class="btn btn-default">Metodos de Pago</a>
-          <a href="./?view=settings&opt=zones" class="btn btn-default">Zonas de Delivery</a>
           <a href="./?view=settings&opt=sedes" class="btn btn-default">Sedes</a>
           <a href="./?view=settings&opt=horarios" class="btn btn-default">Horarios</a>
           <a href="./?view=settings&opt=units" class="btn btn-default">Unidades</a>
@@ -467,7 +466,6 @@ $settings = ConfigurationData::getAll();
               <thead>
                 <tr>
                   <th style="min-width:180px;">Zona de Delivery</th>
-                  <th class="text-center">Precio base</th>
                   <?php foreach($sedes as $sd): ?>
                   <th class="text-center" style="min-width:140px;"><?php echo htmlspecialchars($sd->name); ?></th>
                   <?php endforeach; ?>
@@ -480,23 +478,21 @@ $settings = ConfigurationData::getAll();
                     <form method="post" action="./?action=settings&opt=updzone" class="d-flex gap-2 align-items-center flex-wrap">
                       <input type="hidden" name="id" value="<?php echo $z->id; ?>">
                       <input type="text" name="name" class="form-control" value="<?php echo htmlspecialchars($z->name); ?>" required style="min-width:160px;">
-                      <input type="number" step="0.01" min="0" name="price" class="form-control" value="<?php echo number_format($z->price,2,".",""); ?>" style="max-width:100px;">
                       <button type="submit" class="btn btn-warning btn-sm"><i class="bi bi-check-lg"></i></button>
                     </form>
                     <a href="./?action=settings&opt=delzone&id=<?php echo $z->id; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Eliminar esta zona de delivery?');"><i class="bi bi-trash"></i></a>
                   </td>
-                  <td class="text-center"><?php echo number_format($z->price,2,".",","); ?></td>
                   <?php foreach($sedes as $sd): ?>
-                  <?php $sp = SedeDeliveryZoneData::getPrice($sd->id, $z->id); $hasPrice = $sp !== null; $val = $hasPrice ? number_format(floatval($sp),2,".","") : number_format($z->price,2,".",""); ?>
+                  <?php $sp = SedeDeliveryZoneData::getPrice($sd->id, $z->id); $hasPrice = $sp !== null; $val = $hasPrice ? number_format(floatval($sp),2,".","") : "1.00"; ?>
                   <td class="text-center">
                     <form method="post" action="./?action=settings&opt=updsedezone" class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
                       <input type="hidden" name="sede_id" value="<?php echo $sd->id; ?>">
                       <input type="hidden" name="zone_id" value="<?php echo $z->id; ?>">
                       <div class="form-check form-switch me-2">
-                        <input class="form-check-input" type="checkbox" name="disabled" value="1" <?php echo !$hasPrice ? "checked" : ""; ?>>
-                        <label class="form-check-label small text-muted">Sin delivery</label>
+                        <input class="form-check-input" type="checkbox" name="enabled" value="1" <?php echo $hasPrice ? "checked" : ""; ?>>
+                        <label class="form-check-label small text-muted"><?php echo $hasPrice ? "Con delivery" : "Sin delivery"; ?></label>
                       </div>
-                      <input type="number" step="0.01" min="0" name="price" class="form-control form-control-sm text-center" value="<?php echo $val; ?>" style="max-width:90px;" <?php echo !$hasPrice ? "disabled" : ""; ?>>
+                      <input type="number" step="0.01" min="1" name="price" class="form-control form-control-sm text-center" value="<?php echo $val; ?>" style="max-width:90px;" <?php echo !$hasPrice ? "disabled" : ""; ?>>
                       <button type="submit" class="btn btn-warning btn-sm"><i class="bi bi-check-lg"></i></button>
                     </form>
                   </td>

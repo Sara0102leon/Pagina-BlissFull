@@ -202,7 +202,7 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="addzone"){
 	if(isset($_POST["name"]) && $_POST["name"]!=""){
 		$z = new DeliveryZoneData();
 		$z->name = $_POST["name"];
-		$z->price = floatval($_POST["price"]);
+		$z->price = 1;
 		$z->add();
 	}
 	Core::redir("./?view=settings&opt=sedes&tab=zonas");
@@ -215,8 +215,7 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="updzone"){
 	if(isset($_POST["id"]) && isset($_POST["name"]) && $_POST["name"]!=""){
 		$z = DeliveryZoneData::getById($_POST["id"]);
 		$z->name = $_POST["name"];
-		$z->price = floatval($_POST["price"]);
-		$z->add(); // DeliveryZoneData::add() does insert, need update method
+		$z->update();
 	}
 	Core::redir("./?view=settings&opt=sedes&tab=zonas");
 }
@@ -224,8 +223,8 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="updsedezone"){
 	if(isset($_POST["sede_id"]) && isset($_POST["zone_id"])){
 		$sede_id = intval($_POST["sede_id"]);
 		$zone_id = intval($_POST["zone_id"]);
-		$disabled = isset($_POST["disabled"]);
-		if($disabled){
+		$enabled = isset($_POST["enabled"]);
+		if(!$enabled){
 			// Delete the record = no delivery for this sede+zone
 			Executor::doit("DELETE FROM sede_delivery_zone WHERE sede_id=$sede_id AND delivery_zone_id=$zone_id");
 		}else{
