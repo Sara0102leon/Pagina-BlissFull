@@ -30,11 +30,11 @@ if($cat_id>0){
 <?php
 $aviso_sede = null;
 $aviso_cat_nombre = "";
-if($cat_id>0 && $sede_id>0 && in_array($cat_id, array(5,6))){
-  $q2 = Executor::doit("select sede_id from product where category_id=$cat_id and is_public=1 and is_active=1 and sede_id is not null limit 1");
-  $r2 = Model::one($q2[0], new ProductData());
-  if($r2 && intval($r2->sede_id)>0 && $r2->sede_id!=$sede_id){
-    $aviso_sede = SedeData::getById($r2->sede_id);
+if($cat_id>0 && count($products)==0 && in_array($cat_id, array(5,6))){
+  $q2 = Executor::doit("select sede_id from product where category_id=$cat_id and sede_id is not null and sede_id>0 and sede_id!=".intval($sede_id)." group by sede_id");
+  $all_sedes = Model::many($q2[0], new ProductData());
+  if(count($all_sedes)>0 && intval($all_sedes[0]->sede_id)>0){
+    $aviso_sede = SedeData::getById($all_sedes[0]->sede_id);
     $aviso_cat_nombre = ($cat_id==5) ? "Pastas" : "Focaccias";
   }
 }
@@ -59,7 +59,7 @@ if($cat_id>0 && $sede_id>0 && in_array($cat_id, array(5,6))){
       $pizza_edit_json["division"] = $tipo;
     }
   }
-  $has_edit = count($pizza_edit_json["ingredients"])>0 || count($pizza_edit_json["extras"])>0 || count($pizza_edit_json["sabores"]??[])>0;
+  $has_edit = !in_array(intval($p->category_id), $no_edit_cats);
   $pizza_edit_json_str = htmlspecialchars(json_encode($pizza_edit_json), ENT_QUOTES);
   ?>
   <div class="col-12 col-sm-6 col-md-4 col-lg-3">

@@ -645,6 +645,8 @@ function openExtrasModal(pid, pname, dataJson) {
       : "Elige los ingredientes adicionales para tu producto:";
   } else if (pendingExtras.length > 0) {
     hint = "Elige los extras para tu producto:";
+  } else {
+    hint = "Agrega este producto a tu carrito:";
   }
   $("#extras_hint").text(hint);
 
@@ -800,6 +802,7 @@ function updateExtrasTotal() {
 
 function confirmExtras() {
   const sel = [];
+  let selectedNames = [];
   if (pendingDivision > 0 && pendingSabores.length > 0) {
     const blockName = pendingDivision === 2 ? "Mitad" : "Cuarto";
     for (let b = 1; b <= pendingDivision; b++) {
@@ -810,8 +813,9 @@ function confirmExtras() {
       }
       const sb = pendingSabores[parseInt(checked.data("sabor"), 10)];
       sel.push({ name: blockName + " " + b + ": " + sb.name, price: 0, div: 1 });
+      selectedNames.push(sb.name);
     }
-    extraToggles().forEach(function(x){ sel.push({ name: x.name, price: x.price, div: 1 }); });
+    extraToggles().forEach(function(x){ sel.push({ name: x.name, price: x.price, div: 1 }); selectedNames.push(x.name); });
   } else {
     const ingIdx = [];
     $(".ing-opt input:checked").each(function(){ ingIdx.push(parseInt($(this).data("idx"))); });
@@ -820,16 +824,47 @@ function confirmExtras() {
       if (!e) { continue; }
       const included = pendingSel.indexOf(ingIdx[i]) !== -1;
       sel.push({ name: e.name, price: included ? 0 : (i < pendingFreeExtra ? 0 : parseFloat(e.price)), div: included ? 1 : 0 });
+      if (!included) { selectedNames.push(e.name); }
     }
     $(".extra-opt input:checked").each(function(){
       if ($(this).data("sec") === "ing") { return; }
       const e = pendingExtras[parseInt($(this).data("idx"))];
-      if (e) { sel.push({ name: e.name, price: parseFloat(e.price) }); }
+      if (e) { sel.push({ name: e.name, price: parseFloat(e.price) }); selectedNames.push(e.name); }
     });
-    extraToggles().forEach(function(x){ sel.push({ name: x.name, price: x.price }); });
+    extraToggles().forEach(function(x){ sel.push({ name: x.name, price: x.price }); selectedNames.push(x.name); });
   }
   $("#modal-extras").modal("hide");
-  addToCart(pendingExtrasPid, pendingExtrasName, JSON.stringify(sel));
+
+  $.post("./?action=cart&opt=add&ajax=1", { product_id: pendingExtrasPid, extras: JSON.stringify(sel) }, function(data) {
+    $("#cart-container").html(data);
+    $("#offcanvas-cart-container").html(data);
+    updateUI();
+
+    let detailHtml = "";
+    if (selectedNames.length > 0) {
+      detailHtml = '<div style="text-align:left;margin-top:8px;font-size:0.85rem;color:#555;">' +
+        selectedNames.map(function(n){ return '<i class="bi bi-check2 text-success"></i> ' + n; }).join('<br>') +
+        '</div>';
+    }
+
+    Swal.fire({
+      icon: "success",
+      title: pendingExtrasName,
+      html: '<span style="font-size:0.95rem;">Agregado al carrito</span>' + detailHtml,
+      confirmButtonText: '<i class="bi bi-cart-check me-1"></i> Ver carrito',
+      confirmButtonColor: "#b87e38",
+      showCancelButton: true,
+      cancelButtonText: "Seguir pidiendo",
+      cancelButtonColor: "#6c757d",
+      timer: 5000,
+      timerProgressBar: true
+    }).then(function(result) {
+      if (result.isConfirmed || result.dismiss === Swal.DismissReason.timer) {
+        const offcanvas = document.getElementById("offcanvas-cart");
+        if (offcanvas) { bootstrap.Offcanvas.getOrCreateInstance(offcanvas).show(); }
+      }
+    });
+  });
 }
 
 // ===== Checkout Totals =====
