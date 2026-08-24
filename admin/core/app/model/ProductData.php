@@ -45,7 +45,7 @@ class ProductData {
 		if($this->code=="" || $this->code===null){ $this->code = self::generateCode(); }
 		$sql = "insert into ".self::$tablename." (short_name,code,name,description,image,price,price_llevar,offer_price,offer_finish,free_ingredients,house_ingredients,allow_halves,tipo_division,link,category_id,unit_id,sede_id,is_public,in_existence,is_featured,is_offert,created_at) ";
 		$sql .= "value (\"$this->short_name\",\"$this->code\",\"$this->name\",\"$this->description\",\"$this->image\",\"$this->price\"," . ($this->price_llevar!="" ? "\"$this->price_llevar\"" : "NULL") . "," . ($this->offer_price!=""  ? "\"$this->offer_price\"" : "NULL") . "," . ($this->offer_finish!="" ? "\"$this->offer_finish\"" : "NULL") . "," . intval($this->free_ingredients) . "," . ($this->house_ingredients!="" ? "\"$this->house_ingredients\"" : "NULL") . "," . intval($this->allow_halves) . ",\"" . ($this->tipo_division!="" ? $this->tipo_division : "normal") . "\",\"$this->link\",$this->category_id,$this->unit_id," . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",$this->is_public,$this->in_existence,$this->is_featured,$this->is_offert,$this->created_at)";
-		Executor::doit($sql);
+		return Executor::doit($sql);
 	}
 
 	public static function delById($id){

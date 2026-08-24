@@ -251,6 +251,32 @@ $(function(){
             </div>
           </div>
           <div class="mb-3">
+            <label class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" name="has_extras">
+              <span class="form-check-label">¿Tiene ingredientes extra? <span class="text-muted small">(si lo marcas, al guardar el producto se agrega automáticamente a todos los ingredientes)</span></span>
+            </label>
+          </div>
+          <?php $house_catalog = array();
+          foreach(ProductExtraData::getAll() as $pe){
+            if(intval($pe->is_ingredient)==1 && trim($pe->name)!=""){
+              $house_catalog[strtr(mb_strtolower(trim($pe->name)), array("á"=>"a","é"=>"e","í"=>"i","ó"=>"o","ú"=>"u","ñ"=>"n"))] = $pe->name;
+            }
+          }
+          ksort($house_catalog); ?>
+          <div class="mb-3">
+            <label class="form-label">Ingredientes que trae el producto <span class="text-muted small">(se premarcan como incluidos en el menÃº del pÃºblico y no se pueden quitar; si no marcas ninguno se detectan solos desde la descripciÃ³n)</span></label>
+            <div class="row g-2">
+              <?php foreach($house_catalog as $hkey => $hname): ?>
+              <div class="col-6 col-md-4 col-lg-3">
+                <label class="form-check">
+                  <input class="form-check-input" type="checkbox" name="house_ingredients[]" value="<?php echo htmlspecialchars($hname); ?>">
+                  <span class="form-check-label"><?php echo htmlspecialchars($hname); ?></span>
+                </label>
+              </div>
+              <?php endforeach; ?>
+            </div>
+          </div>
+          <div class="mb-3">
             <label class="form-label">Imagen</label>
             <input type="file" class="form-control" name="image">
           </div>

@@ -77,6 +77,22 @@ class ProductExtraData {
 		Executor::doit($sql);
 	}
 
+	public static function addProductToAllGroups($product_id){
+		$pid = intval($product_id);
+		if($pid<=0){ return; }
+		$groups = self::getGroups();
+		$vals = array();
+		foreach($groups as $g){
+			$rows = self::getByGroup($g->group_key);
+			if(self::groupHasGlobal($rows)){ continue; }
+			$vals[] = "(\"".$g->group_key."\",\"".$g->name."\",\"".$g->price."\",".$pid.",".intval($g->is_ingredient).")";
+		}
+		if(count($vals)>0){
+			$sql = "insert into ".self::$tablename." (group_key,name,price,product_id,is_ingredient) values ".implode(",",$vals);
+			Executor::doit($sql);
+		}
+	}
+
 	public static function setGroup($group_key,$name,$price,$product_ids,$all_products_ids,$is_ingredient=0){
 		self::delGroup($group_key);
 		$pids = array();

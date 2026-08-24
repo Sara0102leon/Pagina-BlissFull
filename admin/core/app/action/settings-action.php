@@ -27,13 +27,9 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="addzone"){
 	if(isset($_POST["name"]) && $_POST["name"]!=""){
 		$z = new DeliveryZoneData();
 		$z->name = $_POST["name"];
-		$z->price = floatval($_POST["price"]);
+		$z->price = 1;
 		$z->add();
 	}
-	Core::redir("./?view=settings&opt=sedes&tab=zonas");
-}
-else if(isset($_GET["opt"]) && $_GET["opt"]=="delzone"){
-	DeliveryZoneData::delById($_GET["id"]);
 	Core::redir("./?view=settings&opt=sedes&tab=zonas");
 }
 else if(isset($_GET["opt"]) && $_GET["opt"]=="addextra"){
@@ -157,14 +153,6 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="delsede"){
 	SedeData::delById($_GET["id"]);
 	Core::redir("./?view=settings&opt=sedes");
 }
-else if(isset($_GET["opt"]) && $_GET["opt"]=="updsedezones"){
-	if(isset($_POST["sede_id"]) && $_POST["sede_id"]!="" && isset($_POST["zone_price"]) && is_array($_POST["zone_price"])){
-		foreach($_POST["zone_price"] as $zid => $zprice){
-			SedeDeliveryZoneData::save(intval($_POST["sede_id"]), intval($zid), floatval($zprice));
-		}
-		Core::redir("./?view=settings&opt=sedes");
-	}
-}
 else if(isset($_GET["opt"]) && $_GET["opt"]=="updhorarios"){
 	if(count($_POST)>0){
 		foreach(array("horario_lunes","horario_martes","horario_miercoles","horario_jueves","horario_viernes","horario_sabado","horario_domingo") as $k){
@@ -198,37 +186,16 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="changepass"){
 		Core::redir("./?view=settings&opt=password");
 	}
 }
-else if(isset($_GET["opt"]) && $_GET["opt"]=="addzone"){
-	if(isset($_POST["name"]) && $_POST["name"]!=""){
-		$z = new DeliveryZoneData();
-		$z->name = $_POST["name"];
-		$z->price = 1;
-		$z->add();
-	}
-	Core::redir("./?view=settings&opt=sedes&tab=zonas");
-}
-else if(isset($_GET["opt"]) && $_GET["opt"]=="delzone"){
-	DeliveryZoneData::delById($_GET["id"]);
-	Core::redir("./?view=settings&opt=sedes&tab=zonas");
-}
-else if(isset($_GET["opt"]) && $_GET["opt"]=="updzone"){
-	if(isset($_POST["id"]) && isset($_POST["name"]) && $_POST["name"]!=""){
-		$z = DeliveryZoneData::getById($_POST["id"]);
-		$z->name = $_POST["name"];
-		$z->update();
-	}
-	Core::redir("./?view=settings&opt=sedes&tab=zonas");
-}
 else if(isset($_GET["opt"]) && $_GET["opt"]=="updsedezone"){
 	if(isset($_POST["sede_id"]) && isset($_POST["zone_id"])){
 		$sede_id = intval($_POST["sede_id"]);
 		$zone_id = intval($_POST["zone_id"]);
-		$enabled = isset($_POST["enabled"]);
+		$enabled = isset($_POST["enabled"]) && $_POST["enabled"] !== "";
 		if(!$enabled){
 			// Delete the record = no delivery for this sede+zone
 			Executor::doit("DELETE FROM sede_delivery_zone WHERE sede_id=$sede_id AND delivery_zone_id=$zone_id");
 		}else{
-			$price = floatval($_POST["price"]);
+			$price = isset($_POST["price"]) ? floatval($_POST["price"]) : 1;
 			SedeDeliveryZoneData::save($sede_id, $zone_id, $price);
 		}
 	}

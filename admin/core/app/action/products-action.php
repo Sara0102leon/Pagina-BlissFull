@@ -35,7 +35,13 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="add"){
 		$hi = isset($_POST["house_ingredients"]) && is_array($_POST["house_ingredients"]) ? array_map("trim", $_POST["house_ingredients"]) : array();
 		$product->house_ingredients = implode(", ", array_filter($hi));
 
-		$product->add();
+		$res = $product->add();
+		if(isset($_POST["has_extras"]) && $res){
+			$new_id = intval($res[1]);
+			if($new_id>0){
+				ProductExtraData::addProductToAllGroups($new_id);
+			}
+		}
 		Core::redir("./?view=products&opt=all");
 	}
 }

@@ -54,7 +54,7 @@
     ],
     settings: [
       { sel: ".app-title", t: "Módulo Ajustes", d: "Configuración general del negocio: datos, moneda, WhatsApp, tasa BCV y más." },
-      { sel: 'a[href*="opt=payment"], a[href*="opt=zones"], a[href*="opt=sedes"], a[href*="opt=horarios"], a[href*="opt=units"], a[href*="opt=ingredients"]', t: "Accesos rápidos", d: "Estos botones te llevan a cada sección: métodos de pago, zonas de delivery, sedes, horarios, unidades e ingredientes." },
+      { sel: 'a[href*="opt=payment"], a[href*="opt=sedes"], a[href*="opt=horarios"], a[href*="opt=units"], a[href*="opt=ingredients"]', t: "Accesos rápidos", d: "Estos botones te llevan a cada sección: métodos de pago, sedes, horarios, unidades e ingredientes." },
       { sel: ".table-responsive table, form[action*='settings'] table", t: "Ajustes generales", d: "Aquí editas nombre del negocio, moneda, WhatsApp, imagen por defecto y tasa BCV." },
       { sel: 'button[type="submit"], input[type="submit"]', t: "Actualizar Ajustes", d: "Guarda todos los cambios de esta sección." },
       { sel: "#menuSistema", t: "Menú Sistema", d: "En el menú lateral, dentro de Sistema, también encuentras Usuarios, Ajustes, Sedes, Métodos de Pago, Unidades e Ingredientes." }
