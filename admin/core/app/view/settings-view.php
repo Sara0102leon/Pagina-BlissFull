@@ -276,24 +276,34 @@ $settings = ConfigurationData::getAll();
 <?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="sedes"):?>
 <?php $sedes = SedeData::getAll(); ?>
 <?php $zones = DeliveryZoneData::getAll(); ?>
+<?php $tab = isset($_GET["tab"]) ? $_GET["tab"] : "sedes"; ?>
 <div class="page-header d-print-none">
   <div class="container-xl">
     <div class="row g-2 align-items-center">
       <div class="col">
         <h2 class="page-title">Sedes</h2>
       </div>
-      <div class="col-auto ms-auto d-print-none">
-        <div class="btn-list">
-          <a href="./?view=settings&opt=sedes" class="btn btn-outline-warning">
-            <i class="bi bi-geo-alt"></i> Zonas de Delivery
-          </a>
-        </div>
-      </div>
     </div>
   </div>
 </div>
 <div class="page-body">
   <div class="container-xl">
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-3" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link <?php echo $tab==='sedes'?'active':''; ?>" href="./?view=settings&opt=sedes&tab=sedes" role="tab">
+          <i class="bi bi-shop me-1"></i> Sedes
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link <?php echo $tab==='zonas'?'active':''; ?>" href="./?view=settings&opt=sedes&tab=zonas" role="tab">
+          <i class="bi bi-geo-alt me-1"></i> Zonas de Delivery
+        </a>
+      </li>
+    </ul>
+
+    <?php if($tab === "sedes"): ?>
+    <!-- TAB SEDES -->
     <div class="card mb-3">
       <div class="card-status-top bg-success"></div>
       <div class="card-header">
@@ -502,7 +512,7 @@ $settings = ConfigurationData::getAll();
   </div>
 </div>
 ?>
-<?php if(isset($_GET["opt"]) && $_GET["opt"]=="horarios"):?>
+<?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="horarios"):?>
 <?php
 $days = array(
   "horario_lunes" => "Lunes",
