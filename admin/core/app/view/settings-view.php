@@ -423,11 +423,16 @@ $settings = ConfigurationData::getAll();
             <button type="submit" class="btn btn-warning btn-sm mt-3"><i class="bi bi-check-lg"></i> Guardar precios de <?php echo htmlspecialchars($sd->name); ?></button>
           </form>
           <?php endforeach; ?>
-        <?php endif;?>
-</div>
-        </div>
+<?php endif;?>
       </div>
     </div>
+    <div class="d-flex justify-content-end mt-3">
+      <button type="button" class="btn btn-success btn-lg" id="btn-guardar-todo">
+        <i class="bi bi-save-fill me-1"></i> Guardar todos los cambios
+      </button>
+    </div>
+  </div>
+</div>
     <?php endif; ?>
       </div>
     </div>
@@ -485,16 +490,15 @@ $settings = ConfigurationData::getAll();
                   <?php foreach($sedes as $sd): ?>
                   <?php $sp = SedeDeliveryZoneData::getPrice($sd->id, $z->id); $hasPrice = $sp !== null; $val = $hasPrice ? number_format(floatval($sp),2,".","") : "1.00"; ?>
                   <td class="text-center">
-                    <form method="post" action="./?action=settings&opt=updsedezone" class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
+                    <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
                       <input type="hidden" name="sede_id" value="<?php echo $sd->id; ?>">
                       <input type="hidden" name="zone_id" value="<?php echo $z->id; ?>">
                       <div class="form-check form-switch me-2">
-                        <input class="form-check-input" type="checkbox" name="enabled" value="1" <?php echo $hasPrice ? "checked" : ""; ?>>
-                        <label class="form-check-label small text-muted"><?php echo $hasPrice ? "Con delivery" : "Sin delivery"; ?></label>
+                        <input class="form-check-input sede-zone-toggle" type="checkbox" name="enabled" value="1" <?php echo $hasPrice ? "checked" : ""; ?> data-sede="<?php echo $sd->id; ?>" data-zone="<?php echo $z->id; ?>">
+                        <label class="form-check-label small text-muted delivery-label"><?php echo $hasPrice ? "Con delivery" : "Sin delivery"; ?></label>
                       </div>
-                      <input type="number" step="0.01" min="1" name="price" class="form-control form-control-sm text-center" value="<?php echo $val; ?>" style="max-width:90px;" <?php echo !$hasPrice ? "disabled" : ""; ?>>
-                      <button type="submit" class="btn btn-warning btn-sm"><i class="bi bi-check-lg"></i></button>
-                    </form>
+                      <input type="number" step="0.01" min="1" name="price" class="form-control form-control-sm text-center sede-price-input" value="<?php echo $val; ?>" style="max-width:90px;" <?php echo !$hasPrice ? "disabled" : ""; ?>>
+                    </div>
                   </td>
                   <?php endforeach; ?>
                 </tr>
@@ -886,6 +890,54 @@ $(function(){
     var $btn = $('[data-form="' + key + '"]');
     saveExtraProducts(key, rowPids($btn), $btn.find(".picker-label"));
     Swal.fire({ icon:"success", title:"Guardado", text:"Ingrediente actualizado", timer:1200, showConfirmButton:false });
+  });
+
+  // Sedes/Zonas: toggle Con delivery / Sin delivery
+  $(document).on("change", ".sede-zone-toggle", function() {
+    var $checkbox = $(this);
+    var $container = $checkbox.closest(".d-flex");
+    var $label = $container.find(".delivery-label");
+    var $priceInput = $container.find(".sede-price-input");
+    if ($checkbox.is(":checked")) {
+      $label.text("Con delivery");
+      $priceInput.prop("disabled", false);
+      if ($priceInput.val() === "" || parseFloat($priceInput.val()) < 1) {
+        $priceInput.val("1.00");
+      }
+    } else {
+      $label.text("Sin delivery");
+      $priceInput.prop("disabled", true);
+    }
+  });
+
+  // Guardar todo: submit all sede-zone forms
+  $("#btn-guardar-todo").click(function() {
+    var $btn = $(this);
+    $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm me-1"></span> Guardando...');
+    var promises = [];
+    $(".sede-zone-toggle").each(function() {
+      var $checkbox = $(this);
+      var $container = $checkbox.closest(".d-flex");
+      var $form = $("<form>", { method: "post", action: "./?action=settings&opt=updsedezone" });
+      $form.append($("<input>", { type: "hidden", name: "enabled", value: $checkbox.is(":checked") ? "1" : "" }));
+      $form.append($("<input>", { type: "hidden", name: "sede_id", value: $checkbox.data("sede") }));
+      $form.append($("<input>", { type: "hidden", name: "zone_id", value: $checkbox.data("zone") }));
+      var $priceInput = $container.find(".sede-price-input");
+      if ($checkbox.is(":checked")) {
+        var price = parseFloat($priceInput.val()) || 1;
+        $form.append($("<input>", { type: "hidden", name: "price", value: price }));
+      }
+      $("body").append($form);
+      promises.push($.post($form.attr("action"), $form.serialize()));
+      $form.remove();
+    });
+    Promise.all(promises).then(function() {
+      Swal.fire({ icon: "success", title: "Guardado", text: "Todos los cambios guardados", timer: 1500, showConfirmButton: false });
+      location.reload();
+    }).catch(function() {
+      Swal.fire({ icon: "error", title: "Error", text: "Hubo un error al guardar" });
+      $btn.prop("disabled", false).html('<i class="bi bi-save-fill me-1"></i> Guardar todos los cambios');
+    });
   });
 });
 </script>
