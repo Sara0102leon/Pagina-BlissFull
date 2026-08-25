@@ -705,14 +705,8 @@ function renderSaborIng(block, si) {
   const $box = $(".sabor-ing[data-block='" + block + "']");
   if (!sb) { $box.html(""); return; }
   let h = '<div class="small text-muted mb-1"><i class="bi bi-check2-circle me-1 text-success"></i>Incluye: ';
-  h += sb.ingredients.map(function(g){ return g.name; }).join(", ");
+  h += (sb.desc || sb.ingredients.map(function(g){ return g.name; }).join(", "));
   h += '</div>';
-  sb.ingredients.forEach(function(g, gi) {
-    h += '<div class="d-flex justify-content-between align-items-center mb-1 small">' +
-      '<span class="text-muted">' + g.name + '</span>' +
-      extraBtnHtml(block + "-" + gi, g.price) +
-      '</div>';
-  });
   $box.html(h);
 }
 

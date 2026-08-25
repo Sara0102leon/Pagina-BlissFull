@@ -122,7 +122,7 @@ function tt_build_sabores($sede_id){
     foreach($pay["ingredients"] as $ing_item){
       $ing[] = array("name"=>$ing_item["name"],"price"=>$ing_item["price"]);
     }
-    $sabores[] = array("id"=>intval($p->id),"name"=>trim((string)$p->name),"ingredients"=>$ing);
+    $sabores[] = array("id"=>intval($p->id),"name"=>trim((string)$p->name),"desc"=>trim((string)$p->description),"ingredients"=>$ing);
   }
   return $sabores;
 }
