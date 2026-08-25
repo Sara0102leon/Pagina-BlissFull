@@ -199,6 +199,7 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="updsedezone"){
 			SedeDeliveryZoneData::save($sede_id, $zone_id, $price);
 		}
 	}
-	Core::redir("./?view=settings&opt=sedes&tab=zonas");
+	echo "ok";
+	exit;
 }
 ?>

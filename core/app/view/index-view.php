@@ -888,6 +888,26 @@ function deliveryPriceFor(sede, zoneId) {
   return zoneDefault;
 }
 
+function filterZonesBySede() {
+  var sede = getSelectedSede();
+  $("input[name='order_zone']").each(function() {
+    var zoneId = String($(this).val());
+    if (zoneId === "0") return;
+    var $label = $(this).closest("label");
+    var $priceTag = $label.find(".text-primary");
+    if (sede && sede.delivery && sede.delivery[zoneId] !== undefined) {
+      var sp = parseFloat(sede.delivery[zoneId]) || 0;
+      $(this).attr("data-price", sp);
+      $priceTag.text("+" + COIN + sp.toFixed(2));
+      $label.show();
+    } else {
+      $label.hide();
+      if ($(this).is(":checked")) {
+        $("input[name='order_zone'][value='0']").prop("checked", true);
+      }
+    }
+  });
+}
 function updateCheckoutUI() {
   const isPickup = $("#order_pickup").is(":checked");
   const zoneSel = $("input[name='order_zone']:checked").val();
@@ -975,6 +995,7 @@ $(document).ready(function() {
   $("#btn_checkout_sede").click(function() { openSedeModal(); });
 
   setSedeUI();
+  filterZonesBySede();
   if (!getSelectedSede()) {
     setTimeout(function() { openSedeModal(); }, 600);
   } else {
@@ -1039,7 +1060,7 @@ $(document).ready(function() {
   $(".payment-method").change(updateCheckoutUI);
 
   // Refresh totals when checkout opens
-  $("#modal-checkout").on("shown.bs.modal", function() { updateCheckoutUI(); });
+  $("#modal-checkout").on("shown.bs.modal", function() { filterZonesBySede(); updateCheckoutUI(); });
 
   // Clear invalid state while typing
   $("#order_name, #order_phone, #order_address").on("input", function() {
@@ -1101,9 +1122,9 @@ $(document).ready(function() {
     }
 
     const delivery = !isPickup;
-    const zoneOpt = delivery ? $("#order_zone option:selected") : null;
+    const $zoneChecked = $("input[name='order_zone']:checked");
     const deliveryPrice = delivery ? deliveryPriceFor(sede, zoneSel) : 0;
-    const zoneName = delivery ? zoneOpt.text() : "Recoger en sucursal";
+    const zoneName = delivery ? $zoneChecked.closest("label").find(".form-check-label").clone().children().remove().end().text().trim() : "Recoger en sucursal";
     const items = getCartItems();
     const t = computeTotals(items, delivery, deliveryPrice);
     const note = $("#order_note").val().trim().replace(/\n/g, ", ");
