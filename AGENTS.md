@@ -60,7 +60,14 @@ SHOW COLUMNS FROM product;   -- vs lo que usan ProductData::add(), products-view
 ```
 Columnas conocidas que han causado este bug: `price_llevar`, `allow_halves`, `house_ingredients`, `tipo_division`.
 
-**Contraseña de usuario admin:** `sha1(md5("password"))` — hash débil pero funcional, no cambiar.
+**Contraseña de usuario admin:** `admin`, hash `sha1(md5("admin"))` = `90b9aa7e25f80cf4f64e990b78a9fc5ebd6cecad`. (AGENTS viejo decía "password" pero el hash real NO coincide.) Hash débil pero funcional, no cambiar. El login está en `admin/core/app/action/access-action.php`.
+
+**Login admin por HTTP (para probar endpoints con sesión):**
+```powershell
+$sess = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+$base = "http://localhost/blissfull/admin"
+Invoke-WebRequest -Uri "$base/?action=access&opt=login" -Method POST -Body @{email="admin"; password="admin"} -WebSession $sess -UseBasicParsing -MaximumRedirection 5 | Out-Null
+
 
 ## Desarrollo y validación
 
@@ -115,6 +122,7 @@ schema.sql                     # Schema canónico de BD
 ## Patrones de código importantes
 
 - **`ProductData::offerActive()`** verifica `offer_price > 0` directamente (no usa checkbox `is_offert`)
+- **`ClientData::del()`** hace SOFT-DELETE (marca `is_active=0`) y `getAll()` filtra `is_active=1`. NO borra físicamente: `buy.client_id` tiene FK y un DELETE duro de un cliente con ventas da error. `getById()` no filtra para no romper la sesión/ventas
 - **`ProductExtraData::addProductToAllGroups()`** es idempotente: chequea existencia antes de insertar
 - **`tt_build_sabores()`** en `product-extras-helper.php`: filtra productos con ingredientes fijos (`count($pay["sel"])>0`), excluye "a tu Preferencia"
 - **Estaciones** (`4_estaciones`, `2_estaciones`): el modal `openExtrasModal` renderiza radios por división (MITAD/CUARTO) con sabores como opciones
