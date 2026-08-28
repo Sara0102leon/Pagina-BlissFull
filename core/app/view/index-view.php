@@ -20,15 +20,13 @@ $sede_json = array();
 foreach($sedes as $sd){
   $deliv_map = array();
   foreach(SedeDeliveryZoneData::getBySede($sd->id) as $sdzd){ $deliv_map[$sdzd->delivery_zone_id] = floatval($sdzd->price); }
-  $ho = trim((string)$sd->horario_open);
-  $hc = trim((string)$sd->horario_close);
+  $horarios = SedeHorarioData::mapForSede($sd->id);
   array_push($sede_json, array(
     "id"=>$sd->id,
     "name"=>$sd->name,
     "address"=>$sd->address,
     "phone"=>$sd->phone,
-    "horario_open"=>$ho!="" ? substr($ho,0,5) : "",
-    "horario_close"=>$hc!="" ? substr($hc,0,5) : "",
+    "horarios"=>$horarios,
     "delivery"=>$deliv_map
   ));
 }
@@ -41,6 +39,12 @@ function tt_cat_ic($cat_name){
   if(strpos($cn,"fria") !== false){ return "snow"; }
   if(strpos($cn,"pizza") !== false){ return "pie-chart-fill"; }
   return "circle-half";
+}
+function tt_sede_today($sede_id){
+  $h = SedeHorarioData::mapForSede($sede_id);
+  $keys = array("domingo","lunes","martes","miercoles","jueves","viernes","sabado");
+  $today = $keys[(int)date("w")];
+  return array("open"=>trim((string)$h[$today]["open"]), "close"=>trim((string)$h[$today]["close"]));
 }
 $base_url = (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"]!="off" ? "https" : "http")."://".$_SERVER["HTTP_HOST"];
 $script_dir = str_replace("\\","/",dirname($_SERVER["SCRIPT_NAME"]));
@@ -116,8 +120,8 @@ foreach($horario_keys as $hk){
               <div class="flex-fill">
                 <div class="fw-bold h4 mb-1"><?php echo htmlspecialchars($sd->name); ?></div>
                 <div class="text-muted fs-6"><?php echo htmlspecialchars($sd->address); ?></div>
-                <?php if(trim((string)$sd->horario_open)!="" || trim((string)$sd->horario_close)!=""): ?>
-                <div class="small text-gold mt-1"><i class="bi bi-clock me-1"></i><?php echo htmlspecialchars(substr((string)$sd->horario_open,0,5)); ?> - <?php echo htmlspecialchars(substr((string)$sd->horario_close,0,5)); ?></div>
+                <?php $sd_today = tt_sede_today($sd->id); if($sd_today["open"]!="" || $sd_today["close"]!=""): ?>
+                <div class="small text-gold mt-1"><i class="bi bi-clock me-1"></i>Hoy: <?php echo htmlspecialchars(substr($sd_today["open"],0,5)); ?> - <?php echo htmlspecialchars(substr($sd_today["close"],0,5)); ?></div>
                 <?php endif; ?>
               </div>
             </div>
@@ -417,12 +421,7 @@ foreach($horario_keys as $hk){
       <div class="col-lg-5">
         <div class="tt-panel">
           <div class="tt-panel-title mb-3"><i class="bi bi-clock-fill text-gold me-2"></i>HORARIO DE ATENCIÓN</div>
-          <?php $dias_fin = array("Sábado","Domingo"); foreach($tt_hours as $dlabel => $dhours): ?>
-          <div class="tt-hours-row<?php echo in_array($dlabel,$dias_fin)?" tt-weekend":""; ?>">
-            <span class="tt-day"><?php echo $dlabel; ?></span>
-            <span class="tt-hours"><?php echo $dhours; ?></span>
-          </div>
-          <?php endforeach; ?>
+          <div id="horario-atencion"><div class="text-white-50 small">Elige una sede para ver su horario.</div></div>
           <div class="d-flex align-items-center gap-2 text-white-50 small mt-3 pt-3 border-top">
             <i class="bi bi-whatsapp text-gold"></i> Los pedidos por WhatsApp se atienden en el mismo horario.
           </div>
@@ -456,8 +455,8 @@ foreach($horario_keys as $hk){
                       <div class="fw-bold"><i class="bi bi-shop me-1 text-gold"></i><?php echo htmlspecialchars($sd->name); ?></div>
                       <div class="small text-white-50"><i class="bi bi-geo-alt me-1"></i><?php echo htmlspecialchars($sd->address); ?></div>
                       <div class="small text-white-50"><i class="bi bi-telephone me-1"></i><?php echo htmlspecialchars($sd->phone); ?></div>
-                      <?php if(trim((string)$sd->horario_open)!="" || trim((string)$sd->horario_close)!=""): ?>
-                      <div class="small text-gold mt-1"><i class="bi bi-clock me-1"></i><?php echo htmlspecialchars(substr((string)$sd->horario_open,0,5)); ?> - <?php echo htmlspecialchars(substr((string)$sd->horario_close,0,5)); ?></div>
+                      <?php $sd2_today = tt_sede_today($sd->id); if($sd2_today["open"]!="" || $sd2_today["close"]!=""): ?>
+                      <div class="small text-gold mt-1"><i class="bi bi-clock me-1"></i>Hoy: <?php echo htmlspecialchars(substr($sd2_today["open"],0,5)); ?> - <?php echo htmlspecialchars(substr($sd2_today["close"],0,5)); ?></div>
                       <?php endif; ?>
                       <div class="tt-flip-hint small mt-2"><i class="bi bi-arrow-repeat me-1"></i>Toca para girar · ver mapa</div>
                     </div>
@@ -522,35 +521,30 @@ function fmt12(t) {
   h = h % 12; if (h === 0) h = 12;
   return h + ":" + (m < 10 ? "0" + m : m) + " " + ampm;
 }
+const TT_DAYS = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
+function todayKey() {
+  return TT_DAYS[new Date().getDay()] || "";
+}
 function sedeClosedGuard() {
   const sede = getSelectedSede();
-  let closed = false, sedeHours = false;
-  let openLabel = "", closeLabel = "";
-  if (sede && (sede.horario_open || sede.horario_close)) {
-    const om = toMin(sede.horario_open), cm = toMin(sede.horario_close);
+  let closed = false, closedMsg = null;
+  if (sede && sede.horarios) {
+    const h = sede.horarios[todayKey()] || {};
+    const om = toMin(h.open), cm = toMin(h.close);
     if (om !== null && cm !== null) {
-      sedeHours = true;
       const now = new Date();
       const cur = now.getHours() * 60 + now.getMinutes();
       closed = (cm > om) ? (cur < om || cur >= cm) : !(cur >= om || cur < cm);
-      openLabel = fmt12(sede.horario_open);
-      closeLabel = fmt12(sede.horario_close);
+      if (closed) {
+        closedMsg = "La sede <b>" + sede.name + "</b> está cerrada en este momento.<br>Horario de atención de hoy: <b>" + fmt12(h.open) + " - " + fmt12(h.close) + "</b>.";
+      }
     }
-  }
-  if (!sedeHours) {
-    if (typeof TITO_STORE_CLOSED !== "undefined" && TITO_STORE_CLOSED) { closed = true; }
   }
   if (closed) {
-    let html;
-    if (sedeHours) {
-      html = "La sede <b>" + (sede ? sede.name : "") + "</b> está cerrada en este momento.<br>Horario de atención: <b>" + openLabel + " - " + closeLabel + "</b>.";
-    } else {
-      html = typeof TITO_CLOSED_MSG !== "undefined" ? TITO_CLOSED_MSG : "Estamos cerrados en este momento.";
-    }
     Swal.fire({
       icon: "error",
       title: "ESTAMOS CERRADOS",
-      html: html,
+      html: closedMsg ? closedMsg : "Estamos cerrados en este momento.",
       background: "#000000",
       color: "#ffffff",
       iconColor: "#ff2a2a",
@@ -589,6 +583,26 @@ function setSedeUI() {
   const label = sede ? sede.name : "Elegir tu sede";
   if (headerEl) { headerEl.textContent = label; }
   if (checkoutEl) { checkoutEl.textContent = label; }
+  renderHorarioAtencion();
+}
+
+const TT_DAY_LABELS = [["lunes","Lunes"],["martes","Martes"],["miercoles","Miércoles"],["jueves","Jueves"],["viernes","Viernes"],["sabado","Sábado"],["domingo","Domingo"]];
+function renderHorarioAtencion() {
+  const el = $("#horario-atencion");
+  if (!el.length) { return; }
+  const sede = getSelectedSede();
+  if (!sede || !sede.horarios) {
+    el.html('<div class="text-white-50 small">Elige una sede para ver su horario.</div>');
+    return;
+  }
+  let html = "";
+  TT_DAY_LABELS.forEach(function(d) {
+    const h = sede.horarios[d[0]] || {};
+    const txt = (h.open && h.close) ? fmt12(h.open) + " - " + fmt12(h.close) : "Cerrado";
+    const weekend = (d[0] === "sabado" || d[0] === "domingo") ? " tt-weekend" : "";
+    html += '<div class="tt-hours-row' + weekend + '"><span class="tt-day">' + d[1] + '</span><span class="tt-hours">' + txt + '</span></div>';
+  });
+  el.html(html);
 }
 
 function selectSedeCard(id) {

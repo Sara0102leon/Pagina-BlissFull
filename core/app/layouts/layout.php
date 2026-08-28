@@ -159,11 +159,8 @@
     $h_close_parts = explode(":", $h_close_str);
     $h_open_min = (int)$h_open_parts[0]*60 + (int)(isset($h_open_parts[1]) ? $h_open_parts[1] : 0);
     $h_close_min = (int)$h_close_parts[0]*60 + (int)(isset($h_close_parts[1]) ? $h_close_parts[1] : 0);
-    if($h_close_min > $h_open_min){
-      $store_closed = ($now_min < $h_open_min || $now_min >= $h_close_min);
-    }else{
-      $store_closed = !($now_min >= $h_open_min || $now_min < $h_close_min);
-    }
+    // El cierre se maneja por sede (sedeClosedGuard en el frontend), no globalmente.
+    $store_closed = false;
     // Display: use per-day schedule if set, otherwise general
     if($usar_horario_hoy){
       $h_open_d = date("g:i A", strtotime($h_open_str));
@@ -349,7 +346,7 @@
               <div class="col-6 col-md-4 col-lg-3">
                 <h4 class="h5 mb-3">Horario</h4>
                 <ul class="list-unstyled small d-grid gap-1 mb-0">
-                  <li><span class="tt-hand tt-hand-sm">Todos los días</span> <span class="float-end text-white fw-bold"><?php echo $horario_display; ?></span></li>
+                  <li><span class="tt-hand tt-hand-sm">Horarios por sede</span> <span class="float-end text-white fw-bold">consulta tu sede</span></li>
                   <li class="text-white-50">Entrega a domicilio y recogida en sucursal.</li>
                 </ul>
               </div>

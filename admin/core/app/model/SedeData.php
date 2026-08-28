@@ -2,23 +2,21 @@
 class SedeData {
 	public static $tablename = "sede";
 
-	public $id, $name, $address, $phone, $horario_open, $horario_close, $image, $maps, $is_active, $created_at;
+	public $id, $name, $address, $phone, $image, $maps, $is_active, $created_at;
 
 	public function __construct(){
 		$this->id = null;
 		$this->name = "";
 		$this->address = "";
 		$this->phone = "";
-		$this->horario_open = "";
-		$this->horario_close = "";
 		$this->image = "";
 		$this->maps = "";
 		$this->is_active = "1";
 	}
 
 	public function add(){
-		$sql = "insert into ".self::$tablename." (name,address,phone,horario_open,horario_close,image,maps,is_active) ";
-		$sql .= "value (\"$this->name\",\"$this->address\",\"$this->phone\"," . ($this->horario_open!="" ? "\"$this->horario_open\"" : "NULL") . "," . ($this->horario_close!="" ? "\"$this->horario_close\"" : "NULL") . ",\"$this->image\",\"$this->maps\",$this->is_active)";
+		$sql = "insert into ".self::$tablename." (name,address,phone,image,maps,is_active) ";
+		$sql .= "value (\"$this->name\",\"$this->address\",\"$this->phone\",\"$this->image\",\"$this->maps\",$this->is_active)";
 		Executor::doit($sql);
 	}
 
@@ -28,7 +26,7 @@ class SedeData {
 	}
 
 	public function update(){
-		$sql = "update ".self::$tablename." set name=\"$this->name\",address=\"$this->address\",phone=\"$this->phone\",horario_open=" . ($this->horario_open!="" ? "\"$this->horario_open\"" : "NULL") . ",horario_close=" . ($this->horario_close!="" ? "\"$this->horario_close\"" : "NULL") . ",image=\"$this->image\",maps=\"$this->maps\",is_active=\"$this->is_active\" where id=$this->id";
+		$sql = "update ".self::$tablename." set name=\"$this->name\",address=\"$this->address\",phone=\"$this->phone\",image=\"$this->image\",maps=\"$this->maps\",is_active=\"$this->is_active\" where id=$this->id";
 		Executor::doit($sql);
 	}
 

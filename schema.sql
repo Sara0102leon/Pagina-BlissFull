@@ -233,6 +233,16 @@ create table sede (
 	created_at datetime default current_timestamp
 );
 
+create table sede_horario (
+	id int not null auto_increment primary key,
+	sede_id int not null,
+	dia varchar(20) not null,
+	hora_open varchar(5) default null,
+	hora_close varchar(5) default null,
+	unique key uq_sede_dia (sede_id, dia)
+);
+
+
 insert into sede (name, address, phone) values
 ("Blissfull Villa Roca", "Villa Roca (sucursal principal)", "+584120000001"),
 ("Blissfull Cabudare", "Cabudare (sucursal)", "+584120000002"),
