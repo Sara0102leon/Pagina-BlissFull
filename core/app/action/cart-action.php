@@ -162,6 +162,7 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="buy"){
 		$buy->sede_id = isset($_POST["sede_id"])?$_POST["sede_id"]:"";
 		$buy->capture = isset($_POST["capture"])?$_POST["capture"]:"";
 		$buy->note = isset($_POST["note"])?trim($_POST["note"]):"";
+		$buy->scheduled_at = isset($_POST["scheduled_at"])?trim($_POST["scheduled_at"]):"";
 		$buy->status_id= 1;
 		$b = $buy->add();
 

@@ -40,6 +40,7 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
               <th>Metodo de pago</th>
               <th>Estado</th>
               <th>Fecha</th>
+              <th>Programado</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -57,7 +58,9 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
               <td><?php echo $b->getPaymethod()->name; ?></td>
               <td>
                 <?php if($b->status_id==1):?>
-                  <?php if(intval($pending_map[$b->id])>=30):?>
+                  <?php if(!empty($b->scheduled_at) && strtotime($b->scheduled_at) > time()):?>
+                    <span class="badge bg-info text-dark" title="Pedido programado"><i class="bi bi-calendar-check me-1"></i>Programado</span>
+                  <?php elseif(intval($pending_map[$b->id])>=30):?>
                     <span class="badge bg-danger text-white" title="30+ minutos sin pago ni señales del cliente"><i class="bi bi-bell-fill me-1"></i>Sin señales de pago</span>
                   <?php else:?>
                     <span class="badge bg-warning text-dark">Pendiente</span>
@@ -67,6 +70,13 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
                 <?php endif;?>
               </td>
               <td><?php echo $b->created_at; ?></td>
+              <td>
+                <?php if(!empty($b->scheduled_at)): ?>
+                  <span class="badge bg-info-lt" title="Pedido programado"><i class="bi bi-clock me-1"></i><?php echo date("d/m/Y h:i A", strtotime($b->scheduled_at)); ?></span>
+                <?php else: ?>
+                  <span class="text-muted">-</span>
+                <?php endif; ?>
+              </td>
               <td>
                 <?php if($b->status_id==3):?>
                   <span class="badge bg-danger text-white"><i class="bi bi-x-lg me-1"></i>Cancelado</span>
@@ -173,6 +183,9 @@ $ivatxt = ConfigurationData::getByPreffix("general_iva_txt")->val;
         <strong>Sede:</strong> <?php echo htmlspecialchars($b_sede2->name); ?> (WhatsApp: <?php echo htmlspecialchars($b_sede2->phone); ?>)<br>
         <?php endif; ?>
         <strong>Dirección:</strong> <?php echo $client->address ? $client->address : "Recoger en sucursal"; ?><br>
+        <?php if(!empty($buy->scheduled_at)): ?>
+        <strong>Pedido programado:</strong> <?php echo date("d/m/Y h:i A", strtotime($buy->scheduled_at)); ?><br>
+        <?php endif; ?>
         <strong>Metodo de pago:</strong> <?php echo $paymethod->name; ?><br>
         <?php $zone = $buy->getDeliveryZone(); if($zone): ?>
         <strong>Zona de Delivery:</strong> <?php echo htmlspecialchars($zone->name); ?> ($ <?php echo number_format($zone->price,2,".",","); ?>)<br>

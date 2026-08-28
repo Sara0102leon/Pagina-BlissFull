@@ -117,6 +117,8 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="addsede"){
 		$s->name = $_POST["name"];
 		$s->address = isset($_POST["address"]) ? $_POST["address"] : "";
 		$s->phone = $_POST["phone"];
+		$s->horario_open = isset($_POST["horario_open"]) ? $_POST["horario_open"] : "";
+		$s->horario_close = isset($_POST["horario_close"]) ? $_POST["horario_close"] : "";
 		$s->maps = isset($_POST["maps"]) ? $_POST["maps"] : "";
 		$s->is_active = isset($_POST["is_active"]) ? "1" : "0";
 		if(isset($_FILES["image"])){
@@ -136,6 +138,8 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="updsede"){
 		$s->name = $_POST["name"];
 		$s->address = isset($_POST["address"]) ? $_POST["address"] : "";
 		$s->phone = $_POST["phone"];
+		$s->horario_open = isset($_POST["horario_open"]) ? $_POST["horario_open"] : "";
+		$s->horario_close = isset($_POST["horario_close"]) ? $_POST["horario_close"] : "";
 		$s->maps = isset($_POST["maps"]) ? $_POST["maps"] : "";
 		$s->is_active = isset($_POST["is_active"]) ? "1" : "0";
 		if(isset($_FILES["image"]) && $_FILES["image"]["name"]!=""){

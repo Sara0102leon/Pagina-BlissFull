@@ -258,6 +258,17 @@ $settings = ConfigurationData::getAll();
             <div class="col-md-4 d-flex align-items-center text-muted small">
               Foto de la sede (se ve al girar la tarjeta en la página).
             </div>
+            <div class="col-md-3">
+              <label class="form-label small text-muted mb-0">Horario apertura (opcional)</label>
+              <input type="time" name="horario_open" class="form-control" placeholder="Ej: 10:00">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small text-muted mb-0">Horario cierre (opcional)</label>
+              <input type="time" name="horario_close" class="form-control" placeholder="Ej: 22:00">
+            </div>
+            <div class="col-md-6 d-flex align-items-center text-muted small">
+              Si se dejan vacíos, esta sede usa el horario general de atención.
+            </div>
           </div>
           <p class="text-muted small mb-0 mt-2">El WhatsApp de la sede se usa en el envío del pedido. Ej: +584121234567</p>
         </div>
@@ -276,6 +287,7 @@ $settings = ConfigurationData::getAll();
               <tr>
                 <th>Sede</th>
                 <th>WhatsApp</th>
+                <th>Horario</th>
                 <th>Activa</th>
                 <th></th>
               </tr>
@@ -296,6 +308,14 @@ $settings = ConfigurationData::getAll();
                 </td>
                 <td>
                   <input type="text" name="phone" class="form-control" value="<?php echo htmlspecialchars($sd->phone); ?>" required style="min-width:140px;">
+                </td>
+                <td>
+                  <div class="d-flex gap-1 align-items-center">
+                    <input type="time" name="horario_open" class="form-control form-control-sm" value="<?php echo htmlspecialchars(substr((string)$sd->horario_open,0,5)); ?>" title="Apertura" style="min-width:95px;">
+                    <span class="text-muted">-</span>
+                    <input type="time" name="horario_close" class="form-control form-control-sm" value="<?php echo htmlspecialchars(substr((string)$sd->horario_close,0,5)); ?>" title="Cierre" style="min-width:95px;">
+                  </div>
+                  <div class="text-muted small">vacío = horario general</div>
                 </td>
                 <td>
                   <label class="form-check form-switch mb-0">

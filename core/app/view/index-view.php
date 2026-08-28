@@ -20,7 +20,17 @@ $sede_json = array();
 foreach($sedes as $sd){
   $deliv_map = array();
   foreach(SedeDeliveryZoneData::getBySede($sd->id) as $sdzd){ $deliv_map[$sdzd->delivery_zone_id] = floatval($sdzd->price); }
-  array_push($sede_json, array("id"=>$sd->id,"name"=>$sd->name,"address"=>$sd->address,"phone"=>$sd->phone,"delivery"=>$deliv_map));
+  $ho = trim((string)$sd->horario_open);
+  $hc = trim((string)$sd->horario_close);
+  array_push($sede_json, array(
+    "id"=>$sd->id,
+    "name"=>$sd->name,
+    "address"=>$sd->address,
+    "phone"=>$sd->phone,
+    "horario_open"=>$ho!="" ? substr($ho,0,5) : "",
+    "horario_close"=>$hc!="" ? substr($hc,0,5) : "",
+    "delivery"=>$deliv_map
+  ));
 }
 $sede_json = json_encode($sede_json);
 function tt_cat_ic($cat_name){
@@ -65,11 +75,12 @@ if($flotante_pdata){
   $flotante_no_edit_cats = array(5,6);
   if(!in_array(intval($flotante_pdata->category_id), $flotante_no_edit_cats)){
     $extras_tmp = ProductExtraData::getByProductId($flotante_pdata->id);
-    if(trim((string)$flotante_pdata->tipo_division)!=""){
+    $flotante_tipo = trim((string)$flotante_pdata->tipo_division);
+    if($flotante_tipo === "2_estaciones" || $flotante_tipo === "4_estaciones"){
       $flotante_payload["sabores"] = tt_build_sabores(0);
     } else {
       $flotante_payload = tt_build_extras_payload($flotante_pdata->description, $flotante_pdata->free_ingredients, $extras_tmp, $flotante_pdata->house_ingredients);
-      $flotante_payload["division"] = trim((string)$flotante_pdata->tipo_division);
+      $flotante_payload["division"] = $flotante_tipo;
     }
   }
   $flotante_extras_json = htmlspecialchars(json_encode($flotante_payload), ENT_QUOTES);
@@ -104,6 +115,9 @@ foreach($horario_keys as $hk){
               <div class="flex-fill">
                 <div class="fw-bold h4 mb-1"><?php echo htmlspecialchars($sd->name); ?></div>
                 <div class="text-muted fs-6"><?php echo htmlspecialchars($sd->address); ?></div>
+                <?php if(trim((string)$sd->horario_open)!="" || trim((string)$sd->horario_close)!=""): ?>
+                <div class="small text-gold mt-1"><i class="bi bi-clock me-1"></i><?php echo htmlspecialchars(substr((string)$sd->horario_open,0,5)); ?> - <?php echo htmlspecialchars(substr((string)$sd->horario_close,0,5)); ?></div>
+                <?php endif; ?>
               </div>
             </div>
           </label>
@@ -167,6 +181,23 @@ foreach($horario_keys as $hk){
          <div class="mb-0" id="address_container">
             <label class="form-label fw-bold">Dirección de Entrega</label>
             <textarea id="order_address" class="form-control" rows="2" placeholder="Calle, número, cruzamientos..."></textarea>
+         </div>
+         <hr>
+         <div class="mb-3">
+            <label class="form-check form-check-inline mb-0">
+               <input class="form-check-input" type="checkbox" id="order_scheduled">
+               <span class="form-check-label fw-bold"><i class="bi bi-calendar-check me-1"></i>PROGRAMAR ESTE PEDIDO PARA MÁS TARDE</span>
+            </label>
+            <div id="schedule_box" class="d-none mt-2 row g-2">
+               <div class="col-6">
+                  <label class="form-label small fw-bold mb-1">Fecha</label>
+                  <input type="date" id="order_scheduled_date" class="form-control">
+               </div>
+               <div class="col-6">
+                  <label class="form-label small fw-bold mb-1">Hora</label>
+                  <input type="time" id="order_scheduled_time" class="form-control">
+               </div>
+            </div>
          </div>
          <hr>
          <div class="mb-2">
@@ -421,6 +452,9 @@ foreach($horario_keys as $hk){
                       <div class="fw-bold"><i class="bi bi-shop me-1 text-gold"></i><?php echo htmlspecialchars($sd->name); ?></div>
                       <div class="small text-white-50"><i class="bi bi-geo-alt me-1"></i><?php echo htmlspecialchars($sd->address); ?></div>
                       <div class="small text-white-50"><i class="bi bi-telephone me-1"></i><?php echo htmlspecialchars($sd->phone); ?></div>
+                      <?php if(trim((string)$sd->horario_open)!="" || trim((string)$sd->horario_close)!=""): ?>
+                      <div class="small text-gold mt-1"><i class="bi bi-clock me-1"></i><?php echo htmlspecialchars(substr((string)$sd->horario_open,0,5)); ?> - <?php echo htmlspecialchars(substr((string)$sd->horario_close,0,5)); ?></div>
+                      <?php endif; ?>
                       <div class="tt-flip-hint small mt-2"><i class="bi bi-arrow-repeat me-1"></i>Toca para girar · ver mapa</div>
                     </div>
                   </div>
@@ -455,6 +489,7 @@ const SEDES = <?php echo $sede_json; ?>;
 const FLOTANTE_PID = <?php echo $flotante_pdata ? $flotante_pdata->id : 0; ?>;
 const FLOTANTE_NAME = "<?php echo $flotante_pdata ? addslashes($flotante_pdata->name) : ''; ?>";
 const FLOTANTE_EXTRAS = <?php echo $flotante_pdata ? $flotante_extras_json_js : "[]"; ?>;
+const FLOTANTE_HAS_EDIT = <?php echo ($flotante_pdata && !in_array(intval($flotante_pdata->category_id), array(5,6))) ? "true" : "false"; ?>;
 let currentCatId = "";
 let currentSearch = "";
 let pendingExtrasPid = null;
@@ -465,10 +500,68 @@ function fmt(n){ return COIN + n.toFixed(2); }
 function fmtBs(n){ return BS_SYMBOL + " " + n.toFixed(2); }
 function fmtComma(n){ return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
 
+// ===== Horarios por sede =====
+function toMin(t) {
+  if (!t) return null;
+  const p = String(t).split(":");
+  const h = parseInt(p[0], 10), m = parseInt(p[1], 10);
+  if (isNaN(h) || isNaN(m)) return null;
+  return h * 60 + m;
+}
+function fmt12(t) {
+  if (!t) return "";
+  const p = String(t).split(":");
+  let h = parseInt(p[0], 10), m = parseInt(p[1], 10);
+  if (isNaN(h)) return "";
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12; if (h === 0) h = 12;
+  return h + ":" + (m < 10 ? "0" + m : m) + " " + ampm;
+}
+function sedeClosedGuard() {
+  const sede = getSelectedSede();
+  let closed = false, sedeHours = false;
+  let openLabel = "", closeLabel = "";
+  if (sede && (sede.horario_open || sede.horario_close)) {
+    const om = toMin(sede.horario_open), cm = toMin(sede.horario_close);
+    if (om !== null && cm !== null) {
+      sedeHours = true;
+      const now = new Date();
+      const cur = now.getHours() * 60 + now.getMinutes();
+      closed = (cm > om) ? (cur < om || cur >= cm) : !(cur >= om || cur < cm);
+      openLabel = fmt12(sede.horario_open);
+      closeLabel = fmt12(sede.horario_close);
+    }
+  }
+  if (!sedeHours) {
+    if (typeof TITO_STORE_CLOSED !== "undefined" && TITO_STORE_CLOSED) { closed = true; }
+  }
+  if (closed) {
+    let html;
+    if (sedeHours) {
+      html = "La sede <b>" + (sede ? sede.name : "") + "</b> está cerrada en este momento.<br>Horario de atención: <b>" + openLabel + " - " + closeLabel + "</b>.";
+    } else {
+      html = typeof TITO_CLOSED_MSG !== "undefined" ? TITO_CLOSED_MSG : "Estamos cerrados en este momento.";
+    }
+    Swal.fire({
+      icon: "error",
+      title: "ESTAMOS CERRADOS",
+      html: html,
+      background: "#000000",
+      color: "#ffffff",
+      iconColor: "#ff2a2a",
+      confirmButtonText: "Entendido",
+      confirmButtonColor: "#ff2a2a",
+      customClass: { title: "tt-swal-closed-title" }
+    });
+    return true;
+  }
+  return false;
+}
+
 // ===== Flotante Hero =====
 function openFlotante() {
   if (!FLOTANTE_PID) return;
-  if (FLOTANTE_EXTRAS.length > 0) {
+  if (FLOTANTE_HAS_EDIT) {
     openExtrasModal(FLOTANTE_PID, FLOTANTE_NAME, JSON.stringify(FLOTANTE_EXTRAS));
   } else {
     addToCart(FLOTANTE_PID, FLOTANTE_NAME, "[]");
@@ -549,7 +642,7 @@ function updateUI() {
 }
 
 function addToCart(pid, pname, extrasJson) {
-  if (typeof showStoreClosedAlert === "function" && showStoreClosedAlert()) { return; }
+  if (sedeClosedGuard()) { return; }
   $.post("./?action=cart&opt=add&ajax=1", { product_id: pid, extras: extrasJson || "[]" }, function(data) {
      $("#cart-container").html(data);
      $("#offcanvas-cart-container").html(data);
@@ -602,7 +695,7 @@ let pendingSel = [];
 let pendingFreeExtra = 0;
 
 function openExtrasModal(pid, pname, dataJson) {
-  if (typeof showStoreClosedAlert === "function" && showStoreClosedAlert()) { return; }
+  if (sedeClosedGuard()) { return; }
   pendingExtrasPid = pid;
   pendingExtrasName = pname;
   let data = {};
@@ -1059,6 +1152,21 @@ $(document).ready(function() {
   $("input[name='order_zone']").change(updateCheckoutUI);
   $(".payment-method").change(updateCheckoutUI);
 
+  // Schedule (programar pedido) toggle
+  $("#order_scheduled").change(function() {
+    if ($(this).is(":checked")) {
+      $("#schedule_box").removeClass("d-none");
+      if (!$("#order_scheduled_date").val()) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        $("#order_scheduled_date").val(tomorrow.toISOString().slice(0, 10));
+      }
+      if (!$("#order_scheduled_time").val()) { $("#order_scheduled_time").val("12:00"); }
+    } else {
+      $("#schedule_box").addClass("d-none");
+    }
+  });
+
   // Refresh totals when checkout opens
   $("#modal-checkout").on("shown.bs.modal", function() { filterZonesBySede(); updateCheckoutUI(); });
 
@@ -1084,7 +1192,7 @@ $(document).ready(function() {
 
   // Confirm Order
   $("#btn_confirm_order").click(async function() {
-    if (typeof showStoreClosedAlert === "function" && showStoreClosedAlert()) { return; }
+    if (sedeClosedGuard()) { return; }
     const sede = getSelectedSede();
     if (!sede) {
       Swal.fire({ icon: "warning", title: "Elige tu sede", text: "Primero selecciona la sede que te queda más cerca, así tu pedido llega al WhatsApp correcto.", confirmButtonColor: "#b87e38" }).then(function(){ openSedeModal(); });
@@ -1129,6 +1237,25 @@ $(document).ready(function() {
     const t = computeTotals(items, delivery, deliveryPrice);
     const note = $("#order_note").val().trim().replace(/\n/g, ", ");
 
+    const isScheduled = $("#order_scheduled").is(":checked");
+    const schedDate = $("#order_scheduled_date").val();
+    const schedTime = $("#order_scheduled_time").val();
+    let scheduledAt = "";
+    let scheduledLabel = "";
+    if (isScheduled) {
+      if (!schedDate || !schedTime) {
+        Swal.fire({ icon: "warning", title: "Falta fecha u hora", text: "Selecciona la fecha y la hora para programar tu pedido.", confirmButtonColor: "#b87e38" });
+        return;
+      }
+      const dt = new Date(schedDate + "T" + schedTime + ":00");
+      if (isNaN(dt.getTime()) || dt <= new Date()) {
+        Swal.fire({ icon: "warning", title: "Fecha inválida", text: "La fecha y hora del pedido programado debe ser futura.", confirmButtonColor: "#b87e38" });
+        return;
+      }
+      scheduledAt = schedDate + " " + schedTime + ":00";
+      scheduledLabel = schedDate + " " + fmt12(schedTime);
+    }
+
     const btn = $(this);
     btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm me-2"></span> Enviando...');
 
@@ -1139,7 +1266,8 @@ $(document).ready(function() {
       sede_id: sede.id,
       paymethod_id: paymethodId,
       delivery_zone_id: delivery ? zoneSel : "",
-      note: note
+      note: note,
+      scheduled_at: scheduledAt
     }, function(res) {
       clearCart();
 
@@ -1154,6 +1282,9 @@ $(document).ready(function() {
         msg += "*Delivery:* " + fmt(t.delivery) + "%0A";
       } else {
         msg += "*Entrega:* Recoger en sucursal%0A";
+      }
+      if (isScheduled) {
+        msg += "*Pedido programado para:* " + scheduledLabel + "%0A";
       }
       msg += "*Pago:* " + paymethodName + "%0A%0A";
       if(note){ msg += "*Nota:* " + note + "%0A"; }

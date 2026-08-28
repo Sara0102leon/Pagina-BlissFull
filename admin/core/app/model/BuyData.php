@@ -2,7 +2,7 @@
 class BuyData {
 	public static $tablename = "buy";
 
-	public $id, $k, $code, $coupon_id, $client_id, $created_at, $paymethod_id, $delivery_zone_id, $sede_id, $capture, $note, $status_id, $name, $c, $m;
+	public $id, $k, $code, $coupon_id, $client_id, $created_at, $paymethod_id, $delivery_zone_id, $sede_id, $capture, $note, $scheduled_at, $status_id, $name, $c, $m;
 
 	public function __construct(){
 		$this->id = null;
@@ -16,6 +16,7 @@ class BuyData {
 		$this->sede_id = "";
 		$this->capture = "";
 		$this->note = "";
+		$this->scheduled_at = "";
 		$this->status_id = "";
 	}
 
@@ -28,8 +29,8 @@ class BuyData {
 	public function add(){
 		$zone_sql = $this->delivery_zone_id!="" ? $this->delivery_zone_id : "NULL";
 		$sede_sql = $this->sede_id!="" ? $this->sede_id : "NULL";
-		$sql = "insert into ".self::$tablename." (k,code,coupon_id,client_id,created_at,paymethod_id,delivery_zone_id,sede_id,capture,note,status_id) ";
-		$sql .= "value (\"$this->k\",\"$this->code\",$this->coupon_id,\"$this->client_id\",$this->created_at,$this->paymethod_id,$zone_sql,$sede_sql," . ($this->capture!="" ? "\"$this->capture\"" : "NULL") . "," . ($this->note!="" ? "\"$this->note\"" : "NULL") . ",$this->status_id)";
+		$sql = "insert into ".self::$tablename." (k,code,coupon_id,client_id,created_at,paymethod_id,delivery_zone_id,sede_id,capture,note,scheduled_at,status_id) ";
+		$sql .= "value (\"$this->k\",\"$this->code\",$this->coupon_id,\"$this->client_id\",$this->created_at,$this->paymethod_id,$zone_sql,$sede_sql," . ($this->capture!="" ? "\"$this->capture\"" : "NULL") . "," . ($this->note!="" ? "\"$this->note\"" : "NULL") . "," . ($this->scheduled_at!="" ? "\"$this->scheduled_at\"" : "NULL") . ",$this->status_id)";
 		return Executor::doit($sql);
 	}
 

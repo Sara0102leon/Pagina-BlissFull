@@ -7,6 +7,10 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="json"){
 	$rows = Model::many($query[0], new BuyData());
 	$data = array();
 	foreach($rows as $b){
+		// Los pedidos programados a futuro no se notifican como "sin pago" todavia
+		if(!empty($b->scheduled_at) && strtotime($b->scheduled_at) > time()){
+			continue;
+		}
 		$elapsed = intval($b->elapsed_sec);
 		if($elapsed < 0){ $elapsed = 0; }
 		if($elapsed <= 1800){
@@ -22,6 +26,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="json"){
 		$data[] = array(
 			"id"			=> intval($b->id),
 			"created_at"	=> date("Y-m-d H:i:s", strtotime($b->created_at)),
+			"scheduled_at"	=> $b->scheduled_at ? date("Y-m-d H:i", strtotime($b->scheduled_at)) : "",
 			"elapsed"		=> $elapsed,
 			"level"			=> $level,
 			"client"		=> $client ? $client->getFullname() : "Sin nombre",
