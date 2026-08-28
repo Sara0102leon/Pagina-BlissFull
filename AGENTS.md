@@ -1,5 +1,33 @@
 # Blissfull — Notas de proyecto
 
+## Despliegue en producción (VPS alianza)
+
+**Sitio público:** https://prueba.alianzablissful.com
+
+**Stack en el VPS (Ubuntu 24.04, root):**
+- nginx 1.24 + PHP-FPM 8.3 (socket `/run/php/php8.3-fpm.sock`)
+- MariaDB 10.11 — BD `tacomenu`, root sin password en localhost (compatible con `Database.php`)
+- HTTPS Let's Encrypt (certbot + timer de renovación), redirect HTTP→HTTPS
+
+**Rutas clave:**
+- Código desplegado: `/var/www/blissfull` (propietario `www-data`). **Editar aquí para cambios en producción.**
+- Repo clonado de referencia: `/root/menu/Pagina-BlissFull`
+- Virtual host nginx: `/etc/nginx/sites-enabled/prueba.alianzablissful.com`
+- Cert: `/etc/letsencrypt/live/prueba.alianzablissful.com/`
+
+**Comandos útiles (VPS):**
+```bash
+nginx -t && systemctl reload nginx
+systemctl reload php8.3-fpm
+mariadb -u root tacomenu -e "SHOW COLUMNS FROM product;"   # por defecto, -h localhost usa unix socket
+```
+
+**Para probar endpoints con sesión admin (VPS):**
+```bash
+curl -s -c /tmp/cj.txt -d "email=admin&password=admin" "https://prueba.alianzablissful.com/admin/?action=access&opt=login"
+curl -s -b /tmp/cj.txt "https://prueba.alianzablissful.com/admin/"
+```
+
 ## Arquitectura
 
 PHP puro, sin Composer/npm/build tools. Framework MVC custom ("Lb/Legobox").
