@@ -83,6 +83,7 @@ if($flotante_pdata){
       $flotante_payload["division"] = $flotante_tipo;
     }
   }
+  $flotante_payload["price"] = ProductData::getEffectivePrice($flotante_pdata);
   $flotante_extras_json = htmlspecialchars(json_encode($flotante_payload), ENT_QUOTES);
   $flotante_extras_json_js = json_encode($flotante_payload, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
 }
@@ -266,7 +267,10 @@ foreach($horario_keys as $hk){
         <div id="extras_hint" class="form-hint mb-3"></div>
         <div id="extra_sections"></div>
         <div class="bg-light rounded-3 p-3 mb-2">
-          <div class="d-flex justify-content-between fw-bold">
+          <div class="d-flex justify-content-between small text-muted">
+            <span>Extras:</span><span id="extras_subtotal">$0.00</span>
+          </div>
+          <div class="d-flex justify-content-between fw-bold mt-1">
             <span>Total del producto:</span><span id="extras_total">$0.00</span>
           </div>
         </div>
@@ -492,6 +496,7 @@ const FLOTANTE_EXTRAS = <?php echo $flotante_pdata ? $flotante_extras_json_js : 
 const FLOTANTE_HAS_EDIT = <?php echo ($flotante_pdata && !in_array(intval($flotante_pdata->category_id), array(5,6))) ? "true" : "false"; ?>;
 let currentCatId = "";
 let currentSearch = "";
+let pendingBasePrice = 0;
 let pendingExtrasPid = null;
 let pendingExtrasName = "";
 let pendingExtras = [];
@@ -701,6 +706,7 @@ function openExtrasModal(pid, pname, dataJson) {
   let data = {};
   try { data = JSON.parse(dataJson || "{}"); } catch(e) { data = {}; }
   pendingExtras = data.extras || [];
+  pendingBasePrice = parseFloat(data.price) || 0;
   pendingIngredients = data.ingredients || [];
   pendingFree = parseInt(data.free || 0, 10) || 0;
   pendingDivision = data.division === "2_estaciones" ? 2 : (data.division === "4_estaciones" ? 4 : 0);
@@ -871,19 +877,20 @@ function refreshIngPriceLabels() {
 }
 
 function updateExtrasTotal() {
-  let total = 0;
+  let extrasTotal = 0;
   const ingIdx = [];
   $(".ing-opt input:checked").each(function(){ ingIdx.push(parseInt($(this).data("idx"))); });
   for (let i = pendingFreeExtra; i < ingIdx.length; i++) {
     const e = pendingIngredients[ingIdx[i]];
-    if (e) { total += parseFloat(e.price); }
+    if (e) { extrasTotal += parseFloat(e.price); }
   }
   $(".extra-opt input:checked").each(function(){
     if ($(this).data("sec") === "ing") { return; }
-    total += parseFloat($(this).data("price"));
+    extrasTotal += parseFloat($(this).data("price"));
   });
-  extraToggles().forEach(function(x){ total += x.price; });
-  $("#extras_total").text(fmt(total));
+  extraToggles().forEach(function(x){ extrasTotal += x.price; });
+  $("#extras_subtotal").text(fmt(extrasTotal));
+  $("#extras_total").text(fmt(pendingBasePrice + extrasTotal));
   refreshIngPriceLabels();
 }
 
