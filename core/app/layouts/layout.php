@@ -236,17 +236,15 @@
         </div>
       </header>
 
-      <?php if($store_closed): ?>
-      <!-- CINTA SUPERIOR: sistema cerrado fuera del horario del admin -->
-      <div class="tt-ribbon d-print-none">
+      <!-- CINTA SUPERIOR: cierre por sede (dinámica según la sede elegida) -->
+      <div id="sede-closed-ribbon" class="tt-ribbon d-print-none d-none">
         <i class="bi bi-clock-history"></i>
-        <span>ESTAMOS CERRADOS</span>
+        <span class="tt-ribbon-msg">ESTAMOS CERRADOS</span>
         <span class="tt-ribbon-sep">·</span>
-        <span class="tt-ribbon-time">Abrimos hoy a las <?php echo $horario_open_display; ?></span>
+        <span class="tt-ribbon-time" id="sede-closed-name"></span>
         <span class="tt-ribbon-sep">·</span>
-        <span class="tt-ribbon-time">Atendemos de <?php echo $horario_display; ?></span>
+        <span class="tt-ribbon-time" id="sede-closed-horario"></span>
       </div>
-      <?php endif; ?>
 
       <!-- Offcanvas Cart (Mobile/Desktop Swipe) -->
       <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">

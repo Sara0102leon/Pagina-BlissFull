@@ -525,9 +525,9 @@ const TT_DAYS = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes",
 function todayKey() {
   return TT_DAYS[new Date().getDay()] || "";
 }
-function sedeClosedGuard() {
+function getSedeClosedState() {
   const sede = getSelectedSede();
-  let closed = false, closedMsg = null;
+  let closed = false, sedeName = "", horario = "";
   if (sede && sede.horarios) {
     const h = sede.horarios[todayKey()] || {};
     const om = toMin(h.open), cm = toMin(h.close);
@@ -536,25 +536,45 @@ function sedeClosedGuard() {
       const cur = now.getHours() * 60 + now.getMinutes();
       closed = (cm > om) ? (cur < om || cur >= cm) : !(cur >= om || cur < cm);
       if (closed) {
-        closedMsg = "La sede <b>" + sede.name + "</b> está cerrada en este momento.<br>Horario de atención de hoy: <b>" + fmt12(h.open) + " - " + fmt12(h.close) + "</b>.";
+        sedeName = sede.name;
+        horario = fmt12(h.open) + " - " + fmt12(h.close);
       }
     }
   }
-  if (closed) {
-    Swal.fire({
-      icon: "error",
-      title: "ESTAMOS CERRADOS",
-      html: closedMsg ? closedMsg : "Estamos cerrados en este momento.",
-      background: "#000000",
-      color: "#ffffff",
-      iconColor: "#ff2a2a",
-      confirmButtonText: "Entendido",
-      confirmButtonColor: "#ff2a2a",
-      customClass: { title: "tt-swal-closed-title" }
-    });
-    return true;
+  return { closed: closed, sedeName: sedeName, horario: horario };
+}
+
+function updateClosedRibbon() {
+  const ribbon = document.getElementById("sede-closed-ribbon");
+  if (!ribbon) { return; }
+  const st = getSedeClosedState();
+  if (st.closed) {
+    document.getElementById("sede-closed-name").textContent = st.sedeName;
+    document.getElementById("sede-closed-horario").textContent = "Atendemos hoy de " + st.horario;
+    ribbon.classList.remove("d-none");
+  } else {
+    ribbon.classList.add("d-none");
   }
-  return false;
+}
+
+function sedeClosedGuard() {
+  const st = getSedeClosedState();
+  if (!st.closed) {
+    return false;
+  }
+  const closedMsg = "La sede <b>" + st.sedeName + "</b> está cerrada en este momento.<br>Horario de atención de hoy: <b>" + st.horario + "</b>.";
+  Swal.fire({
+    icon: "error",
+    title: "ESTAMOS CERRADOS",
+    html: closedMsg ? closedMsg : "Estamos cerrados en este momento.",
+    background: "#000000",
+    color: "#ffffff",
+    iconColor: "#ff2a2a",
+    confirmButtonText: "Entendido",
+    confirmButtonColor: "#ff2a2a",
+    customClass: { title: "tt-swal-closed-title" }
+  });
+  return true;
 }
 
 // ===== Flotante Hero =====
@@ -584,6 +604,7 @@ function setSedeUI() {
   if (headerEl) { headerEl.textContent = label; }
   if (checkoutEl) { checkoutEl.textContent = label; }
   renderHorarioAtencion();
+  updateClosedRibbon();
 }
 
 const TT_DAY_LABELS = [["lunes","Lunes"],["martes","Martes"],["miercoles","Miércoles"],["jueves","Jueves"],["viernes","Viernes"],["sabado","Sábado"],["domingo","Domingo"]];
