@@ -114,6 +114,8 @@
     $bcv_row = ConfigurationData::getByPreffix("bcv_rate");
     if($bcv_row && $bcv_row->val){ $bcv_rate_header = floatval($bcv_row->val); }
     $whatsapp_footer = ConfigurationData::getByPreffix("general_whatsapp")?ConfigurationData::getByPreffix("general_whatsapp")->val:"+5215574506232";
+    $fb_footer = trim(ConfigurationData::getByPreffix("general_facebook")?ConfigurationData::getByPreffix("general_facebook")->val:"");
+    $ig_footer = trim(ConfigurationData::getByPreffix("general_instagram")?ConfigurationData::getByPreffix("general_instagram")->val:"");
     $horario_open_raw = ConfigurationData::getByPreffix("horario_open")?ConfigurationData::getByPreffix("horario_open")->val:"11:00";
     $horario_close_raw = ConfigurationData::getByPreffix("horario_close")?ConfigurationData::getByPreffix("horario_close")->val:"23:00";
     $horario_open_raw = $horario_open_raw=="" ? "11:00" : $horario_open_raw;
@@ -328,8 +330,8 @@
                 <img src="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/assets/img/logo.png" alt="Alianzas Blissful" class="brand-logo mb-3" style="filter: brightness(1);">
                 <p class="text-white-50 small mb-3">Disfruta de la mejor experiencia gastronómica desde tu celular. Escanea, ordena y disfruta.</p>
                 <div class="d-flex gap-2">
-                   <a href="#" class="social-icon" title="Facebook"><i class="bi bi-facebook"></i></a>
-                   <a href="#" class="social-icon" title="Instagram"><i class="bi bi-instagram"></i></a>
+                   <a href="<?php echo $fb_footer ? (preg_match('/^https?:\/\//i',$fb_footer) ? $fb_footer : "https://facebook.com/".ltrim($fb_footer,"@")) : "#"; ?>" class="social-icon" title="Facebook" target="_blank" rel="noopener"><i class="bi bi-facebook"></i></a>
+                   <a href="<?php echo $ig_footer ? (preg_match('/^https?:\/\//i',$ig_footer) ? $ig_footer : "https://instagram.com/".ltrim($ig_footer,"@")) : "#"; ?>" class="social-icon" title="Instagram" target="_blank" rel="noopener"><i class="bi bi-instagram"></i></a>
                    <a href="https://api.whatsapp.com/send?phone=<?php echo preg_replace('/\D/','',$whatsapp_footer); ?>" class="social-icon" target="_blank" rel="noopener" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
                 </div>
               </div>

@@ -90,8 +90,8 @@
             $data =  array(
               array("value"=>"","name"=>"-- SELECCIONE --"),
               array("value"=>"mxn","name"=>"Peso Mexicano"),
-              array("value"=>"usd","name"=>"Dolar estadounidense"),
-              array("value"=>"jpy","name"=>"Yen Japones")
+              array("value"=>"usd","name"=>"Dólar estadounidense"),
+              array("value"=>"jpy","name"=>"Yen Japonés")
               );
             echo Form::select("myselect",$data,"","required");
             ?>

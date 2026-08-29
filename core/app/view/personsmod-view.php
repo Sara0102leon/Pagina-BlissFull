@@ -11,7 +11,7 @@ $new_btn_text = "Nueva Persona";
 <?php if(isset($_GET["opt"]) && $_GET['opt']=="all"):
 $contacts = PersonData::getAll();
 
-TableTool::$table_header = array("Id", "Nombre", "Direccion", "Telefono", "");
+TableTool::$table_header = array("Id", "Nombre", "Dirección", "Teléfono", "");
 ?>
 <div class="page-header d-print-none">
   <div class="container-xl">
@@ -89,8 +89,8 @@ TableTool::$table_header = array("Id", "Nombre", "Direccion", "Telefono", "");
           FormTool::addInput("text","name","Nombre","required");
           FormTool::addInput("text","lastname","Apellidos","required");
           FormTool::addInput("text","email","Email","required");
-          FormTool::addInput("text","phone","Telefono","required");
-          FormTool::addInput("text","address","Direccion","required");
+          FormTool::addInput("text","phone","Teléfono","required");
+          FormTool::addInput("text","address","Dirección","required");
           ?>
           <div class="form-footer mt-4">
             <button type="submit" class="btn btn-primary w-100">Guardar</button>
@@ -126,8 +126,8 @@ $contact = PersonData::getById($_GET["id"]);
           FormTool::addInputVal("text","name",$contact->name,"Nombre","required");
           FormTool::addInputVal("text","lastname",$contact->lastname,"Apellidos","required");
           FormTool::addInputVal("text","email",$contact->email, "Email","required");
-          FormTool::addInputVal("text","phone",$contact->phone,"Telefono","required");
-          FormTool::addInputVal("text","address",$contact->address,"Direccion","required");
+          FormTool::addInputVal("text","phone",$contact->phone,"Teléfono","required");
+          FormTool::addInputVal("text","address",$contact->address,"Dirección","required");
           ?>
           <div class="form-footer mt-4">
             <button type="submit" class="btn btn-success w-100">Actualizar</button>

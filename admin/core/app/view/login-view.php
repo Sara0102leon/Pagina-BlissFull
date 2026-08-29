@@ -5,10 +5,10 @@
     </div>
     <div class="card card-md">
       <div class="card-body">
-        <h2 class="h2 text-center mb-4">Iniciar sesion</h2>
+        <h2 class="h2 text-center mb-4">Iniciar sesión</h2>
         <form method="post" action="./?action=access&opt=login">
           <div class="mb-3">
-            <label class="form-label">Correo Electronico</label>
+            <label class="form-label">Correo Electrónico</label>
             <input type="text" required name="email" class="form-control" placeholder="your@email.com" autocomplete="off">
           </div>
           <div class="mb-3">

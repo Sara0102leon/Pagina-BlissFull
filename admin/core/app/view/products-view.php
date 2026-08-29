@@ -192,8 +192,8 @@ $(function(){
             </div>
           </div>
           <div class="mb-3">
-            <label class="form-label">Descripcion</label>
-            <textarea class="form-control" placeholder="Descripcion" rows="4" name="description"></textarea>
+            <label class="form-label">Descripción</label>
+            <textarea class="form-control" placeholder="Descripción" rows="4" name="description"></textarea>
           </div>
           <div class="mb-3">
             <label class="form-label">Precio</label>
@@ -354,8 +354,8 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
             </div>
           </div>
           <div class="mb-3">
-            <label class="form-label">Descripcion</label>
-            <textarea class="form-control" placeholder="Descripcion" rows="4" name="description"><?php echo $product->description; ?></textarea>
+            <label class="form-label">Descripción</label>
+            <textarea class="form-control" placeholder="Descripción" rows="4" name="description"><?php echo $product->description; ?></textarea>
           </div>
           <div class="mb-3">
             <label class="form-label">Precio</label>

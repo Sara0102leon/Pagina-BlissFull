@@ -102,16 +102,16 @@ if($user==null){ Core::redir("./");}
             </div>
           </div>
           <div class="mb-3">
-            <label class="form-label">Direccion</label>
-            <input type="text" class="form-control" name="address" placeholder="Direccion">
+            <label class="form-label">Dirección</label>
+            <input type="text" class="form-control" name="address" placeholder="Dirección">
           </div>
           <div class="mb-3">
             <label class="form-label">Email</label>
             <input type="email" class="form-control" name="email" required placeholder="Email">
           </div>
           <div class="mb-3">
-            <label class="form-label">Telefono</label>
-            <input type="text" class="form-control" name="phone" placeholder="Telefono">
+            <label class="form-label">Teléfono</label>
+            <input type="text" class="form-control" name="phone" placeholder="Teléfono">
           </div>
           <div class="mb-3">
             <label class="form-label">Contraseña</label>
@@ -157,16 +157,16 @@ $cat = ClientData::getById($_GET["id"]);
             </div>
           </div>
           <div class="mb-3">
-            <label class="form-label">Direccion</label>
-            <input type="text" class="form-control" name="address" value="<?php echo $cat->address; ?>" placeholder="Direccion">
+            <label class="form-label">Dirección</label>
+            <input type="text" class="form-control" name="address" value="<?php echo $cat->address; ?>" placeholder="Dirección">
           </div>
           <div class="mb-3">
             <label class="form-label">Email</label>
             <input type="email" class="form-control" name="email" value="<?php echo $cat->email; ?>" required placeholder="Email">
           </div>
           <div class="mb-3">
-            <label class="form-label">Telefono</label>
-            <input type="text" class="form-control" name="phone" value="<?php echo $cat->phone; ?>" placeholder="Telefono">
+            <label class="form-label">Teléfono</label>
+            <input type="text" class="form-control" name="phone" value="<?php echo $cat->phone; ?>" placeholder="Teléfono">
           </div>
           <div class="form-footer">
             <button type="submit" class="btn btn-success w-100">Actualizar Cliente</button>

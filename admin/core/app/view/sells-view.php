@@ -202,7 +202,6 @@ $ivatxt = ConfigurationData::getByPreffix("general_iva_txt")->val;
           <table class="table table-bordered">
             <thead>
 <tr>
-              <th></th>
                 <th>Codigo</th>
                 <th>Producto</th>
                 <th>Cant.</th>
@@ -222,7 +221,6 @@ $ivatxt = ConfigurationData::getByPreffix("general_iva_txt")->val;
                 }
               ?>
               <tr>
-                <td><a target="_blank" href="../index.php?view=producto&product_id=<?php echo $px->id; ?>">Ver</a></td>
                 <td><?php echo $px->code; ?></td>
                 <td><?php echo $px->name; ?></td>
                 <td><?php echo $p->q; ?></td>

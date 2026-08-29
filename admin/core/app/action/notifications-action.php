@@ -1,5 +1,5 @@
 <?php
-if(!isset($_SESSION["user_id"])){ http_response_code(403); echo json_encode(array("ok"=>false,"error"=>"Sin sesion")); exit; }
+if(!isset($_SESSION["user_id"])){ http_response_code(403); echo json_encode(array("ok"=>false,"error"=>"Sin sesión")); exit; }
 
 if(isset($_GET["opt"]) && $_GET["opt"]=="json"){
 	$sql = "select b.*, c.name as client_name, c.phone as client_phone, TIMESTAMPDIFF(SECOND, b.created_at, NOW()) as elapsed_sec from buy b left join client c on c.id=b.client_id where b.status_id=1 order by b.created_at asc";

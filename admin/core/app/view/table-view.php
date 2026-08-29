@@ -15,11 +15,11 @@
       <div class="table-responsive">
         <?php
         $data = array(
-          "header"=>array("","Nombre","Apellidos","Telefono",""),
+          "header"=>array("","Nombre","Apellidos","Teléfono",""),
           "body"=> array(
-            array("","Agustin","Ramos","+5219141183199","<a href='./?view=item&id=1' class='btn btn-sm btn-primary'>Ver</a>"),
-            array("","Agustin","Ramos","+5219141183199","<a href='./?view=item&id=1' class='btn btn-sm btn-primary'>Ver</a>"),
-            array("","Agustin","Ramos","+5219141183199","<a href='./?view=item&id=1' class='btn btn-sm btn-primary'>Ver</a>")
+            array("","Agustín","Ramos","+5219141183199","<a href='./?view=item&id=1' class='btn btn-sm btn-primary'>Ver</a>"),
+            array("","Agustín","Ramos","+5219141183199","<a href='./?view=item&id=1' class='btn btn-sm btn-primary'>Ver</a>"),
+            array("","Agustín","Ramos","+5219141183199","<a href='./?view=item&id=1' class='btn btn-sm btn-primary'>Ver</a>")
             )
           );
         echo Table::render($data);

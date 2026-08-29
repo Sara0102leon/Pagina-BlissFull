@@ -163,18 +163,20 @@ foreach($horario_keys as $hk){
             <input type="tel" id="order_phone" class="form-control" placeholder="Ej: 5215512345678">
          </div>
          <div class="mb-3">
-            <label class="form-check form-check-inline mt-1">
-              <input class="form-check-input" type="checkbox" id="order_pickup">
-              <span class="form-check-label fw-bold">PASARÉ A RECOGER EN LA SUCURSAL</span>
-            </label>
+            <div class="d-flex flex-column gap-2">
+              <label class="form-check mb-1">
+                <input class="form-check-input" type="checkbox" id="order_pickup">
+                <span class="form-check-label fw-bold">PASARÉ A RECOGER EN LA SUCURSAL</span>
+              </label>
+              <label class="form-check mb-1">
+                <input class="form-check-input" type="checkbox" id="order_dinein">
+                <span class="form-check-label fw-bold">COMER EN SUCURSAL</span>
+              </label>
+            </div>
          </div>
-<div class="mb-3">
+         <div class="mb-3" id="zone_container">
             <label class="form-label fw-bold">Zona de entrega</label>
             <div class="d-flex flex-column gap-2">
-              <label class="form-check">
-                <input class="form-check-input" type="radio" name="order_zone" id="order_zone_0" value="0" data-price="0" checked>
-                <span class="form-check-label">Comer en la sede / Recoger en sucursal <span class="text-muted small fw-normal">(gratis)</span></span>
-              </label>
               <?php foreach($zones as $z): ?>
               <label class="form-check">
                 <input class="form-check-input" type="radio" name="order_zone" id="order_zone_<?php echo $z->id; ?>" value="<?php echo $z->id; ?>" data-price="<?php echo $z->price; ?>">
@@ -1038,22 +1040,24 @@ function filterZonesBySede() {
     } else {
       $label.hide();
       if ($(this).is(":checked")) {
-        $("input[name='order_zone'][value='0']").prop("checked", true);
+        $(this).prop("checked", false);
       }
     }
   });
 }
 function updateCheckoutUI() {
   const isPickup = $("#order_pickup").is(":checked");
+  const isDineIn = $("#order_dinein").is(":checked");
   const zoneSel = $("input[name='order_zone']:checked").val();
-  const delivery = !isPickup && zoneSel !== "0";
+  const inStore = isPickup || isDineIn;
+  const delivery = !inStore && !!zoneSel;
   const deliveryPrice = delivery ? deliveryPriceFor(getSelectedSede(), zoneSel) : 0;
   const t = computeTotals(getCartItems(), delivery, deliveryPrice);
   const paySel = $(".payment-method:checked");
   const isPM = paySel.data("pm") == 1;
 
   $("#ck_subtotal").text(fmt(t.subtotal));
-  $("#ck_delivery").text(delivery ? fmt(t.delivery) : "Comer en la sede / Recoger");
+  $("#ck_delivery").text(delivery ? fmt(t.delivery) : (inStore ? "—" : "Comer/Recoger en sucursal"));
   $("#ck_total").text(fmt(t.total));
   $("#ck_total_bs").text(bcvRate > 0 ? fmtBs(t.total * bcvRate) : "Bs a confirmar");
 
@@ -1177,17 +1181,27 @@ $(document).ready(function() {
     .on("click", ".extra-btn", onExtraBtn);
   $("#btn_confirm_extras").click(confirmExtras);
 
-  // Pickup Toggle
-  $("#order_pickup").change(function() {
-    if($(this).is(":checked")) {
+  // Pickup / Dine-In Toggle
+  function applyOrderModeUI() {
+    const inStore = $("#order_pickup").is(":checked") || $("#order_dinein").is(":checked");
+    if (inStore) {
       $("#address_container").fadeOut();
-      $("input[name='order_zone'][value='0']").prop("checked", true);
-      $("input[name='order_zone']").prop("disabled", true);
+      $("#zone_container").fadeOut();
+      $("input[name='order_zone']").prop("checked", false).prop("disabled", true);
     } else {
       $("#address_container").fadeIn();
+      $("#zone_container").fadeIn();
       $("input[name='order_zone']").prop("disabled", false);
     }
     updateCheckoutUI();
+  }
+  $("#order_pickup").change(function() {
+    if($(this).is(":checked")) { $("#order_dinein").prop("checked", false); }
+    applyOrderModeUI();
+  });
+  $("#order_dinein").change(function() {
+    if($(this).is(":checked")) { $("#order_pickup").prop("checked", false); }
+    applyOrderModeUI();
   });
 
   // Zone / Payment Method
@@ -1244,6 +1258,8 @@ $(document).ready(function() {
     const phone = $("#order_phone").val().trim();
     let address = $("#order_address").val().trim();
     const isPickup = $("#order_pickup").is(":checked");
+    const isDineIn = $("#order_dinein").is(":checked");
+    const inStore = isPickup || isDineIn;
     const zoneSel = $("input[name='order_zone']:checked").val();
     const paymethodId = $(".payment-method:checked").val();
     const paymethodName = $(".payment-method:checked").data("name");
@@ -1260,21 +1276,23 @@ $(document).ready(function() {
       Swal.fire({ icon: "warning", title: "Teléfono inválido", text: "Escribe un número de teléfono válido (mínimo 7 dígitos, sin letras).", confirmButtonColor: "#b87e38" });
       return;
     }
-    if (isPickup) { address = "Recoger en sucursal"; }
+    let orderModeLabel = "";
+    if (isPickup) { orderModeLabel = "Recoger en sucursal"; address = "Recoger en sucursal"; }
+    else if (isDineIn) { orderModeLabel = "Comer en sucursal"; address = "Comer en sucursal"; }
     else if (address.length < 5) {
       $("#order_address").addClass("is-invalid").focus();
       Swal.fire({ icon: "warning", title: "Dirección inválida", text: "Escribe una dirección de entrega válida (al menos 5 caracteres, con más detalle).", confirmButtonColor: "#b87e38" });
       return;
     }
-    if (!isPickup && zoneSel === "0") {
-      Swal.fire({ icon: "warning", title: "Zona de entrega", text: "Por favor selecciona tu zona de entrega (o marca que pasarás a recoger).", confirmButtonColor: "#b87e38" });
+    if (!inStore && !zoneSel) {
+      Swal.fire({ icon: "warning", title: "Zona de entrega", text: "Selecciona tu zona de entrega, o marca que comerás o recogerás en sucursal.", confirmButtonColor: "#b87e38" });
       return;
     }
 
-    const delivery = !isPickup;
+    const delivery = !inStore && !!zoneSel;
     const $zoneChecked = $("input[name='order_zone']:checked");
     const deliveryPrice = delivery ? deliveryPriceFor(sede, zoneSel) : 0;
-    const zoneName = delivery ? $zoneChecked.closest("label").find(".form-check-label").clone().children().remove().end().text().trim() : "Recoger en sucursal";
+    const zoneName = delivery ? $zoneChecked.closest("label").find(".form-check-label").clone().children().remove().end().text().trim() : orderModeLabel;
     const items = getCartItems();
     const t = computeTotals(items, delivery, deliveryPrice);
     const note = $("#order_note").val().trim().replace(/\n/g, ", ");
@@ -1323,7 +1341,7 @@ $(document).ready(function() {
         msg += "*Zona (Delivery):* " + zoneName + "%0A";
         msg += "*Delivery:* " + fmt(t.delivery) + "%0A";
       } else {
-        msg += "*Entrega:* Recoger en sucursal%0A";
+        msg += "*Entrega:* " + orderModeLabel + "%0A";
       }
       if (isScheduled) {
         msg += "*Pedido programado para:* " + scheduledLabel + "%0A";
