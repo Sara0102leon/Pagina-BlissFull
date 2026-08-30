@@ -145,7 +145,7 @@ foreach($horario_keys as $hk){
 <div class="modal modal-blur fade" id="modal-checkout" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header bg-primary">
+      <div class="modal-header" style="background: linear-gradient(135deg,#e0a96d,#b87e38); color: #000000;">
         <h5 class="modal-title fw-bold"><i class="bi bi-cart-check-fill me-2"></i> Estás a un paso de tu pedido</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -263,12 +263,12 @@ foreach($horario_keys as $hk){
 <div class="modal modal-blur fade" id="modal-extras" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header bg-primary">
+      <div class="modal-header" style="background: linear-gradient(135deg,#e0a96d,#b87e38); color: #000000;">
         <h5 class="modal-title fw-bold" id="extras_modal_title">Extras</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div id="extras_desc" class="alert alert-soft-primary rounded-3 py-2 px-3 small d-none mb-3 border-0"></div>
+        <div id="extras_desc" class="alert alert-soft-warning rounded-3 py-2 px-3 small d-none mb-3 border-0"></div>
         <div id="extras_reform_msg" class="alert alert-warning rounded-3 py-2 px-3 small d-none mb-3 border-0"></div>
         <div id="extras_hint" class="form-hint mb-3"></div>
         <div id="extra_sections"></div>
@@ -501,6 +501,7 @@ let pendingBasePrice = 0;
 let pendingExtrasPid = null;
 let pendingExtrasName = "";
 let pendingExtras = [];
+var bcvRate = <?php echo $bcv_rate_js; ?>;
 
 function fmt(n){ return COIN + n.toFixed(2); }
 function fmtBs(n){ return BS_SYMBOL + " " + n.toFixed(2); }
@@ -978,22 +979,17 @@ function confirmExtras() {
         '</div>';
     }
 
+    const offcanvas = document.getElementById("offcanvasCart");
+    if (offcanvas) { bootstrap.Offcanvas.getOrCreateInstance(offcanvas).show(); }
+
     Swal.fire({
       icon: "success",
-      title: pendingExtrasName,
-      html: '<span style="font-size:0.95rem;">Agregado al carrito</span>' + detailHtml,
-      confirmButtonText: '<i class="bi bi-cart-check me-1"></i> Ver carrito',
-      confirmButtonColor: "#b87e38",
-      showCancelButton: true,
-      cancelButtonText: "Seguir pidiendo",
-      cancelButtonColor: "#6c757d",
-      timer: 5000,
-      timerProgressBar: true
-    }).then(function(result) {
-      if (result.isConfirmed || result.dismiss === Swal.DismissReason.timer) {
-        const offcanvas = document.getElementById("offcanvas-cart");
-        if (offcanvas) { bootstrap.Offcanvas.getOrCreateInstance(offcanvas).show(); }
-      }
+      title: pendingExtrasName ? "¡" + pendingExtrasName + " en tu carrito!" : "¡Agregado al carrito!",
+      toast: true,
+      position: "top-end",
+      timer: 2000,
+      timerProgressBar: true,
+      showConfirmButton: false
     });
   });
 }
@@ -1232,7 +1228,7 @@ $(document).ready(function() {
   });
 
   // BCV Rate
-  let bcvRate = <?php echo $bcv_rate_js; ?>;
+  bcvRate = <?php echo $bcv_rate_js; ?>;
   function bcvLoadRate(showSpinner) {
     $.get("./?action=bcv&opt=get", function(data) {
       try {

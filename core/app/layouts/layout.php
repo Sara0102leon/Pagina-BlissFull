@@ -250,7 +250,7 @@
 
       <!-- Offcanvas Cart (Mobile/Desktop Swipe) -->
       <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
-        <div class="offcanvas-header bg-primary">
+        <div class="offcanvas-header" style="background: linear-gradient(135deg,#e0a96d,#b87e38); color: #000000;">
           <h5 class="offcanvas-title fw-bold" id="offcanvasCartLabel"><i class="bi bi-bag-heart me-2"></i> Mi Orden</h5>
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
