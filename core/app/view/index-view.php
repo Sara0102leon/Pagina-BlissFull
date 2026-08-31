@@ -690,6 +690,8 @@ function addToCart(pid, pname, extrasJson) {
      $("#cart-container").html(data);
      $("#offcanvas-cart-container").html(data);
      updateUI();
+     const offcanvas = document.getElementById("offcanvasCart");
+     if (offcanvas) { bootstrap.Offcanvas.getOrCreateInstance(offcanvas).show(); }
      if(typeof showCartToast === "function") { showCartToast("Se agregó: " + pname); }
   });
 }
@@ -972,25 +974,10 @@ function confirmExtras() {
     $("#offcanvas-cart-container").html(data);
     updateUI();
 
-    let detailHtml = "";
-    if (selectedNames.length > 0) {
-      detailHtml = '<div style="text-align:left;margin-top:8px;font-size:0.85rem;color:#555;">' +
-        selectedNames.map(function(n){ return '<i class="bi bi-check2 text-success"></i> ' + n; }).join('<br>') +
-        '</div>';
-    }
-
     const offcanvas = document.getElementById("offcanvasCart");
     if (offcanvas) { bootstrap.Offcanvas.getOrCreateInstance(offcanvas).show(); }
 
-    Swal.fire({
-      icon: "success",
-      title: pendingExtrasName ? "¡" + pendingExtrasName + " en tu carrito!" : "¡Agregado al carrito!",
-      toast: true,
-      position: "top-end",
-      timer: 2000,
-      timerProgressBar: true,
-      showConfirmButton: false
-    });
+    if (typeof showCartToast === "function") { showCartToast("Se agregó: " + pendingExtrasName); }
   });
 }
 
