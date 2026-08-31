@@ -181,7 +181,7 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="buy"){
 			$p->add();
 		}
 		unset($_SESSION["cart"]);
-		echo "ok";
+		echo $code;
 	}
 }
 else if(isset($_GET["opt"]) && $_GET["opt"]=="check"){

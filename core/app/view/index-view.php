@@ -1314,8 +1314,10 @@ $(document).ready(function() {
     }, function(res) {
       clearCart();
 
+      const buyCode = String(res || "").trim();
       const whatsappNum = sede.phone ? String(sede.phone).replace(/\D/g, "") : "<?php echo $whatsapp_number; ?>";
       let msg = "*NUEVA ORDEN - ALIANZAS BLISSFUL*%0A%0A";
+      msg += "*Código:* #" + buyCode + "%0A%0A";
       msg += "*Sede:* " + sede.name + "%0A";
       msg += "*Cliente:* " + name + "%0A";
       msg += "*Teléfono:* " + phone + "%0A";

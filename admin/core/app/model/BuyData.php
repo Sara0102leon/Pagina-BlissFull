@@ -2,7 +2,7 @@
 class BuyData {
 	public static $tablename = "buy";
 
-	public $id, $k, $code, $coupon_id, $client_id, $created_at, $paymethod_id, $delivery_zone_id, $sede_id, $capture, $note, $scheduled_at, $status_id, $name, $c, $m;
+	public $id, $k, $code, $coupon_id, $client_id, $created_at, $paymethod_id, $delivery_zone_id, $sede_id, $capture, $note, $scheduled_at, $status_id, $name, $c, $m, $chatwoot_conversation_id, $chatwoot_contact_id;
 
 	public function __construct(){
 		$this->id = null;
@@ -92,6 +92,37 @@ class BuyData {
 		$sql = "select * from ".self::$tablename." where (created_at>=\"$start\" and created_at<=\"$end\") order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new BuyData());
+	}
+
+	public static function getByRangeDelivered($start,$end){
+		$sql = "select * from ".self::$tablename." where status_id=5 and (created_at>=\"$start\" and created_at<=\"$end\") order by created_at desc";
+		$query = Executor::doit($sql);
+		return Model::many($query[0],new BuyData());
+	}
+
+	public static function getAllDelivered(){
+		$sql = "select * from ".self::$tablename." where status_id=5 order by created_at desc";
+		$query = Executor::doit($sql);
+		return Model::many($query[0],new BuyData());
+	}
+
+	public static function getByConversationId($cw_conversation_id){
+		$sql = "select * from ".self::$tablename." where chatwoot_conversation_id=$cw_conversation_id order by id desc limit 1";
+		$query = Executor::doit($sql);
+		return Model::one($query[0],new BuyData());
+	}
+
+	public function linkConversation($cw_conversation_id,$cw_contact_id){
+		$sql = "update ".self::$tablename." set chatwoot_conversation_id=$cw_conversation_id, chatwoot_contact_id=".($cw_contact_id!=""?$cw_contact_id:"NULL")." where id=$this->id";
+		Executor::doit($sql);
+		$this->chatwoot_conversation_id = $cw_conversation_id;
+		$this->chatwoot_contact_id = $cw_contact_id;
+	}
+
+	public function cascadeToFinal(){
+		$sql = "update ".self::$tablename." set status_id=5 where id=$this->id";
+		Executor::doit($sql);
+		$this->status_id = 5;
 	}
 
 	public  function getTotal(){

@@ -2,7 +2,7 @@
 class SedeData {
 	public static $tablename = "sede";
 
-	public $id, $name, $address, $phone, $image, $maps, $is_active, $created_at;
+	public $id, $name, $address, $phone, $image, $maps, $is_active, $created_at, $chatwoot_group_conversation_id;
 
 	public function __construct(){
 		$this->id = null;

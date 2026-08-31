@@ -51,7 +51,11 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
             ?>
             <tr>
               <td><a href="./?view=sells&opt=open&id=<?php echo $b->id; ?>" class="btn btn-sm btn-default">Detalles</a></td>
-              <td>#<?php echo $b->id; ?></td>
+              <td>#<?php echo $b->id; ?>
+                <?php if(intval($b->chatwoot_conversation_id)>0):?>
+                  <a href="<?php echo ChatwootData::baseUrl(); ?>/accounts/<?php echo ChatwootData::accountId(); ?>/conversations/<?php echo intval($b->chatwoot_conversation_id); ?>" target="_blank" rel="noopener" class="ms-1" title="Ver conversación en Chatwoot"><i class="bi bi-chat-dots text-success"></i></a>
+                <?php endif; ?>
+              </td>
               <td><?php echo $b->getClient()->getFullname(); ?></td>
               <td><?php $b_sede = $b->getSede(); echo $b_sede ? htmlspecialchars($b_sede->name) : '-'; ?></td>
               <td><?php echo $coin; ?> <?php echo number_format($b->getTotal()-$discount,2,".",","); ?></td>
@@ -262,9 +266,9 @@ $ivatxt = ConfigurationData::getByPreffix("general_iva_txt")->val;
 <?php
 $buys = array();
 if(isset($_GET["start_at"]) && isset($_GET["finish_at"]) && $_GET["start_at"]!="" && $_GET["finish_at"]!=""){
-  $buys = BuyData::getByRange($_GET["start_at"],$_GET["finish_at"]);
+  $buys = BuyData::getByRangeDelivered($_GET["start_at"],$_GET["finish_at"]);
 }else{
-  $buys = BuyData::getAll();
+  $buys = BuyData::getAllDelivered();
 }
 
 // group by month and sum totals with daily BCV rate
@@ -441,9 +445,9 @@ function bcv_rate_for_date_excel($date){
 }
 $buys = array();
 if(isset($_GET["start_at"]) && isset($_GET["finish_at"]) && $_GET["start_at"]!="" && $_GET["finish_at"]!=""){
-  $buys = BuyData::getByRange($_GET["start_at"],$_GET["finish_at"]);
+  $buys = BuyData::getByRangeDelivered($_GET["start_at"],$_GET["finish_at"]);
 }else{
-  $buys = BuyData::getAll();
+  $buys = BuyData::getAllDelivered();
 }
 $sum_usd = 0;
 $sum_bs = 0;
