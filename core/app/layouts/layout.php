@@ -7,6 +7,7 @@
     <title>Alianzas Blissful - Menú Digital</title>
     <link rel="icon" type="image/png" href="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/assets/img/favicon.png">
     <link rel="shortcut icon" type="image/x-icon" href="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/favicon.ico">
+    <meta name="facebook-domain-verification" content="qrvapznaazsiqazbrl2m1r0plekb22" />
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -332,7 +333,7 @@
                 <div class="d-flex gap-2">
                    <a href="<?php echo $fb_footer ? (preg_match('/^https?:\/\//i',$fb_footer) ? $fb_footer : "https://facebook.com/".ltrim($fb_footer,"@")) : "#"; ?>" class="social-icon" title="Facebook" target="_blank" rel="noopener"><i class="bi bi-facebook"></i></a>
                    <a href="<?php echo $ig_footer ? (preg_match('/^https?:\/\//i',$ig_footer) ? $ig_footer : "https://instagram.com/".ltrim($ig_footer,"@")) : "#"; ?>" class="social-icon" title="Instagram" target="_blank" rel="noopener"><i class="bi bi-instagram"></i></a>
-                   <a href="https://api.whatsapp.com/send?phone=<?php echo preg_replace('/\D/','',$whatsapp_footer); ?>" class="social-icon" target="_blank" rel="noopener" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                   <a href="https://wa.me/<?php echo preg_replace('/\D/','',$whatsapp_footer); ?>" class="social-icon" target="_blank" rel="noopener" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
                 </div>
               </div>
               <div class="col-6 col-md-3 col-lg-2">
@@ -355,7 +356,7 @@
                 <ul class="list-unstyled small d-grid gap-2 mb-0">
                   <li class="d-flex gap-2"><i class="bi bi-geo-alt-fill text-gold mt-1"></i><span class="text-white-50"><?php echo $footer_sede ? htmlspecialchars($footer_sede->address) : "Av. Principal #123"; ?></span></li>
                   <li class="d-flex gap-2"><i class="bi bi-telephone-fill text-gold mt-1"></i><span class="text-white-50"><?php echo $footer_sede ? htmlspecialchars($footer_sede->phone) : "555-MENU"; ?></span></li>
-                  <li class="d-flex gap-2"><i class="bi bi-whatsapp text-gold mt-1"></i><a href="https://api.whatsapp.com/send?phone=<?php echo preg_replace('/\D/','',$whatsapp_footer); ?>" target="_blank" rel="noopener" class="text-white-50">Pedir por WhatsApp</a></li>
+                   <li class="d-flex gap-2"><i class="bi bi-whatsapp text-gold mt-1"></i><a href="https://wa.me/<?php echo preg_replace('/\D/','',$whatsapp_footer); ?>" target="_blank" rel="noopener" class="text-white-50">Pedir por WhatsApp</a></li>
                 </ul>
               </div>
             </div>

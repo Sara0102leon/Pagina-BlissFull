@@ -27,11 +27,41 @@ class BuyData {
 	public function getSede(){ return $this->sede_id ? SedeData::getById($this->sede_id) : null; }
 
 	public function add(){
+		$cols = $this->existingColumns();
 		$zone_sql = $this->delivery_zone_id!="" ? $this->delivery_zone_id : "NULL";
 		$sede_sql = $this->sede_id!="" ? $this->sede_id : "NULL";
-		$sql = "insert into ".self::$tablename." (k,code,coupon_id,client_id,created_at,paymethod_id,delivery_zone_id,sede_id,capture,note,scheduled_at,status_id) ";
-		$sql .= "value (\"$this->k\",\"$this->code\",$this->coupon_id,\"$this->client_id\",$this->created_at,$this->paymethod_id,$zone_sql,$sede_sql," . ($this->capture!="" ? "\"$this->capture\"" : "NULL") . "," . ($this->note!="" ? "\"$this->note\"" : "NULL") . "," . ($this->scheduled_at!="" ? "\"$this->scheduled_at\"" : "NULL") . ",$this->status_id)";
+		$sched_sql = ($this->scheduled_at!="" && isset($cols["scheduled_at"])) ? "\"$this->scheduled_at\"" : "NULL";
+		$fields = array("k","code","coupon_id","client_id","created_at","paymethod_id","delivery_zone_id","sede_id","capture","note","scheduled_at","status_id");
+		$names = array();
+		$vals = array();
+		foreach($fields as $f){
+			if(!isset($cols[$f])){ continue; }
+			$names[] = $f;
+			switch($f){
+				case "coupon_id": $vals[] = $this->coupon_id; break;
+				case "created_at": $vals[] = $this->created_at; break;
+				case "delivery_zone_id": $vals[] = $zone_sql; break;
+				case "sede_id": $vals[] = $sede_sql; break;
+				case "capture": $vals[] = ($this->capture!="" ? "\"$this->capture\"" : "NULL"); break;
+				case "note": $vals[] = ($this->note!="" ? "\"$this->note\"" : "NULL"); break;
+				case "scheduled_at": $vals[] = $sched_sql; break;
+				default: $vals[] = "\"$this->$f\"";
+			}
+		}
+		$sql = "insert into ".self::$tablename." (".implode(",",$names).") ";
+		$sql .= "value (".implode(",",$vals).")";
 		return Executor::doit($sql);
+	}
+
+	private function existingColumns(){
+		$cols = array();
+		try {
+			$r = Executor::doit("SHOW COLUMNS FROM ".self::$tablename);
+			if($r[0] !== false){
+				while($row = $r[0]->fetch_assoc()){ $cols[strtolower($row["Field"])] = true; }
+			}
+		} catch(\Throwable $e){}
+		return $cols;
 	}
 
 	public static function delById($id){

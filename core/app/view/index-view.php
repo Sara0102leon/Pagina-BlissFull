@@ -16,11 +16,34 @@ $zelle_contact = ConfigurationData::getByPreffix("zelle_contact")?ConfigurationD
 $binance_contact = ConfigurationData::getByPreffix("binance_contact")?ConfigurationData::getByPreffix("binance_contact")->val:"";
 $zones = DeliveryZoneData::getAll();
 $sedes = SedeData::getActives();
+function tt_safe_table_exists($table){
+  static $cache = array();
+  if(isset($cache[$table])){ return $cache[$table]; }
+  $ok = false;
+  try {
+    $r = Executor::doit("SHOW TABLES LIKE \"$table\"");
+    $ok = ($r[0] !== false && $r[0]->num_rows > 0);
+  } catch(\Throwable $e){ $ok = false; }
+  $cache[$table] = $ok;
+  return $ok;
+}
+function tt_safe_map_horarios($sede_id){
+  try {
+    if(class_exists("SedeHorarioData") && tt_safe_table_exists("sede_horario")){
+      return SedeHorarioData::mapForSede($sede_id);
+    }
+  } catch(\Throwable $e){}
+  $map = array();
+  foreach(array("domingo","lunes","martes","miercoles","jueves","viernes","sabado") as $d){
+    $map[$d] = array("open"=>"", "close"=>"");
+  }
+  return $map;
+}
 $sede_json = array();
 foreach($sedes as $sd){
   $deliv_map = array();
   foreach(SedeDeliveryZoneData::getBySede($sd->id) as $sdzd){ $deliv_map[$sdzd->delivery_zone_id] = floatval($sdzd->price); }
-  $horarios = SedeHorarioData::mapForSede($sd->id);
+  $horarios = tt_safe_map_horarios($sd->id);
   array_push($sede_json, array(
     "id"=>$sd->id,
     "name"=>$sd->name,
@@ -34,7 +57,12 @@ $sede_json = json_encode($sede_json);
 $bebidas_json = "[]";
 $bebida_base_cfg = ConfigurationData::getByPreffix("bebida_base");
 $bebida_base = ($bebida_base_cfg && $bebida_base_cfg->val!="" ) ? floatval($bebida_base_cfg->val) : 1.00;
-$bebidas_activas = BebidaData::getActive();
+$bebidas_activas = array();
+try {
+  if(class_exists("BebidaData") && tt_safe_table_exists("bebida")){
+    $bebidas_activas = BebidaData::getActive();
+  }
+} catch(\Throwable $e){ $bebidas_activas = array(); }
 if(count($bebidas_activas)>0){
   $bebidas_arr = array_map(function($b) use($bebida_base){ return array("id"=>intval($b->id),"sabor"=>$b->sabor,"medida"=>$b->medida,"sabor_options"=>$b->sabor_options,"es_gratis"=>intval($b->es_gratis),"precio"=>floatval($b->precio),"extra"=>max(0,floatval($b->precio)-$bebida_base)); }, $bebidas_activas);
   $bebidas_json = json_encode($bebidas_arr, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
@@ -49,7 +77,7 @@ function tt_cat_ic($cat_name){
   return "circle-half";
 }
 function tt_sede_today($sede_id){
-  $h = SedeHorarioData::mapForSede($sede_id);
+  $h = tt_safe_map_horarios($sede_id);
   $keys = array("domingo","lunes","martes","miercoles","jueves","viernes","sabado");
   $today = $keys[(int)date("w")];
   return array("open"=>trim((string)$h[$today]["open"]), "close"=>trim((string)$h[$today]["close"]));
@@ -1152,17 +1180,17 @@ function itemsWhatsAppText(items, delivery) {
     let extrasTxt = "";
     (it.extras || []).forEach(function(e){
       unit += parseFloat(e.price);
-      if (parseFloat(e.price) > 0) { extrasTxt += "    - " + e.name + " (+" + fmt(parseFloat(e.price)) + ")%0A"; }
-      else if (e.div === 1) { extrasTxt += "    - " + e.name + " (gratis)%0A"; }
+      if (parseFloat(e.price) > 0) { extrasTxt += "    - " + e.name + " (+" + fmt(parseFloat(e.price)) + ")\n"; }
+      else if (e.div === 1) { extrasTxt += "    - " + e.name + " (gratis)\n"; }
     });
     let bebidasTxt = "";
     (it.bebidas || []).forEach(function(b){
       unit += parseFloat(b.precio);
       const sabor_txt = b.sabor_elegido ? " (" + b.sabor_elegido + ")" : "";
       const tag = parseFloat(b.precio) > 0 ? "(+" + fmt(parseFloat(b.precio)) + ")" : "(gratis)";
-      bebidasTxt += "    - 🥤 " + b.sabor + " " + b.medida + sabor_txt + " " + tag + "%0A";
+      bebidasTxt += "    - 🥤 " + b.sabor + " " + b.medida + sabor_txt + " " + tag + "\n";
     });
-    lines.push("- " + it.q + " x " + it.name + "%0A" + extrasTxt + bebidasTxt + "    (" + fmt(unit) + ") = " + fmt(unit * it.q) + "%0A");
+    lines.push("- " + it.q + " x " + it.name + "\n" + extrasTxt + bebidasTxt + "    (" + fmt(unit) + ") = " + fmt(unit * it.q) + "\n");
   });
   return lines.join("");
 }
@@ -1412,36 +1440,50 @@ $(document).ready(function() {
       note: note,
       scheduled_at: scheduledAt
     }, function(res) {
-      clearCart();
+      let buyCode = String(res || "").trim();
+      if (!buyCode) {
+        var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        buyCode = "";
+        for (var ci = 0; ci < 11; ci++) { buyCode += chars.charAt(Math.floor(Math.random() * chars.length)); }
+      }
 
-      const buyCode = String(res || "").trim();
-      const whatsappNum = sede.phone ? String(sede.phone).replace(/\D/g, "") : "<?php echo $whatsapp_number; ?>";
-      let msg = "*NUEVA ORDEN - ALIANZAS BLISSFUL*%0A%0A";
-      msg += "*Código:* #" + buyCode + "%0A%0A";
-      msg += "*Sede:* " + sede.name + "%0A";
-      msg += "*Cliente:* " + name + "%0A";
-      msg += "*Teléfono:* " + phone + "%0A";
+      const whatsappNum = (sede.phone ? String(sede.phone).replace(/\D/g, "") : "<?php echo preg_replace('/\D/','', $whatsapp_number); ?>").replace(/^0+/, "");
+      // Build a compact WhatsApp message to avoid URL length truncation
+      let msg = "*NUEVA ORDEN - ALIANZAS BLISSFUL*\n\n";
+      msg += "*Código:* " + buyCode + "\n\n";
+      msg += "*Sede:* " + (sede.name || "") + "\n";
+      msg += "*Cliente:* " + name + "\n";
+      msg += "*Teléfono:* " + phone + "\n";
       if(delivery){
-        msg += "*Dirección:* " + address + "%0A";
-        msg += "*Zona (Delivery):* " + zoneName + "%0A";
-        msg += "*Delivery:* " + fmt(t.delivery) + "%0A";
+        msg += "*Dirección:* " + address + "\n";
+        msg += "*Zona:* " + zoneName + "\n";
+        msg += "*Delivery:* " + fmt(t.delivery) + "\n";
       } else {
-        msg += "*Entrega:* " + orderModeLabel + "%0A";
+        msg += "*Entrega:* " + orderModeLabel + "\n";
       }
       if (isScheduled) {
-        msg += "*Pedido programado para:* " + scheduledLabel + "%0A";
+        msg += "*Programado:* " + scheduledLabel + "\n";
       }
-      msg += "*Pago:* " + paymethodName + "%0A%0A";
-      if(note){ msg += "*Nota:* " + note + "%0A"; }
-      msg += "*Productos:*%0A" + itemsWhatsAppText(items, delivery);
-      msg += "%0A*------------------------------*%0A";
-      msg += "*SUBTOTAL (US$): " + fmt(t.subtotal) + "*%0A";
-      msg += "*TOTAL (US$): " + fmt(t.total) + "*%0A";
-      msg += "*TOTAL (Bs): " + (bcvRate > 0 ? fmtBs(t.total * bcvRate) : "a confirmar") + "*%0A";
-      msg += "*------------------------------*%0A";
-      msg += isPM ? "_El cliente pagó/pagará el monto indicado. Solicita el capture de pago por este chat antes de confirmar._" : "_El cliente confirmará el pago._";
+      msg += "*Pago:* " + paymethodName + "\n\n";
+      if(note){ msg += "*Nota:* " + note + "\n"; }
+      msg += "*Productos:*\n" + itemsWhatsAppText(items, delivery);
+      msg += "\n*SUBTOTAL (US$): " + fmt(t.subtotal) + "*\n";
+      msg += "*TOTAL (US$): " + fmt(t.total) + "*\n";
+      msg += "*TOTAL (Bs): " + (bcvRate > 0 ? fmtBs(t.total * bcvRate) : "a confirmar") + "*\n";
+      msg += isPM ? "_El cliente pagó/pagará el monto. Solicita el capture._" : "_El cliente confirmará el pago._";
 
-      window.open("https://api.whatsapp.com/send?phone=" + whatsappNum + "&text=" + msg, '_blank');
+      function waEncode(s){
+        return encodeURIComponent(s)
+          .replace(/%2A/g, "*")
+          .replace(/%5F/g, "_")
+          .replace(/%250A/g, "%0A");
+      }
+      const waUrl = "https://wa.me/" + whatsappNum + "?text=" + waEncode(msg);
+      var opened = false;
+      var w = window.open(waUrl, '_blank');
+      if (w) { opened = true; }
+
+      clearCart();
       $("#modal-checkout").modal("hide");
       Swal.fire({
         icon: "success",
