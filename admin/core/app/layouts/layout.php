@@ -100,6 +100,7 @@ $sys_open = $sys_active!="" ? " show" : "";
               <a class="sidebar-subitem<?php echo ($current_view=="settings" && isset($_GET["opt"]) && $_GET["opt"]=="payment") ? " active" : ""; ?>" href="./?view=settings&opt=payment"><i class="bi bi-credit-card"></i> Métodos de Pago</a>
               <a class="sidebar-subitem<?php echo ($current_view=="settings" && isset($_GET["opt"]) && $_GET["opt"]=="units") ? " active" : ""; ?>" href="./?view=settings&opt=units"><i class="bi bi-rulers"></i> Unidades</a>
               <a class="sidebar-subitem<?php echo ($current_view=="settings" && isset($_GET["opt"]) && $_GET["opt"]=="ingredients") ? " active" : ""; ?>" href="./?view=settings&opt=ingredients"><i class="bi bi-egg-fried"></i> Ingredientes</a>
+              <a class="sidebar-subitem<?php echo ($current_view=="settings" && isset($_GET["opt"]) && $_GET["opt"]=="bebidas") ? " active" : ""; ?>" href="./?view=settings&opt=bebidas"><i class="bi bi-cup-straw"></i> Bebidas</a>
             </div>
           </div>
 

@@ -18,6 +18,7 @@ if($user==null){ Core::redir("./");}
           <a href="./?view=settings&opt=horarios" class="btn btn-default">Horarios</a>
           <a href="./?view=settings&opt=units" class="btn btn-default">Unidades</a>
           <a href="./?view=settings&opt=ingredients" class="btn btn-default">Ingredientes</a>
+          <a href="./?view=settings&opt=bebidas" class="btn btn-default">Bebidas</a>
           <a href="./?view=settings&opt=password" class="btn btn-default">Cambiar Contraseña</a>
         </div>
       </div>
@@ -589,6 +590,213 @@ $h_close_cfg = ConfigurationData::getByPreffix("horario_close");
     </div>
   </div>
 </div>
+
+<?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="bebidas"):?>
+<?php
+$bebidas = BebidaData::getAll();
+$bebidas_gratis = array();
+$bebidas_cargo = array();
+foreach($bebidas as $bb){ if(intval($bb->es_gratis)==1){ $bebidas_gratis[] = $bb; } else { $bebidas_cargo[] = $bb; } }
+?>
+<div class="page-header d-print-none">
+  <div class="container-xl">
+    <div class="row g-2 align-items-center">
+      <div class="col">
+        <h2 class="page-title">Bebidas</h2>
+      </div>
+      <div class="col-auto ms-auto d-print-none">
+        <div class="btn-list">
+          <a href="./?view=settings&opt=ingredients" class="btn btn-default">Ingredientes</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="page-body">
+  <div class="container-xl">
+    <div class="card mb-3">
+      <div class="card-status-top bg-success"></div>
+      <div class="card-header">
+        <h3 class="card-title">Agregar Refresco</h3>
+      </div>
+      <div class="card-body">
+        <form method="post" action="./?action=settings&opt=addbebida" id="form-add-bebida" class="row g-2 align-items-end">
+          <div class="col-md-2">
+            <label class="form-label">Sabor</label>
+            <input type="text" name="sabor" class="form-control" placeholder="Ej: Golden" required>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Medida</label>
+            <input type="text" name="medida" class="form-control" placeholder="Ej: 1.5 Litros" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Sabores (opcional)</label>
+            <input type="text" name="sabor_options" class="form-control" placeholder="Ej: Uva, Piña, Kolita">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Precio</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input type="text" name="precio" class="form-control" placeholder="2.50" required>
+            </div>
+          </div>
+          <div class="col-md-1">
+            <label class="form-check form-switch mb-0 mt-4" title="La pizza gigante lo incluye gratis">
+              <input class="form-check-input" type="checkbox" name="es_gratis">
+              <span class="form-check-label">Gratis</span>
+            </label>
+          </div>
+          <div class="col-md-1">
+            <label class="form-check form-switch mb-0 mt-4">
+              <input class="form-check-input" type="checkbox" name="is_active" checked>
+              <span class="form-check-label">Activa</span>
+            </label>
+          </div>
+          <div class="col-md-1">
+            <button type="submit" class="btn btn-success w-100">Agregar</button>
+          </div>
+          <p class="text-muted small mb-0 mt-1 col-12">La pizza gigante incluye <strong>1 refresco gratis de litro y medio</strong>. Marca <strong>Gratis</strong> los que van incluidos (ej: Golden y Up7) y completa sus <strong>Sabores</strong> por si tienen variedad. Los demás refrescos "pagan la diferencia": se cobra <strong>precio − $1.00</strong>.</p>
+        </form>
+      </div>
+    </div>
+    <div class="card mb-3">
+      <div class="card-status-top bg-primary"></div>
+      <div class="card-header">
+        <h3 class="card-title">Refrescos incluidos (gratis)</h3>
+      </div>
+      <div class="card-body">
+        <?php if(count($bebidas_gratis)>0):?>
+        <div class="table-responsive">
+          <table class="table card-table table-vcenter">
+            <thead>
+              <tr>
+                <th>Sabor</th>
+                <th>Medida</th>
+                <th>Sabores</th>
+                <th>Precio</th>
+                <th>Gratis</th>
+                <th>Activa</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+            <?php foreach($bebidas_gratis as $b):?>
+              <tr>
+                <td><input type="text" class="form-control" value="<?php echo htmlspecialchars($b->sabor); ?>" data-bebida-sabor="<?php echo $b->id; ?>" required></td>
+                <td><input type="text" class="form-control" value="<?php echo htmlspecialchars($b->medida); ?>" data-bebida-medida="<?php echo $b->id; ?>" required></td>
+                <td style="min-width:180px;"><input type="text" class="form-control" value="<?php echo htmlspecialchars($b->sabor_options); ?>" placeholder="Separados por coma" data-bebida-sabores="<?php echo $b->id; ?>"></td>
+                <td style="min-width:120px;">
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="text" class="form-control" value="<?php echo $b->precio; ?>" data-bebida-precio="<?php echo $b->id; ?>" required>
+                  </div>
+                </td>
+                <td>
+                  <label class="form-check form-switch mb-0" title="Cuenta como el refresco gratis incluido">
+                    <input class="form-check-input bebida-gratis" type="checkbox" data-id="<?php echo $b->id; ?>" <?php if(intval($b->es_gratis)==1){ echo "checked"; } ?>>
+                  </label>
+                </td>
+                <td>
+                  <label class="form-check form-switch mb-0">
+                    <input class="form-check-input bebida-active" type="checkbox" data-id="<?php echo $b->id; ?>" <?php if(intval($b->is_active)==1){ echo "checked"; } ?>>
+                  </label>
+                </td>
+                <td class="text-end text-nowrap">
+                  <button type="button" class="btn btn-warning btn-sm btn-bebida-save" data-id="<?php echo $b->id; ?>"><i class="bi bi-check-lg"></i> Guardar</button>
+                  <a href="./?action=settings&opt=delbebida&id=<?php echo $b->id; ?>" class="btn btn-danger btn-sm btn-bebida-del" title="Eliminar" onclick="return false;"><i class="bi bi-trash"></i></a>
+                </td>
+              </tr>
+            <?php endforeach;?>
+            </tbody>
+          </table>
+        </div>
+        <?php else:?>
+          <p class="alert alert-warning mb-0">No hay refrescos marcados como "Gratis".</p>
+        <?php endif;?>
+      </div>
+    </div>
+    <div class="card mb-3">
+      <div class="card-status-top bg-orange"></div>
+      <div class="card-header">
+        <h3 class="card-title">Refrescos diferentes (pagan la diferencia)</h3>
+      </div>
+      <div class="card-body">
+        <?php if(count($bebidas_cargo)>0):?>
+        <div class="table-responsive">
+          <table class="table card-table table-vcenter">
+            <thead>
+              <tr>
+                <th>Sabor</th>
+                <th>Medida</th>
+                <th>Sabores</th>
+                <th>Precio</th>
+                <th>Gratis</th>
+                <th>Activa</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+            <?php foreach($bebidas_cargo as $b):?>
+              <tr>
+                <td><input type="text" class="form-control" value="<?php echo htmlspecialchars($b->sabor); ?>" data-bebida-sabor="<?php echo $b->id; ?>" required></td>
+                <td><input type="text" class="form-control" value="<?php echo htmlspecialchars($b->medida); ?>" data-bebida-medida="<?php echo $b->id; ?>" required></td>
+                <td style="min-width:180px;"><input type="text" class="form-control" value="<?php echo htmlspecialchars($b->sabor_options); ?>" placeholder="Separados por coma" data-bebida-sabores="<?php echo $b->id; ?>"></td>
+                <td style="min-width:120px;">
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="text" class="form-control" value="<?php echo $b->precio; ?>" data-bebida-precio="<?php echo $b->id; ?>" required>
+                  </div>
+                </td>
+                <td>
+                  <label class="form-check form-switch mb-0" title="Cuenta como el refresco gratis incluido">
+                    <input class="form-check-input bebida-gratis" type="checkbox" data-id="<?php echo $b->id; ?>" <?php if(intval($b->es_gratis)==1){ echo "checked"; } ?>>
+                  </label>
+                </td>
+                <td>
+                  <label class="form-check form-switch mb-0">
+                    <input class="form-check-input bebida-active" type="checkbox" data-id="<?php echo $b->id; ?>" <?php if(intval($b->is_active)==1){ echo "checked"; } ?>>
+                  </label>
+                </td>
+                <td class="text-end text-nowrap">
+                  <button type="button" class="btn btn-warning btn-sm btn-bebida-save" data-id="<?php echo $b->id; ?>"><i class="bi bi-check-lg"></i> Guardar</button>
+                  <a href="./?action=settings&opt=delbebida&id=<?php echo $b->id; ?>" class="btn btn-danger btn-sm btn-bebida-del" title="Eliminar" onclick="return false;"><i class="bi bi-trash"></i></a>
+                </td>
+              </tr>
+            <?php endforeach;?>
+            </tbody>
+          </table>
+        </div>
+        <?php else:?>
+          <p class="alert alert-warning mb-0">No hay refrescos con cargo.</p>
+        <?php endif;?>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+$(function(){
+  $(document).on("click", ".btn-bebida-save", function(){
+    var id = $(this).data("id");
+    var sabor = $('input[data-bebida-sabor="' + id + '"]').val().trim();
+    var medida = $('input[data-bebida-medida="' + id + '"]').val().trim();
+    var sabores = $('input[data-bebida-sabores="' + id + '"]').val().trim();
+    var precio = $('input[data-bebida-precio="' + id + '"]').val();
+    var gratis = $('.bebida-gratis[data-id="' + id + '"]').is(":checked") ? 1 : 0;
+    var act = $('.bebida-active[data-id="' + id + '"]').is(":checked") ? 1 : 0;
+    if(sabor === "" || medida === ""){ Swal.fire({ icon:"warning", title:"Faltan datos", text:"Indica el sabor y la medida." }); return; }
+    $.post("./?action=settings&opt=updbebida", { id: id, sabor: sabor, medida: medida, sabor_options: sabores, precio: precio, es_gratis: gratis, is_active: act })
+      .done(function(){ Swal.fire({ icon:"success", title:"Guardado", text:"Refresco actualizado", timer:1200, showConfirmButton:false }); })
+      .fail(function(){ Swal.fire({ icon:"error", title:"Error", text:"No se pudo guardar." }); });
+  });
+  $(document).on("click", ".btn-bebida-del", function(e){
+    e.preventDefault();
+    var href = $(this).attr("href");
+    Swal.fire({ title:"¿Eliminar refresco?", text:"Esta acción no se puede deshacer.", icon:"warning", showCancelButton:true, confirmButtonText:"Sí, eliminar", cancelButtonText:"Cancelar", confirmButtonColor:"#d63939" })
+      .then(function(r){ if(r.isConfirmed){ $.get(href).done(function(){ location.reload(); }); } });
+  });
+});
+</script>
 
 <?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="ingredients" || isset($_GET["opt"]) && $_GET["opt"]=="extras"):?>
 <?php

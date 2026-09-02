@@ -45,8 +45,8 @@ if($cat_id>0 && count($products)==0 && in_array($cat_id, array(5,6))){
   <?php foreach($products as $p):
   $img = "admin/storage/products/".$p->image;
   if($p->image=="" || !file_exists($img)){ $img=$img_default; }
-  $pizza_edit_json = array("desc"=>trim((string)$p->description),"free"=>intval($p->free_ingredients),"division"=>trim((string)$p->tipo_division),"sabores"=>array(),"ingredients"=>array(),"extras"=>array(),"sel"=>array(),"main"=>-1);
-  $no_edit_cats = array(5,6); // Pastas y Focaccia: por ahora sin extras/ingredientes
+  $pizza_edit_json = array("desc"=>trim((string)$p->description),"free"=>intval($p->free_ingredients),"division"=>trim((string)$p->tipo_division),"sabores"=>array(),"ingredients"=>array(),"extras"=>array(),"sel"=>array(),"main"=>-1,"gigante"=>in_array(intval($p->category_id), array(2))? 1 : 0);
+  $no_edit_cats = array(5,6,8); // Pastas, Focaccia y Refrescos: por ahora sin extras/ingredientes
   if(!in_array(intval($p->category_id), $no_edit_cats)){
     $extras = ProductExtraData::getByProductId($p->id);
     $tipo = trim((string)$p->tipo_division);
@@ -57,6 +57,7 @@ if($cat_id>0 && count($products)==0 && in_array($cat_id, array(5,6))){
       // Pizza normal: ingredientes de la casa detectados por la descripción
       $pizza_edit_json = tt_build_extras_payload($p->description, $p->free_ingredients, $extras, $p->house_ingredients);
       $pizza_edit_json["division"] = $tipo;
+      $pizza_edit_json["gigante"] = in_array(intval($p->category_id), array(2))? 1 : 0;
     }
   }
   $has_edit = !in_array(intval($p->category_id), $no_edit_cats);

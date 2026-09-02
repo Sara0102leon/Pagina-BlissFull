@@ -42,10 +42,23 @@ $total = 0;
                 if(isset($s["extras"]) && count($s["extras"])>0){
                   foreach($s["extras"] as $e){ $extras_sum += floatval($e["price"]); $extras_txt[] = $e["name"]; $extras_lines .= "%0A    - ".htmlspecialchars($e["name"]).(floatval($e["price"])>0 ? " (+".$coin_symbol.number_format(floatval($e["price"]),2).")" : " (gratis)"); }
                 }
-                $unit = ProductData::getEffectivePrice($p) + $extras_sum;
+                $bebidas_sum = 0;
+                $bebidas_txt = array();
+                $bebidas_lines = "";
+                if(isset($s["bebidas"]) && count($s["bebidas"])>0){
+                  foreach($s["bebidas"] as $bd){
+                    $bebidas_sum += floatval($bd["precio"]);
+                    $bebs = $bd["sabor"]." ".$bd["medida"];
+                    if(isset($bd["sabor_elegido"]) && $bd["sabor_elegido"]!=""){ $bebs .= " (".$bd["sabor_elegido"].")"; }
+                    $bebs .= (floatval($bd["precio"])>0) ? " (+$".number_format(floatval($bd["precio"]),2,".",",").")" : " (gratis)";
+                    $bebidas_txt[] = $bebs;
+                    $bebidas_lines .= "%0A    - 🥤 ".htmlspecialchars($bebs);
+                  }
+                }
+                $unit = ProductData::getEffectivePrice($p) + $extras_sum + $bebidas_sum;
                 $subtotal = $unit*$s["q"];
                 $total += $subtotal;
-                $items_text .= "- ".$s["q"]." x ".htmlspecialchars($p->name).$extras_lines."%0A    (".$coin_symbol.number_format($unit,2).") = ".$coin_symbol.number_format($subtotal,2)."%0A";
+                $items_text .= "- ".$s["q"]." x ".htmlspecialchars($p->name).$extras_lines.$bebidas_lines."%0A    (".$coin_symbol.number_format($unit,2).") = ".$coin_symbol.number_format($subtotal,2)."%0A";
                 ?>
                 <tr>
                   <td class="px-4">
@@ -55,6 +68,9 @@ $total = 0;
                          <div class="fw-bold h4 mb-0"><?php echo htmlspecialchars($p->name); ?></div>
                          <?php if(count($extras_txt)>0): ?>
                          <div class="text-muted small">+ <?php echo htmlspecialchars(implode(", ", $extras_txt)); ?></div>
+                         <?php endif; ?>
+                         <?php if(count($bebidas_txt)>0): ?>
+                         <div class="text-primary small">🥤 <?php echo htmlspecialchars(implode(" | ", $bebidas_txt)); ?></div>
                          <?php endif; ?>
                        </div>
                     </div>

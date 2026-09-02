@@ -2,6 +2,25 @@
 if(!isset($_SESSION["user_id"])){ Core::redir("./");}
 $user= UserData::getById($_SESSION["user_id"]);
 if($user==null){ Core::redir("./");}
+$tt_cat_guides = array(
+  "pizza"=>"<b>Pizza:</b> completa sus datos de pizza: cuántos ingredientes trae gratis, qué ingredientes incluye y si el cliente elige mitades/cuartos (tipo de división).",
+  "pasta"=>"<b>Pasta:</b> solo datos básicos (nombre, descripción, precios, imagen y sede). No lleva ingredientes extra ni división: el cliente lo agrega directo al carrito.",
+  "focaccia"=>"<b>Focaccia:</b> igual que la pasta, solo datos básicos. No lleva ingredientes ni división.",
+  "bebida"=>"<b>Bebida/Refresco:</b> solo datos básicos. El sabor y el tamaño van en el Nombre (ej. \"Coca-Cola 2 L\"). Se agrega directo, sin ingredientes.",
+  "general"=>"<b>Categoría genérica:</b> se usa únicamente con los datos básicos. Si va a ser una pizza, usa una categoría cuyo nombre lo indique."
+);
+$tt_cat_guide_map = array();
+foreach(CategoryData::getActives() as $gc){
+  $gcn = mb_strtolower(trim($gc->name));
+  $gtype = "general";
+  if(strpos($gcn,"pizza")!==false){ $gtype = "pizza"; }
+  else if(strpos($gcn,"pasta")!==false){ $gtype = "pasta"; }
+  else if(strpos($gcn,"focaccia")!==false){ $gtype = "focaccia"; }
+  else if(strpos($gcn,"bebida")!==false || strpos($gcn,"refresco")!==false || strpos($gcn,"jugo")!==false){ $gtype = "bebida"; }
+  $tt_cat_guide_map[$gc->id] = $gtype;
+}
+$tt_cat_guides_json = json_encode($tt_cat_guides);
+$tt_cat_guide_map_json = json_encode($tt_cat_guide_map);
 ?>
 <?php if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
 <div class="page-header d-print-none">
@@ -78,7 +97,7 @@ if($user==null){ Core::redir("./");}
           ?>
             <tr>
               <td><?php echo $cat->name; ?></td>
-              <td><span class="badge <?php echo $p_sede_class; ?>"><i class="bi <?php echo $cat->sede_id? "bi-shop" : "bi-globe2"; ?> me-1"></i><?php echo htmlspecialchars($p_sede_name); ?></span></td>
+              <td><span class="badge" style="background:#1a3a5c!important;color:#fff!important;"><i class="bi <?php echo $cat->sede_id? "bi-shop" : "bi-globe2"; ?> me-1"></i><?php echo htmlspecialchars($p_sede_name); ?></span></td>
               <td>
                 <?php if($cat->is_public):?><i class="bi bi-check-lg text-success"></i><?php else: ?><i class="bi bi-x-lg text-danger"></i><?php endif; ?>
               </td>
@@ -226,35 +245,74 @@ $(function(){
               <input type="text" class="form-control" placeholder="Precio al llevar" name="price_llevar">
             </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Ingredientes gratis <span class="text-muted small">(cuántos ingredientes van incluidos sin costo; el resto se cobra. Ej: 3 en la pizza familiar)</span></label>
-            <input type="number" min="0" step="1" class="form-control" placeholder="0" name="free_ingredients" value="0">
-          </div>
-          <?php $house_catalog = array();
-          foreach(ProductExtraData::getAll() as $pe){
-            if(intval($pe->is_ingredient)==1 && trim($pe->name)!=""){
-              $house_catalog[strtr(mb_strtolower(trim($pe->name)), array("á"=>"a","é"=>"e","í"=>"i","ó"=>"o","ú"=>"u","ñ"=>"n"))] = $pe->name;
-            }
-          }
-          ksort($house_catalog); ?>
-          <div class="mb-3">
-            <label class="form-label">Ingredientes que trae el producto <span class="text-muted small">(se premarcan como incluidos en el menú del público y no se pueden quitar; si no marcas ninguno se detectan solos desde la descripción)</span></label>
-            <div class="row g-2">
-              <?php foreach($house_catalog as $hkey => $hname): ?>
-              <div class="col-6 col-md-4 col-lg-3">
-                <label class="form-check">
-                  <input class="form-check-input" type="checkbox" name="house_ingredients[]" value="<?php echo htmlspecialchars($hname); ?>">
-                  <span class="form-check-label"><?php echo htmlspecialchars($hname); ?></span>
-                </label>
+          <div class="row row-cards">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Categoria</label>
+                <?php $categories = CategoryData::getActives(); ?>
+                <select id="cat_select" name="category_id" class="form-select" required>
+                  <option value="">-- SELECCIONE CATEGORIA --</option>
+                  <?php foreach($categories as $cat):?>
+                  <option value="<?php echo $cat->id; ?>"><?php echo $cat->name; ?></option>
+                  <?php endforeach; ?>
+                </select>
               </div>
-              <?php endforeach; ?>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Sede <span class="text-muted small">(menú por sucursal)</span></label>
+                <?php $sedes_form = SedeData::getAll(); ?>
+                <select name="sede_id" class="form-select">
+                  <option value="">-- TODAS LAS SEDES --</option>
+                  <?php foreach($sedes_form as $sd): ?>
+                  <option value="<?php echo $sd->id; ?>"><?php echo htmlspecialchars($sd->name); ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
             </div>
           </div>
-          <div class="mb-3">
-            <label class="form-check form-check-inline">
-              <input class="form-check-input" type="checkbox" name="has_extras">
-              <span class="form-check-label">¿Tiene ingredientes extra? <span class="text-muted small">(si lo marcas, al guardar el producto se agrega automáticamente a todos los ingredientes)</span></span>
-            </label>
+          <div class="mb-3 d-none" id="tt_cat_guide_wrap">
+            <div class="alert alert-info tt-cat-guide mb-0" id="tt_cat_guide"></div>
+          </div>
+          <div id="tt_pizza_fields" class="tt-cat-fields d-none">
+            <div class="mb-3">
+              <label class="form-label">Ingredientes gratis <span class="text-muted small">(cuántos ingredientes van incluidos sin costo; el resto se cobra. Ej: 3 en la pizza familiar)</span></label>
+              <input type="number" min="0" step="1" class="form-control" placeholder="0" name="free_ingredients" value="0">
+            </div>
+            <?php $house_catalog = array();
+            foreach(ProductExtraData::getAll() as $pe){
+              if(intval($pe->is_ingredient)==1 && trim($pe->name)!=""){
+                $house_catalog[strtr(mb_strtolower(trim($pe->name)), array("á"=>"a","é"=>"e","í"=>"i","ó"=>"o","ú"=>"u","ñ"=>"n"))] = $pe->name;
+              }
+            }
+            ksort($house_catalog); ?>
+            <div class="mb-3">
+              <label class="form-label">Ingredientes que trae el producto <span class="text-muted small">(se premarcan como incluidos en el menú del público y no se pueden quitar; si no marcas ninguno se detectan solos desde la descripción)</span></label>
+              <div class="row g-2">
+                <?php foreach($house_catalog as $hkey => $hname): ?>
+                <div class="col-6 col-md-4 col-lg-3">
+                  <label class="form-check">
+                    <input class="form-check-input" type="checkbox" name="house_ingredients[]" value="<?php echo htmlspecialchars($hname); ?>">
+                    <span class="form-check-label"><?php echo htmlspecialchars($hname); ?></span>
+                  </label>
+                </div>
+                <?php endforeach; ?>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" name="has_extras">
+                <span class="form-check-label">¿Tiene ingredientes extra? <span class="text-muted small">(si lo marcas, al guardar el producto se agrega automáticamente a todos los ingredientes)</span></span>
+              </label>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tipo de división <span class="text-muted small">(solo pizzas: el cliente elige el sabor de cada fracción; los ingredientes de la pizza son las opciones)</span></label>
+              <select name="tipo_division" class="form-select">
+                <option value="normal">Normal (el cliente arma su pizza con ingredientes)</option>
+                <option value="2_estaciones">2 Estaciones (cliente elige 2 mitades)</option>
+                <option value="4_estaciones">4 Estaciones (cliente elige 4 cuartos)</option>
+              </select>
+            </div>
           </div>
           <div class="mb-3">
             <label class="form-label">Imagen</label>
@@ -275,40 +333,6 @@ $(function(){
                 <input class="form-check-input" type="checkbox" name="is_featured">
                 <span class="form-check-label">Producto Destacado</span>
               </label>
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Tipo de división <span class="text-muted small">(solo pizzas: el cliente elige el sabor de cada fracción; los ingredientes de la pizza son las opciones)</span></label>
-            <select name="tipo_division" class="form-select">
-              <option value="normal">Normal (el cliente arma su pizza con ingredientes)</option>
-              <option value="2_estaciones">2 Estaciones (cliente elige 2 mitades)</option>
-              <option value="4_estaciones">4 Estaciones (cliente elige 4 cuartos)</option>
-            </select>
-          </div>
-          <div class="row row-cards">
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Categoria</label>
-                <?php $categories = CategoryData::getActives(); ?>
-                <select name="category_id" class="form-select" required>
-                  <option value="">-- SELECCIONE CATEGORIA --</option>
-                  <?php foreach($categories as $cat):?>
-                  <option value="<?php echo $cat->id; ?>"><?php echo $cat->name; ?></option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="mb-3">
-                <label class="form-label">Sede <span class="text-muted small">(menú por sucursal)</span></label>
-                <?php $sedes_form = SedeData::getAll(); ?>
-                <select name="sede_id" class="form-select">
-                  <option value="">-- TODAS LAS SEDES --</option>
-                  <?php foreach($sedes_form as $sd): ?>
-                  <option value="<?php echo $sd->id; ?>"><?php echo htmlspecialchars($sd->name); ?></option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
             </div>
           </div>
           <div class="form-footer">
@@ -388,42 +412,82 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
               <input type="text" class="form-control" placeholder="Precio al llevar" value="<?php echo $product->price_llevar; ?>" name="price_llevar">
             </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Ingredientes gratis <span class="text-muted small">(cuántos ingredientes van incluidos sin costo; el resto se cobra. Ej: 3 en la pizza familiar)</span></label>
-            <input type="number" min="0" step="1" class="form-control" placeholder="0" name="free_ingredients" value="<?php echo intval($product->free_ingredients); ?>">
-          </div>
-          <?php $house_catalog = array();
-          foreach(ProductExtraData::getAll() as $pe){
-            if(intval($pe->is_ingredient)==1 && trim($pe->name)!=""){
-              $house_catalog[strtr(mb_strtolower(trim($pe->name)), array("á"=>"a","é"=>"e","í"=>"i","ó"=>"o","ú"=>"u","ñ"=>"n"))] = $pe->name;
-            }
-          }
-          ksort($house_catalog);
-          $house_current = array();
-          if(trim((string)$product->house_ingredients)!=""){
-            foreach(explode(",", $product->house_ingredients) as $hc){
-              $hcn = strtr(mb_strtolower(trim($hc)), array("á"=>"a","é"=>"e","í"=>"i","ó"=>"o","ú"=>"u","ñ"=>"n"));
-              $house_current[] = $hcn;
-            }
-          } ?>
-          <div class="mb-3">
-            <label class="form-label">Ingredientes que trae el producto <span class="text-muted small">(se premarcan como incluidos en el menú del público y no se pueden quitar; si no marcas ninguno se detectan solos desde la descripción)</span></label>
-            <div class="row g-2">
-              <?php foreach($house_catalog as $hkey => $hname): ?>
-              <div class="col-6 col-md-4 col-lg-3">
-                <label class="form-check">
-                  <input class="form-check-input" type="checkbox" name="house_ingredients[]" value="<?php echo htmlspecialchars($hname); ?>" <?php if(in_array($hkey, $house_current)){ echo "checked"; } ?>>
-                  <span class="form-check-label"><?php echo htmlspecialchars($hname); ?></span>
-                </label>
+          <div class="row row-cards">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Categoria</label>
+                <?php $categories = CategoryData::getActives(); ?>
+                <select id="cat_select" name="category_id" class="form-select" required>
+                  <option value="">-- SELECCIONE CATEGORIA --</option>
+                  <?php foreach($categories as $cat):?>
+                  <option value="<?php echo $cat->id; ?>" <?php if($product->category_id==$cat->id){ echo "selected";} ?>><?php echo $cat->name; ?></option>
+                  <?php endforeach; ?>
+                </select>
               </div>
-              <?php endforeach; ?>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Sede <span class="text-muted small">(menú por sucursal)</span></label>
+                <?php $sedes_form = SedeData::getAll(); ?>
+                <select name="sede_id" class="form-select">
+                  <option value="">-- TODAS LAS SEDES --</option>
+                  <?php foreach($sedes_form as $sd): ?>
+                  <option value="<?php echo $sd->id; ?>" <?php if($product->sede_id==$sd->id){ echo "selected"; } ?>><?php echo htmlspecialchars($sd->name); ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3 d-none" id="tt_cat_guide_wrap">
+            <div class="alert alert-info tt-cat-guide mb-0" id="tt_cat_guide"></div>
+          </div>
+          <div id="tt_pizza_fields" class="tt-cat-fields d-none">
+            <div class="mb-3">
+              <label class="form-label">Ingredientes gratis <span class="text-muted small">(cuántos ingredientes van incluidos sin costo; el resto se cobra. Ej: 3 en la pizza familiar)</span></label>
+              <input type="number" min="0" step="1" class="form-control" placeholder="0" name="free_ingredients" value="<?php echo intval($product->free_ingredients); ?>">
+            </div>
+            <?php $house_catalog = array();
+            foreach(ProductExtraData::getAll() as $pe){
+              if(intval($pe->is_ingredient)==1 && trim($pe->name)!=""){
+                $house_catalog[strtr(mb_strtolower(trim($pe->name)), array("á"=>"a","é"=>"e","í"=>"i","ó"=>"o","ú"=>"u","ñ"=>"n"))] = $pe->name;
+              }
+            }
+            ksort($house_catalog);
+            $house_current = array();
+            if(trim((string)$product->house_ingredients)!=""){
+              foreach(explode(",", $product->house_ingredients) as $hc){
+                $hcn = strtr(mb_strtolower(trim($hc)), array("á"=>"a","é"=>"e","í"=>"i","ó"=>"o","ú"=>"u","ñ"=>"n"));
+                $house_current[] = $hcn;
+              }
+            } ?>
+            <div class="mb-3">
+              <label class="form-label">Ingredientes que trae el producto <span class="text-muted small">(se premarcan como incluidos en el menú del público y no se pueden quitar; si no marcas ninguno se detectan solos desde la descripción)</span></label>
+              <div class="row g-2">
+                <?php foreach($house_catalog as $hkey => $hname): ?>
+                <div class="col-6 col-md-4 col-lg-3">
+                  <label class="form-check">
+                    <input class="form-check-input" type="checkbox" name="house_ingredients[]" value="<?php echo htmlspecialchars($hname); ?>" <?php if(in_array($hkey, $house_current)){ echo "checked"; } ?>>
+                    <span class="form-check-label"><?php echo htmlspecialchars($hname); ?></span>
+                  </label>
+                </div>
+                <?php endforeach; ?>
+              </div>
+            </div>
+            <?php $td_val = isset($product->tipo_division) ? trim((string)$product->tipo_division) : "normal"; ?>
+            <div class="mb-3">
+              <label class="form-label">Tipo de división <span class="text-muted small">(solo pizzas: el cliente elige el sabor de cada fracción; los ingredientes de la pizza son las opciones)</span></label>
+              <select name="tipo_division" class="form-select">
+                <option value="normal" <?php if($td_val=="normal"){ echo "selected"; } ?>>Normal (el cliente arma su pizza con ingredientes)</option>
+                <option value="2_estaciones" <?php if($td_val=="2_estaciones"){ echo "selected"; } ?>>2 Estaciones (cliente elige 2 mitades)</option>
+                <option value="4_estaciones" <?php if($td_val=="4_estaciones"){ echo "selected"; } ?>>4 Estaciones (cliente elige 4 cuartos)</option>
+              </select>
             </div>
           </div>
           <?php if( $product->image!="" && file_exists($url)):?>
           <div class="mb-3">
             <img src="<?php echo $url; ?>" class="img-fluid rounded border" style="max-height: 200px;">
-          </div>
-          <?php endif; ?>
+</div>
+<?php endif; ?>
           <div class="mb-3">
             <label class="form-label">Imagen</label>
             <input type="file" class="form-control" name="image">
@@ -445,41 +509,6 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
               </label>
             </div>
           </div>
-          <?php $td_val = isset($product->tipo_division) ? trim((string)$product->tipo_division) : "normal"; ?>
-          <div class="mb-3">
-            <label class="form-label">Tipo de división <span class="text-muted small">(solo pizzas: el cliente elige el sabor de cada fracción; los ingredientes de la pizza son las opciones)</span></label>
-            <select name="tipo_division" class="form-select">
-              <option value="normal" <?php if($td_val=="normal"){ echo "selected"; } ?>>Normal (el cliente arma su pizza con ingredientes)</option>
-              <option value="2_estaciones" <?php if($td_val=="2_estaciones"){ echo "selected"; } ?>>2 Estaciones (cliente elige 2 mitades)</option>
-              <option value="4_estaciones" <?php if($td_val=="4_estaciones"){ echo "selected"; } ?>>4 Estaciones (cliente elige 4 cuartos)</option>
-            </select>
-          </div>
-          <div class="row row-cards">
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Categoria</label>
-                <?php $categories = CategoryData::getActives(); ?>
-                <select name="category_id" class="form-select" required>
-                  <option value="">-- SELECCIONE CATEGORIA --</option>
-                  <?php foreach($categories as $cat):?>
-                  <option value="<?php echo $cat->id; ?>" <?php if($product->category_id==$cat->id){ echo "selected";} ?>><?php echo $cat->name; ?></option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Sede <span class="text-muted small">(menú por sucursal)</span></label>
-                <?php $sedes_form = SedeData::getAll(); ?>
-                <select name="sede_id" class="form-select">
-                  <option value="">-- TODAS LAS SEDES --</option>
-                  <?php foreach($sedes_form as $sd): ?>
-                  <option value="<?php echo $sd->id; ?>" <?php if($product->sede_id==$sd->id){ echo "selected"; } ?>><?php echo htmlspecialchars($sd->name); ?></option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
-            </div>
-          </div>
           <div class="form-footer">
             <button type="submit" class="btn btn-success w-100">Actualizar Producto</button>
           </div>
@@ -488,4 +517,51 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
     </div>
   </div>
 </div>
+<?php endif; ?>
+<?php if(isset($_GET["opt"]) && ($_GET["opt"]=="new" || $_GET["opt"]=="edit")):?>
+<script>
+$(function(){
+  var TT_GUIDES = <?php echo $tt_cat_guides_json; ?>;
+  var CAT_TYPES = <?php echo $tt_cat_guide_map_json; ?>;
+  function applyCatFields(cid){
+    var t = CAT_TYPES[cid] || "general";
+    var isPizza = (t === "pizza");
+    if(cid === "" || cid === null || cid === undefined){
+      $("#tt_pizza_fields").addClass("d-none");
+      $("#tt_cat_guide_wrap").addClass("d-none");
+      return;
+    }
+    if(isPizza){ $("#tt_pizza_fields").removeClass("d-none"); }
+    else { $("#tt_pizza_fields").addClass("d-none"); }
+    $("#tt_cat_guide").html(TT_GUIDES[t] || TT_GUIDES.general);
+    $("#tt_cat_guide_wrap").removeClass("d-none");
+  }
+  $("#cat_select").on("change", function(){ applyCatFields($(this).val()); });
+  applyCatFields($("#cat_select").val());
+
+  function ttCheckInactive(e){
+    var vis = $("input[name='is_public']").is(":checked");
+    var exi = $("input[name='in_existence']").is(":checked");
+    if(!vis || !exi){
+      var msgs = [];
+      if(!vis) msgs.push("no est\u00e1 visible en el men\u00fa");
+      if(!exi) msgs.push("no est\u00e1 en existencia");
+      var txt = msgs.join(" y ");
+      e.preventDefault();
+      if(!window.Swal){ if(confirm("\u00bfEl producto " + txt + ".\n\n\u00bfDeseas guardarlo de todas formas?")){ e.target.submit(); } return; }
+      Swal.fire({
+        title: "\u00bfProducto inactivo?",
+        html: "El producto <b>" + txt + "</b>.<br>No ser\u00e1 visible para los clientes.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Guardar de todas formas",
+        cancelButtonText: "Cancelar y revisar",
+        confirmButtonColor: "#1a0004",
+        cancelButtonColor: "#000000"
+      }).then(function(r){ if(r.isConfirmed){ e.target.submit(); } });
+    }
+  }
+  $("form[action*='products&opt=add'], form[action*='products&opt=upd']").on("submit", ttCheckInactive);
+});
+</script>
 <?php endif; ?>

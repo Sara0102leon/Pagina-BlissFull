@@ -1024,6 +1024,35 @@ body {
   font-weight: 800;
   font-size: 1.05rem;
 }
+#modal-extras .tt-beb-head {
+  color: var(--tt-gold);
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+}
+#modal-extras .tt-beb-sub {
+  color: var(--tt-gold);
+  letter-spacing: 0.05em;
+  font-size: 0.82rem;
+}
+#modal-extras .tt-beb-box {
+  border: 1px dashed rgba(255, 183, 3, 0.45);
+  border-radius: 0.9rem;
+  background: rgba(255, 183, 3, 0.06);
+  padding: 0.9rem 1rem;
+}
+#modal-extras .bebida-opt .form-check-label { color: #ffffff; }
+#modal-extras .tt-beb-tag {
+  display: inline-block;
+  color: #ffffff !important;
+  background: #0b5c2e;
+  border-radius: 0.45rem;
+  padding: 0.1em 0.6em;
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+}
+#modal-extras .tt-sabor-block .text-gold { color: var(--tt-gold); }
 #modal-extras .ing-opt .form-check-label { font-size: 1.05rem; color: #ffffff; }
 #modal-extras .ing-opt .ing-price { font-size: 1.05rem; }
 #modal-sede .modal-body,

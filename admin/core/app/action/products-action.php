@@ -28,16 +28,19 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="add"){
 		if(isset($_POST["is_featured"])) { $product->is_featured=1; }else{ $product->is_featured=0; }
 		// La oferta se activa automáticamente al colocar un precio de oferta
 		$product->is_offert = ($product->offer_price!=="" && floatval($product->offer_price)>0) ? 1 : 0;
-		$td = isset($_POST["tipo_division"]) ? trim($_POST["tipo_division"]) : "normal";
+		$is_pizza_cat = false;
+		$pcat = isset($_POST["category_id"]) ? CategoryData::getById(intval($_POST["category_id"])) : null;
+		if($pcat && strpos(mb_strtolower(trim($pcat->name)), "pizza")!==false){ $is_pizza_cat = true; }
+		$td = ($is_pizza_cat && isset($_POST["tipo_division"])) ? trim($_POST["tipo_division"]) : "normal";
 		if(!in_array($td, array("normal","2_estaciones","4_estaciones"))){ $td = "normal"; }
 		$product->tipo_division = $td;
 		$product->allow_halves = ($td=="normal" ? 0 : 1);
-		$product->free_ingredients = isset($_POST["free_ingredients"]) ? intval($_POST["free_ingredients"]) : 0;
-		$hi = isset($_POST["house_ingredients"]) && is_array($_POST["house_ingredients"]) ? array_map("trim", $_POST["house_ingredients"]) : array();
+		$product->free_ingredients = ($is_pizza_cat && isset($_POST["free_ingredients"])) ? intval($_POST["free_ingredients"]) : 0;
+		$hi = ($is_pizza_cat && isset($_POST["house_ingredients"]) && is_array($_POST["house_ingredients"])) ? array_map("trim", $_POST["house_ingredients"]) : array();
 		$product->house_ingredients = implode(", ", array_filter($hi));
 
 		$res = $product->add();
-		if(isset($_POST["has_extras"]) && $res){
+		if(isset($_POST["has_extras"]) && $res && $is_pizza_cat){
 			$new_id = intval($res[1]);
 			if($new_id>0){
 				ProductExtraData::addProductToAllGroups($new_id);
@@ -68,12 +71,15 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="upd"){
 		if(isset($_POST["is_featured"])) { $product->is_featured=1; }else{ $product->is_featured=0; }
 		// La oferta se activa automáticamente al colocar un precio de oferta
 		$product->is_offert = ($product->offer_price!=="" && floatval($product->offer_price)>0) ? 1 : 0;
-		$td = isset($_POST["tipo_division"]) ? trim($_POST["tipo_division"]) : "normal";
+		$is_pizza_cat = false;
+		$pcat = isset($_POST["category_id"]) ? CategoryData::getById(intval($_POST["category_id"])) : null;
+		if($pcat && strpos(mb_strtolower(trim($pcat->name)), "pizza")!==false){ $is_pizza_cat = true; }
+		$td = ($is_pizza_cat && isset($_POST["tipo_division"])) ? trim($_POST["tipo_division"]) : "normal";
 		if(!in_array($td, array("normal","2_estaciones","4_estaciones"))){ $td = "normal"; }
 		$product->tipo_division = $td;
 		$product->allow_halves = ($td=="normal" ? 0 : 1);
-		$product->free_ingredients = isset($_POST["free_ingredients"]) ? intval($_POST["free_ingredients"]) : 0;
-		$hi = isset($_POST["house_ingredients"]) && is_array($_POST["house_ingredients"]) ? array_map("trim", $_POST["house_ingredients"]) : array();
+		$product->free_ingredients = ($is_pizza_cat && isset($_POST["free_ingredients"])) ? intval($_POST["free_ingredients"]) : 0;
+		$hi = ($is_pizza_cat && isset($_POST["house_ingredients"]) && is_array($_POST["house_ingredients"])) ? array_map("trim", $_POST["house_ingredients"]) : array();
 		$product->house_ingredients = implode(", ", array_filter($hi));
 
 		$product->update();

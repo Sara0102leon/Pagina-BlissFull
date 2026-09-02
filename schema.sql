@@ -187,6 +187,7 @@ create table buy_product(
 	product_id int,
 	q int,
 	extras varchar(500),
+	bebidas varchar(500),
 	foreign key(buy_id) references buy(id),
 	foreign key(product_id) references product(id)
 );
@@ -215,6 +216,27 @@ create table product_extra (
 	group_key varchar(40),
 	is_ingredient tinyint not null default 0
 );
+
+create table bebida (
+	id int not null auto_increment primary key,
+	sabor varchar(120) not null,
+	medida varchar(80) not null default '',
+	sabor_options varchar(500) null,
+	precio decimal(10,2) not null default 0.00,
+	es_gratis tinyint(1) not null default 0,
+	is_active tinyint not null default 1,
+	unique key uq_bebida (sabor, medida)
+);
+
+insert into bebida (sabor, medida, sabor_options, precio, es_gratis, is_active) values
+("Golden", "1.5 Litros", "Uva,Piña,Kolita,Manzanita,Naranja", 1.00, 1, 1),
+("Up7", "1.5 Litros", "", 1.00, 1, 1),
+("Coca-Cola", "1 Litro", "", 2.50, 0, 1),
+("Coca-Cola", "1.5 Litros", "", 3.00, 0, 1),
+("Coca-Cola", "2 Litros", "", 4.00, 0, 1);
+
+insert into configuration (name, label, val) values
+("bebida_base", "Valor base del refresco gratis (USD)", "1");
 
 create table sede (
 	id int not null auto_increment primary key,

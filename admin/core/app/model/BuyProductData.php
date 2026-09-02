@@ -2,7 +2,7 @@
 class BuyProductData {
 	public static $tablename = "buy_product";
 
-	public $id, $buy_id, $product_id, $q, $extras;
+	public $id, $buy_id, $product_id, $q, $extras, $bebidas;
 
 	public function __construct(){
 		$this->id = null;
@@ -10,6 +10,7 @@ class BuyProductData {
 		$this->product_id = "";
 		$this->q = "";
 		$this->extras = "";
+		$this->bebidas = "";
 	}
 
 	public function getProduct() { return ProductData::getById($this->product_id);}
@@ -22,9 +23,18 @@ class BuyProductData {
 		return array();
 	}
 
+	public function getBebidasArray(){
+		if($this->bebidas && $this->bebidas!=""){
+			$dec = json_decode($this->bebidas, true);
+			if(is_array($dec)){ return $dec; }
+		}
+		return array();
+	}
+
 	public function getExtrasTotal(){
 		$total = 0;
 		foreach($this->getExtrasArray() as $e){ $total += floatval($e["price"]); }
+		foreach($this->getBebidasArray() as $b){ $total += floatval($b["price"]); }
 		return $total;
 	}
 
@@ -34,8 +44,13 @@ class BuyProductData {
 			$esc = mysqli_real_escape_string(Database::getCon(), $this->extras);
 			$extras_sql = "\"$esc\"";
 		}
-		$sql = "insert into ".self::$tablename." (buy_id,product_id,q,extras) ";
-		$sql .= "value (\"$this->buy_id\",$this->product_id,$this->q,$extras_sql)";
+		$bebidas_sql = "NULL";
+		if($this->bebidas!=""){
+			$esc = mysqli_real_escape_string(Database::getCon(), $this->bebidas);
+			$bebidas_sql = "\"$esc\"";
+		}
+		$sql = "insert into ".self::$tablename." (buy_id,product_id,q,extras,bebidas) ";
+		$sql .= "value (\"$this->buy_id\",$this->product_id,$this->q,$extras_sql,$bebidas_sql)";
 		return Executor::doit($sql);
 	}
 

@@ -432,13 +432,16 @@
     })();
     </script>
 
-    <!-- Cart Added Alert (SweetAlert2 accesible, grande y con paleta del proyecto) -->
+    <!-- Cart Alert (SweetAlert2 accesible, grande y con paleta del proyecto) -->
     <script>
-    let cartToastTimer = null;
-    function showCartToast(msg) {
+    function showCartToast(msg, title) {
+      try {
+        if (typeof Swal === "undefined") { return; }
+        Swal.close();
+      } catch(e) {}
       Swal.fire({
         icon: "success",
-        title: "¡AGREGADO AL CARRITO!",
+        title: title || "¡AGREGADO AL CARRITO!",
         html: '<span class="tt-swal-msg">' + msg + '</span>',
         background: "#000000",
         color: "#e0a96d",
@@ -452,7 +455,10 @@
         },
         timer: 3400,
         timerProgressBar: true,
-        showCloseButton: true
+        showCloseButton: true,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        returnFocus: false
       });
     }
     </script>
