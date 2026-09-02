@@ -28,7 +28,18 @@ if(isset($_SESSION["cart"])){
           if(isset($s["extras"]) && count($s["extras"])>0){
             foreach($s["extras"] as $e){ $extras_sum += floatval($e["price"]); if(floatval($e["price"])>0 || (isset($e["div"]) && intval($e["div"])==1)){ $extras_txt[] = $e["name"]; } }
           }
-          $unit = ProductData::getEffectivePrice($p) + $extras_sum;
+          $bebidas_sum = 0;
+          $bebidas_txt = array();
+          if(isset($s["bebidas"]) && count($s["bebidas"])>0){
+            foreach($s["bebidas"] as $bd){
+              $bebidas_sum += floatval($bd["precio"]);
+              $bebs = $bd["sabor"]." ".$bd["medida"];
+              if(isset($bd["sabor_elegido"]) && $bd["sabor_elegido"]!=""){ $bebs .= " (".$bd["sabor_elegido"].")"; }
+              $bebs .= (floatval($bd["precio"])>0) ? " (+$".number_format(floatval($bd["precio"]),2,".",",").")" : " (gratis)";
+              $bebidas_txt[] = $bebs;
+            }
+          }
+          $unit = ProductData::getEffectivePrice($p) + $extras_sum + $bebidas_sum;
           $subtotal = $unit*$s["q"];
           $total += $subtotal;
           $items_json[] = array(
@@ -37,7 +48,8 @@ if(isset($_SESSION["cart"])){
             "q"=>intval($s["q"]),
             "price"=>ProductData::getEffectivePrice($p),
             "price_llevar"=>ProductData::offerActive($p) ? ProductData::getEffectivePrice($p) : floatval($p->price_llevar),
-            "extras"=>isset($s["extras"])?$s["extras"]:array()
+            "extras"=>isset($s["extras"])?$s["extras"]:array(),
+            "bebidas"=>isset($s["bebidas"])?$s["bebidas"]:array()
           );
           ?>
           <tr>
@@ -45,6 +57,9 @@ if(isset($_SESSION["cart"])){
               <div class="fw-bold small"><?php echo htmlspecialchars($p->name); ?></div>
               <?php if(count($extras_txt)>0): ?>
               <div class="text-muted extra-small">+ <?php echo htmlspecialchars(implode(", ", $extras_txt)); ?></div>
+              <?php endif; ?>
+              <?php if(count($bebidas_txt)>0): ?>
+              <div class="text-primary extra-small">🥤 <?php echo htmlspecialchars(implode(" | ", $bebidas_txt)); ?></div>
               <?php endif; ?>
               <div class="text-muted extra-small"><?php echo $coin_symbol.number_format($unit,2,".",","); ?> c/u<?php if($bcv_rate>0): ?> ≈ <?php echo $bs_symbol.number_format($unit*$bcv_rate,2,".",","); ?><?php endif; ?></div>
             </td>

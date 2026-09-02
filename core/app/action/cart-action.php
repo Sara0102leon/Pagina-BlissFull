@@ -5,9 +5,14 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="add"){
 		$dec = json_decode($_POST["extras"], true);
 		if(is_array($dec)){ $extras = $dec; }
 	}
-	$key = $_POST["product_id"].":".md5(json_encode($extras));
+	$bebidas = array();
+	if(isset($_POST["bebidas"]) && $_POST["bebidas"]!=""){
+		$dec = json_decode($_POST["bebidas"], true);
+		if(is_array($dec)){ $bebidas = $dec; }
+	}
+	$key = $_POST["product_id"].":".md5(json_encode($extras)).":".md5(json_encode($bebidas));
 	if(!isset($_SESSION["cart"])){
-		$_SESSION["cart"] = array( array("key"=>$key,"product_id"=>$_POST["product_id"],"q"=>1,"extras"=>$extras) );
+		$_SESSION["cart"] = array( array("key"=>$key,"product_id"=>$_POST["product_id"],"q"=>1,"extras"=>$extras,"bebidas"=>$bebidas) );
 	}else{
 		$products = $_SESSION["cart"];
 		$found = false;
@@ -19,7 +24,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="add"){
 			}
 		}
 		if(!$found){
-			array_push($products, array("key"=>$key,"product_id"=>$_POST["product_id"],"q"=>1,"extras"=>$extras));
+			array_push($products, array("key"=>$key,"product_id"=>$_POST["product_id"],"q"=>1,"extras"=>$extras,"bebidas"=>$bebidas));
 		}
 		$_SESSION["cart"]=$products;
 	}
@@ -177,6 +182,13 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="buy"){
 					$clean[] = array("name"=>$e["name"],"price"=>floatval($e["price"]));
 				}
 				$p->extras = json_encode($clean);
+			}
+			if(isset($c["bebidas"]) && count($c["bebidas"])>0){
+				$cleanb = array();
+				foreach($c["bebidas"] as $beb){
+					$cleanb[] = array("sabor"=>$beb["sabor"],"medida"=>$beb["medida"],"sabor_elegido"=>isset($beb["sabor_elegido"]) ? $beb["sabor_elegido"] : "","price"=>floatval($beb["precio"]));
+				}
+				$p->bebidas = json_encode($cleanb);
 			}
 			$p->add();
 		}

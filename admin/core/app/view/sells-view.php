@@ -170,6 +170,8 @@ $ivatxt = ConfigurationData::getByPreffix("general_iva_txt")->val;
       <div class="col">
         <h2 class="page-title">Venta #<?php echo $buy->id; ?> [<?php echo $buy->getStatus()->name; ?>]</h2>
       </div>
+      <div class="col-auto ms-auto d-print-none">
+      </div>
     </div>
   </div>
 </div>
@@ -223,12 +225,24 @@ $ivatxt = ConfigurationData::getByPreffix("general_iva_txt")->val;
                   foreach($line_extras as $e){ $parts[] = $e["name"]." (+$".number_format($e["price"],2,".",",").")"; }
                   $line_extra_txt = implode(", ", $parts);
                 }
+                $line_bebidas = $p->getBebidasArray();
+                $line_bebida_txt = "";
+                if(count($line_bebidas)>0){
+                  $bparts = array();
+                  foreach($line_bebidas as $bd){
+                  $bs = $bd["sabor"]." ".$bd["medida"];
+                  if(isset($bd["sabor_elegido"]) && $bd["sabor_elegido"]!=""){ $bs .= " (".$bd["sabor_elegido"].")"; }
+                  $bs .= floatval($bd["price"])>0 ? " (+$".number_format($bd["price"],2,".",",").")" : " (gratis)";
+                  $bparts[] = $bs;
+                }
+                  $line_bebida_txt = "🥤 ".implode(", ", $bparts);
+                }
               ?>
               <tr>
                 <td><?php echo $px->code; ?></td>
                 <td><?php echo $px->name; ?></td>
                 <td><?php echo $p->q; ?></td>
-                <td><?php echo $line_extra_txt!="" ? $line_extra_txt : "-"; ?></td>
+                <td><?php echo $line_extra_txt!="" ? $line_extra_txt : "-"; ?><?php if($line_bebida_txt!=""){ echo ($line_extra_txt!="" ? "<br>" : "").$line_bebida_txt; } ?></td>
                 <td><?php echo $coin; ?> <?php echo number_format(($px->price+$p->getExtrasTotal())*$p->q,2,".",","); ?></td>
               </tr>
               <?php endforeach; ?>
@@ -258,9 +272,52 @@ $ivatxt = ConfigurationData::getByPreffix("general_iva_txt")->val;
         </div>
         <?php endif; ?>
       </div>
+      <div class="card-footer d-print-none">
+        <div class="btn-list">
+          <?php if($buy->status_id==1): ?>
+          <button type="button" class="btn btn-danger btn-status-change" data-id="<?php echo $buy->id;?>" data-status="3"><i class="bi bi-x-lg me-1"></i>Cancelar orden</button>
+          <?php endif; ?>
+          <a href="./?view=sells&opt=all" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Atrás</a>
+        </div>
+      </div>
     </div>
   </div>
 </div>
+
+<?php if($buy->status_id==1): ?>
+<script>
+$(function(){
+  $(document).on("click", ".btn-status-change", function(){
+    var $btn = $(this);
+    var id = $btn.data("id");
+    var status = $btn.data("status");
+    Swal.fire({
+      title: "¿CANCELAR este pedido?",
+      html: "El pedido <b>#"+id+"</b> quedará <b>cancelado</b> y <b>NO podrás cambiar su estado después</b>.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, cancelar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#1a0004",
+      cancelButtonColor: "#000000",
+      reverseButtons: true
+    }).then(function(result){
+      if(!result.isConfirmed) return;
+      $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm"></span>');
+      $.get("./?action=sells&opt=status&id=" + id + "&status=" + status)
+        .done(function(){
+          Swal.fire({ icon: "success", title: "Pedido cancelado", toast: true, position: "top-end", timer: 2500, showConfirmButton: false });
+          setTimeout(function(){ window.location.href = "./?view=sells&opt=all"; }, 900);
+        })
+        .fail(function(){
+          $btn.prop("disabled", false).html('<i class="bi bi-exclamation-triangle"></i> Cancelar orden');
+          Swal.fire({ icon: "error", title: "Error", text: "No se pudo cancelar el pedido. Intenta de nuevo.", confirmButtonColor: "#1a0004" });
+        });
+    });
+  });
+});
+</script>
+<?php endif; ?>
 
 <?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="report"):?>
 <?php

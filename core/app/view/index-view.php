@@ -31,6 +31,14 @@ foreach($sedes as $sd){
   ));
 }
 $sede_json = json_encode($sede_json);
+$bebidas_json = "[]";
+$bebida_base_cfg = ConfigurationData::getByPreffix("bebida_base");
+$bebida_base = ($bebida_base_cfg && $bebida_base_cfg->val!="" ) ? floatval($bebida_base_cfg->val) : 1.00;
+$bebidas_activas = BebidaData::getActive();
+if(count($bebidas_activas)>0){
+  $bebidas_arr = array_map(function($b) use($bebida_base){ return array("id"=>intval($b->id),"sabor"=>$b->sabor,"medida"=>$b->medida,"sabor_options"=>$b->sabor_options,"es_gratis"=>intval($b->es_gratis),"precio"=>floatval($b->precio),"extra"=>max(0,floatval($b->precio)-$bebida_base)); }, $bebidas_activas);
+  $bebidas_json = json_encode($bebidas_arr, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
+}
 function tt_cat_ic($cat_name){
   $cn = mb_strtolower(trim($cat_name));
   if(strpos($cn,"pasta") !== false){ return "egg-fried"; }
@@ -75,8 +83,8 @@ $flotante_extras_json = "[]";
 $flotante_extras_json_js = "[]";
 if($flotante_pdata){
   require_once __DIR__."/../helpers/product-extras-helper.php";
-  $flotante_payload = array("desc"=>trim((string)$flotante_pdata->description),"free"=>intval($flotante_pdata->free_ingredients),"division"=>trim((string)$flotante_pdata->tipo_division),"sabores"=>array(),"ingredients"=>array(),"extras"=>array(),"sel"=>array(),"main"=>-1);
-  $flotante_no_edit_cats = array(5,6);
+  $flotante_payload = array("desc"=>trim((string)$flotante_pdata->description),"free"=>intval($flotante_pdata->free_ingredients),"division"=>trim((string)$flotante_pdata->tipo_division),"sabores"=>array(),"ingredients"=>array(),"extras"=>array(),"sel"=>array(),"main"=>-1,"gigante"=>in_array(intval($flotante_pdata->category_id), array(2))? 1 : 0);
+  $flotante_no_edit_cats = array(5,6,8);
   if(!in_array(intval($flotante_pdata->category_id), $flotante_no_edit_cats)){
     $extras_tmp = ProductExtraData::getByProductId($flotante_pdata->id);
     $flotante_tipo = trim((string)$flotante_pdata->tipo_division);
@@ -84,7 +92,8 @@ if($flotante_pdata){
       $flotante_payload["sabores"] = tt_build_sabores(0);
     } else {
       $flotante_payload = tt_build_extras_payload($flotante_pdata->description, $flotante_pdata->free_ingredients, $extras_tmp, $flotante_pdata->house_ingredients);
-      $flotante_payload["division"] = $flotante_tipo;
+      $flotante_payload["division"] = trim((string)$flotante_pdata->tipo_division);
+      $flotante_payload["gigante"] = in_array(intval($flotante_pdata->category_id), array(2))? 1 : 0;
     }
   }
   $flotante_payload["price"] = ProductData::getEffectivePrice($flotante_pdata);
@@ -494,13 +503,16 @@ const SEDES = <?php echo $sede_json; ?>;
 const FLOTANTE_PID = <?php echo $flotante_pdata ? $flotante_pdata->id : 0; ?>;
 const FLOTANTE_NAME = "<?php echo $flotante_pdata ? addslashes($flotante_pdata->name) : ''; ?>";
 const FLOTANTE_EXTRAS = <?php echo $flotante_pdata ? $flotante_extras_json_js : "[]"; ?>;
-const FLOTANTE_HAS_EDIT = <?php echo ($flotante_pdata && !in_array(intval($flotante_pdata->category_id), array(5,6))) ? "true" : "false"; ?>;
+const FLOTANTE_HAS_EDIT = <?php echo ($flotante_pdata && !in_array(intval($flotante_pdata->category_id), array(5,6,8))) ? "true" : "false"; ?>;
+const BEBIDAS = <?php echo $bebidas_json; ?>;
+const BEBIDA_BASE = <?php echo $bebida_base; ?>;
 let currentCatId = "";
 let currentSearch = "";
 let pendingBasePrice = 0;
 let pendingExtrasPid = null;
 let pendingExtrasName = "";
 let pendingExtras = [];
+let pendingBebidas = [];
 var bcvRate = <?php echo $bcv_rate_js; ?>;
 
 function fmt(n){ return COIN + n.toFixed(2); }
@@ -690,9 +702,11 @@ function addToCart(pid, pname, extrasJson) {
      $("#cart-container").html(data);
      $("#offcanvas-cart-container").html(data);
      updateUI();
-     const offcanvas = document.getElementById("offcanvasCart");
-     if (offcanvas) { bootstrap.Offcanvas.getOrCreateInstance(offcanvas).show(); }
-     if(typeof showCartToast === "function") { showCartToast("Se agregó: " + pname); }
+     if(typeof showCartToast === "function") { showCartToast(pname, "¡AGREGADO AL CARRITO!"); }
+     try {
+       const offcanvas = document.getElementById("offcanvasCart");
+       if (offcanvas) { bootstrap.Offcanvas.getOrCreateInstance(offcanvas).show(); }
+     } catch(e) {}
   });
 }
 
@@ -701,7 +715,7 @@ function incCart(key, pname) {
      $("#cart-container").html(data);
      $("#offcanvas-cart-container").html(data);
      updateUI();
-     if(typeof showCartToast === "function") { showCartToast("Se incrementó: " + pname); }
+     if(typeof showCartToast === "function") { showCartToast("+1 " + pname, "¡CANTIDAD ACTUALIZADA!"); }
   });
 }
 
@@ -710,7 +724,7 @@ function decCart(key, pname) {
      $("#cart-container").html(data);
      $("#offcanvas-cart-container").html(data);
      updateUI();
-     if(typeof showCartToast === "function") { showCartToast("Se disminuyó: " + pname); }
+     if(typeof showCartToast === "function") { showCartToast("-1 " + pname, "¡CANTIDAD DISMINUIDA!"); }
   });
 }
 
@@ -719,7 +733,7 @@ function removeFromCart(key, pname) {
      $("#cart-container").html(data);
      $("#offcanvas-cart-container").html(data);
      updateUI();
-     if(typeof showCartToast === "function") { showCartToast("Se eliminó: " + pname); }
+     if(typeof showCartToast === "function") { showCartToast(pname, "¡ELIMINADO DEL CARRITO!"); }
   });
 }
 
@@ -736,6 +750,7 @@ let pendingFree = 0;
 let pendingIngredients = [];
 let pendingDivision = 0;
 let pendingSabores = [];
+let pendingGigante = false;
 let pendingSel = [];
 let pendingFreeExtra = 0;
 
@@ -751,6 +766,7 @@ function openExtrasModal(pid, pname, dataJson) {
   pendingFree = parseInt(data.free || 0, 10) || 0;
   pendingDivision = data.division === "2_estaciones" ? 2 : (data.division === "4_estaciones" ? 4 : 0);
   pendingSabores = data.sabores || [];
+  pendingGigante = parseInt(data.gigante, 10) === 1 || (pendingDivision > 0 && pendingSabores.length > 0);
   pendingSel = data.sel || [];
   pendingFreeExtra = Math.max(0, pendingFree - pendingSel.length);
   $("#extras_modal_title").text(pname);
@@ -794,7 +810,7 @@ function openExtrasModal(pid, pname, dataJson) {
     const blockName = pendingDivision === 2 ? "MITAD" : "CUARTO";
     const fracName = pendingDivision === 2 ? "mitad" : "cuarto";
     for (let b = 1; b <= pendingDivision; b++) {
-      html += '<div class="fw-bold mb-2 mt-1"><i class="bi bi-pie-chart-fill me-1 text-gold"></i>' + blockName + ' ' + b + ' <span class="small text-muted fw-normal">(' + fracName + ' ' + b + ' de ' + pendingDivision + ')</span></div>';
+      html += '<div class="fw-bold mb-2 mt-1 tt-sabor-block"><i class="bi bi-pie-chart-fill me-1 text-gold"></i>' + blockName + ' ' + b + ' <span class="small text-muted fw-normal">(' + fracName + ' ' + b + ' de ' + pendingDivision + ')</span></div>';
       pendingSabores.forEach(function(sb, si) {
         html += '<label class="form-check mb-1 sabor-opt" data-block="' + b + '">';
         html += '<input class="form-check-input" type="radio" name="sabor_' + b + '" data-block="' + b + '" data-sabor="' + si + '">';
@@ -803,6 +819,8 @@ function openExtrasModal(pid, pname, dataJson) {
       });
       html += '<div class="sabor-ing mb-3" data-block="' + b + '"></div>';
     }
+  } else if (pendingDivision > 0) {
+    html += '<div class="alert alert-warning text-center small py-2 mb-2">Este producto no tiene sabores configurados de momento. Se agregará sin selección de sabor.</div>';
   } else if (pendingIngredients.length > 0) {
     html += '<div class="fw-bold mb-2 tt-ing-head"><i class="bi bi-egg-fried me-1 text-gold"></i>INGREDIENTES' + (pendingFreeExtra > 0 ? ' <span id="free_badge" class="tt-free-badge rounded-pill">' + pendingFreeExtra + ' gratis</span>' : "") + '</div>';
     pendingIngredients.forEach(function(e, i) {
@@ -829,9 +847,61 @@ function openExtrasModal(pid, pname, dataJson) {
       html += '</label>';
     });
   }
+  if (pendingGigante && BEBIDAS.length > 0) {
+    html += '<hr class="my-3">';
+    html += '<div class="tt-beb-box">';
+    html += '<div class="fw-bold mb-1 tt-beb-head"><i class="bi bi-cup-straw me-1 text-gold"></i>REFRESCO litro y medio</div>';
+    html += '<div class="small text-muted mb-2">Tu pizza gigante incluye 1 refresco gratis. Elige uno; si prefieres otro, se cobra la diferencia.</div>';
+    const gratisOpts = bebidasGratisOpciones();
+    if (gratisOpts.length > 0) {
+      html += '<div class="fw-bold small mt-2 mb-1 text-uppercase tt-beb-sub">REFRESCO GRATIS · elige el sabor</div>';
+      gratisOpts.forEach(function(o) {
+        html += '<label class="form-check mb-1 bebida-opt">';
+        html += '<input class="form-check-input bebida-radio" type="radio" name="bebida_sel" data-idx="' + o.id + '" data-extra="0" data-flav="' + ttAttr(o.sabor_elegido) + '">';
+        html += '<span class="form-check-label">' + o.rotulo + ' <span class="tt-beb-tag">GRATIS</span></span>';
+        html += '</label>';
+      });
+    }
+    const cargo = BEBIDAS.filter(function(b){ return parseInt(b.es_gratis) !== 1; });
+    if (cargo.length > 0) {
+      html += '<div class="fw-bold small mt-2 mb-1 text-uppercase tt-beb-sub">REFRESCOS DIFERENTES (PAGAS LA DIFERENCIA)</div>';
+      cargo.forEach(function(b) {
+        html += '<label class="form-check mb-1 bebida-opt">';
+        html += '<input class="form-check-input bebida-radio" type="radio" name="bebida_sel" data-idx="' + b.id + '" data-extra="' + (parseFloat(b.extra) || 0) + '" data-flav="' + ttAttr("") + '">';
+        html += '<span class="form-check-label">' + b.sabor + ' ' + b.medida + ' <span class="text-primary fw-bold">' + brPrice(parseFloat(b.precio) || 0) + '</span></span>';
+        html += '</label>';
+      });
+    }
+    html += '</div>';
+  }
   $("#extra_sections").html(html);
   updateExtrasTotal();
   $("#modal-extras").modal("show");
+}
+
+function bebidasGratisOpciones() {
+  const opts = [];
+  BEBIDAS.forEach(function(b) {
+    if (parseInt(b.es_gratis) !== 1) { return; }
+    const opciones = b.sabor_options && String(b.sabor_options).trim() !== "" ? String(b.sabor_options).split(",").map(function(o){ return String(o).trim(); }).filter(Boolean) : [];
+    if (opciones.length > 0) {
+      opciones.forEach(function(f) { opts.push({ id: b.id, sabor: b.sabor, medida: b.medida, sabor_elegido: f, rotulo: f }); });
+    } else {
+      opts.push({ id: b.id, sabor: b.sabor, medida: b.medida, sabor_elegido: "", rotulo: b.sabor });
+    }
+  });
+  return opts;
+}
+
+function brPrice(v) {
+  let s = Number(v).toFixed(2).replace(".", ",");
+  while (s.slice(-1) === "0") { s = s.slice(0, -1); }
+  if (s.slice(-1) === ",") { s = s.slice(0, -1); }
+  return s + "$";
+}
+
+function ttAttr(s) {
+  return String(s).replace(/"/g, "&quot;");
 }
 
 function extraBtnHtml(ekey, price) {
@@ -929,6 +999,8 @@ function updateExtrasTotal() {
     extrasTotal += parseFloat($(this).data("price"));
   });
   extraToggles().forEach(function(x){ extrasTotal += x.price; });
+  const selB = $(".bebida-radio:checked");
+  if (selB.length) { extrasTotal += parseFloat(selB.data("extra")) || 0; }
   $("#extras_subtotal").text(fmt(extrasTotal));
   $("#extras_total").text(fmt(pendingBasePrice + extrasTotal));
   refreshIngPriceLabels();
@@ -967,17 +1039,36 @@ function confirmExtras() {
     });
     extraToggles().forEach(function(x){ sel.push({ name: x.name, price: x.price }); selectedNames.push(x.name); });
   }
-  $("#modal-extras").modal("hide");
 
-  $.post("./?action=cart&opt=add&ajax=1", { product_id: pendingExtrasPid, extras: JSON.stringify(sel) }, function(data) {
+  const beb = [];
+  if (pendingGigante && BEBIDAS.length > 0) {
+    const selB = $(".bebida-radio:checked");
+    if (!selB.length) {
+      Swal.fire({ icon: "warning", title: "Elige tu refresco", text: "Tu pizza gigante incluye 1 refresco gratis: selecciona uno para continuar.", confirmButtonColor: "#b87e38" });
+      return;
+    }
+    const b = BEBIDAS.find(function(x){ return String(x.id) === String(selB.data("idx")); });
+    if (b) {
+      beb.push({ id: b.id, sabor: b.sabor, medida: b.medida, sabor_elegido: selB.data("flav") || "", precio: parseFloat(selB.data("extra")) || 0 });
+    }
+  }
+  pendingBebidas = beb;
+  submitCartConfirm(sel, beb);
+}
+
+function submitCartConfirm(sel, beb) {
+  $("#modal-extras").modal("hide");
+  $.post("./?action=cart&opt=add&ajax=1", { product_id: pendingExtrasPid, extras: JSON.stringify(sel), bebidas: JSON.stringify(beb) }, function(data) {
     $("#cart-container").html(data);
     $("#offcanvas-cart-container").html(data);
     updateUI();
 
-    const offcanvas = document.getElementById("offcanvasCart");
-    if (offcanvas) { bootstrap.Offcanvas.getOrCreateInstance(offcanvas).show(); }
+    if (typeof showCartToast === "function") { showCartToast(pendingExtrasName, "¡AGREGADO AL CARRITO!"); }
 
-    if (typeof showCartToast === "function") { showCartToast("Se agregó: " + pendingExtrasName); }
+    try {
+      const offcanvas = document.getElementById("offcanvasCart");
+      if (offcanvas) { bootstrap.Offcanvas.getOrCreateInstance(offcanvas).show(); }
+    } catch(e) {}
   });
 }
 
@@ -992,6 +1083,7 @@ function computeTotals(items, delivery, deliveryPrice) {
     let unit = it.price;
     if(delivery && it.price_llevar > 0) { unit = it.price_llevar; }
     (it.extras || []).forEach(function(e){ unit += parseFloat(e.price); });
+    (it.bebidas || []).forEach(function(b){ unit += parseFloat(b.precio); });
     subtotal += unit * it.q;
   });
   const deliveryCost = delivery ? deliveryPrice : 0;
@@ -1063,7 +1155,14 @@ function itemsWhatsAppText(items, delivery) {
       if (parseFloat(e.price) > 0) { extrasTxt += "    - " + e.name + " (+" + fmt(parseFloat(e.price)) + ")%0A"; }
       else if (e.div === 1) { extrasTxt += "    - " + e.name + " (gratis)%0A"; }
     });
-    lines.push("- " + it.q + " x " + it.name + "%0A" + extrasTxt + "    (" + fmt(unit) + ") = " + fmt(unit * it.q) + "%0A");
+    let bebidasTxt = "";
+    (it.bebidas || []).forEach(function(b){
+      unit += parseFloat(b.precio);
+      const sabor_txt = b.sabor_elegido ? " (" + b.sabor_elegido + ")" : "";
+      const tag = parseFloat(b.precio) > 0 ? "(+" + fmt(parseFloat(b.precio)) + ")" : "(gratis)";
+      bebidasTxt += "    - 🥤 " + b.sabor + " " + b.medida + sabor_txt + " " + tag + "%0A";
+    });
+    lines.push("- " + it.q + " x " + it.name + "%0A" + extrasTxt + bebidasTxt + "    (" + fmt(unit) + ") = " + fmt(unit * it.q) + "%0A");
   });
   return lines.join("");
 }
@@ -1161,6 +1260,7 @@ $(document).ready(function() {
       renderSaborIng(parseInt($(this).data("block"), 10), parseInt($(this).data("sabor"), 10));
       updateExtrasTotal();
     })
+    .on("change", ".bebida-radio", updateExtrasTotal)
     .on("click", ".extra-btn", onExtraBtn);
   $("#btn_confirm_extras").click(confirmExtras);
 

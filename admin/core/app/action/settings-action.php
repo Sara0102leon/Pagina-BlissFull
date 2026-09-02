@@ -72,6 +72,47 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="delextra"){
 	}
 	Core::redir("./?view=settings&opt=ingredients");
 }
+else if(isset($_GET["opt"]) && $_GET["opt"]=="addbebida"){
+	if(isset($_POST["sabor"]) && trim($_POST["sabor"])!=""){
+		$b = new BebidaData();
+		$b->sabor = trim($_POST["sabor"]);
+		$b->medida = isset($_POST["medida"]) ? trim($_POST["medida"]) : "";
+		$b->sabor_options = isset($_POST["sabor_options"]) ? trim($_POST["sabor_options"]) : "";
+		$b->precio = isset($_POST["precio"]) ? floatval($_POST["precio"]) : 0;
+		$b->es_gratis = !empty($_POST["es_gratis"]) ? "1" : "0";
+		$b->is_active = !empty($_POST["is_active"]) ? "1" : "0";
+		$b->add();
+	}
+	Core::redir("./?view=settings&opt=bebidas");
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="updbebida"){
+	if(isset($_POST["id"]) && isset($_POST["sabor"]) && trim($_POST["sabor"])!=""){
+		$b = BebidaData::getById($_POST["id"]);
+		$b->sabor = trim($_POST["sabor"]);
+		$b->medida = isset($_POST["medida"]) ? trim($_POST["medida"]) : "";
+		$b->sabor_options = isset($_POST["sabor_options"]) ? trim($_POST["sabor_options"]) : "";
+		$b->precio = isset($_POST["precio"]) ? floatval($_POST["precio"]) : 0;
+		$b->es_gratis = !empty($_POST["es_gratis"]) ? "1" : "0";
+		$b->is_active = !empty($_POST["is_active"]) ? "1" : "0";
+		$b->update();
+	}
+	echo "ok";
+	exit;
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="updbebidabase"){
+	if(isset($_POST["bebida_base"]) && $_POST["bebida_base"]!=""){
+		ConfigurationData::updateValFromName("bebida_base", floatval($_POST["bebida_base"]));
+	}
+	echo "ok";
+	exit;
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="delbebida"){
+	if(isset($_GET["id"]) && $_GET["id"]!=""){
+		BebidaData::delById($_GET["id"]);
+	}
+	echo "ok";
+	exit;
+}
 else if(isset($_GET["opt"]) && $_GET["opt"]=="addunit"){
 	if(isset($_POST["name"]) && $_POST["name"]!=""){
 		$u = new UnitData();
