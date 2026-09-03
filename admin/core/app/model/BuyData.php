@@ -2,7 +2,7 @@
 class BuyData {
 	public static $tablename = "buy";
 
-	public $id, $k, $code, $coupon_id, $client_id, $created_at, $paymethod_id, $delivery_zone_id, $sede_id, $capture, $note, $scheduled_at, $status_id, $name, $c, $m, $chatwoot_conversation_id, $chatwoot_contact_id;
+	public $id, $k, $code, $coupon_id, $client_id, $created_at, $paymethod_id, $delivery_zone_id, $sede_id, $capture, $note, $scheduled_at, $status_id, $name, $c, $m, $chatwoot_conversation_id, $chatwoot_contact_id, $notified;
 
 	public function __construct(){
 		$this->id = null;
