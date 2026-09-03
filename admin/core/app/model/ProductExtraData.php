@@ -85,6 +85,9 @@ class ProductExtraData {
 		foreach($groups as $g){
 			$rows = self::getByGroup($g->group_key);
 			if(self::groupHasGlobal($rows)){ continue; }
+			$ya = false;
+			foreach($rows as $r){ if(intval($r->product_id)==$pid){ $ya = true; break; } }
+			if($ya){ continue; }
 			$vals[] = "(\"".$g->group_key."\",\"".$g->name."\",\"".$g->price."\",".$pid.",".intval($g->is_ingredient).")";
 		}
 		if(count($vals)>0){

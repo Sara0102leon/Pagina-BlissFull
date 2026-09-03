@@ -192,6 +192,7 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="updsede"){
 }
 else if(isset($_GET["opt"]) && $_GET["opt"]=="delsede"){
 	SedeData::delById($_GET["id"]);
+	SedeHorarioData::deleteBySede($_GET["id"]);
 	Core::redir("./?view=settings&opt=sedes");
 }
 else if(isset($_GET["opt"]) && $_GET["opt"]=="updhorarios"){
@@ -208,6 +209,17 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="updhorario"){
 			if(isset($_POST[$k])){ ConfigurationData::updateValFromName($k,$_POST[$k]); }
 		}
 		Core::redir("./?view=settings&opt=horarios");
+	}
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="updhorariosede"){
+	if(isset($_POST["sede_id"])){
+		$sede_id = intval($_POST["sede_id"]);
+		foreach(array("lunes","martes","miercoles","jueves","viernes","sabado","domingo") as $dia){
+			$open = isset($_POST["open"][$dia]) ? $_POST["open"][$dia] : "";
+			$close = isset($_POST["close"][$dia]) ? $_POST["close"][$dia] : "";
+			SedeHorarioData::save($sede_id, $dia, $open, $close);
+		}
+		Core::redir("./?view=settings&opt=horarios&sede=".$sede_id);
 	}
 }
 else if(isset($_GET["opt"]) && $_GET["opt"]=="changepass"){
@@ -240,6 +252,7 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="updsedezone"){
 			SedeDeliveryZoneData::save($sede_id, $zone_id, $price);
 		}
 	}
-	Core::redir("./?view=settings&opt=sedes&tab=zonas");
+	echo "ok";
+	exit;
 }
 ?>

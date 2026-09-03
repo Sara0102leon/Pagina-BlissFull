@@ -1,5 +1,52 @@
 # Blissfull — Notas de proyecto
 
+## Despliegue en producción (VPS alianza)
+
+**Sitio público:** https://prueba.alianzablissful.com
+
+**Stack en el VPS (Ubuntu 24.04, root):**
+- nginx 1.24 + PHP-FPM 8.3 (socket `/run/php/php8.3-fpm.sock`)
+- MariaDB 10.11 — BD `tacomenu`, root sin password en localhost (compatible con `Database.php`)
+- HTTPS Let's Encrypt (certbot + timer de renovación), redirect HTTP→HTTPS
+
+**Rutas clave:**
+- Código desplegado: `/var/www/blissfull` (propietario `www-data`). **Editar aquí para cambios en producción.**
+- Repo clonado de referencia: `/root/menu/Pagina-BlissFull`
+- Virtual host nginx: `/etc/nginx/sites-enabled/prueba.alianzablissful.com`
+- Cert: `/etc/letsencrypt/live/prueba.alianzablissful.com/`
+
+**Comandos útiles (VPS):**
+```bash
+nginx -t && systemctl reload nginx
+systemctl reload php8.3-fpm
+mariadb -u root tacomenu -e "SHOW COLUMNS FROM product;"   # por defecto, -h localhost usa unix socket
+```
+
+**Para probar endpoints con sesión admin (VPS):**
+```bash
+curl -s -c /tmp/cj.txt -d "email=admin&password=admin" "https://prueba.alianzablissful.com/admin/?action=access&opt=login"
+curl -s -b /tmp/cj.txt "https://prueba.alianzablissful.com/admin/"
+```
+
+## Arquitectura
+
+PHP puro, sin Composer/npm/build tools. Framework MVC custom ("Lb/Legobox").
+
+**Dos entry points, dos codebases separados:**
+- `index.php` → sitio público (carpeta raíz)
+- `admin/index.php` → panel admin (carpeta `admin/`)
+- Apache sirve desde `C:\xampp\htdocs\blissfull` (live), el repo está en `C:\Users\Userr\Videos\Pagina-BlissFull-main`
+- **Siempre sync despues de editar**: copiar archivos modificados a htdocs
+
+**Routing por query string (sin .htaccess):**
+- `?view=X` → carga `core/app/view/X-view.php` dentro del layout
+- `?action=X&opt=Y` → ejecuta `core/app/action/X-action.php` (sin layout)
+- Sin parámetros → carga `index-view.php`
+
+**Modelos compartidos:** Todos viven en `admin/core/app/model/` y se usan desde ambos lados. El autoloader SPL los resuelve por nombre (`ProductData` → `admin/core/app/model/ProductData.php`). La clase `Database.php` real está en `admin/core/controller/Database.php` (la de `core/controller/` está vacía).
+
+**Models son clases planas** con métodos estáticos (`getAll()`, `getById()`, `getLike()`) e instancias (`add()`, `update()`, `del()`). SQL raw vía `Executor::doit($sql)` — sin prepared statements.
+
 ## Rediseño "TITO BURGER" (agosto 2026)
 
 Alcance exacto del rediseño — **solo estos archivos fueron modificados, una sola vez**:
@@ -9,28 +56,104 @@ Alcance exacto del rediseño — **solo estos archivos fueron modificados, una s
 3. `core/app/view/index-view.php` — hero y todas las secciones
 4. `core/app/view/product-grid-view.php` — tarjeta de producto
 
-Fuera del rediseño (no tocar): `schema.sql` incluye la columna `price_llevar` (línea 76) y el resto del código PHP/JS quedó intacto.
-
 ## Contrato invisible (NO romper)
 
-El rediseño fue 100% HTML estructural + CSS. Lo PHP y JavaScript se copió tal cual. Está prohibido renombrar/eliminar estos identificadores:
+Está prohibido renombrar/eliminar estos identificadores (se usan por AJAX/JS):
 
 - `#btn_confirm_order`, `#product_search`, `#grid-title`
 - `.btn-category-ajax`, atributo `data-cat`
 - `onclick="openExtrasModal(...)"`
 - Los loops `foreach` PHP (se recargan por AJAX)
+- `$_SESSION["cart"]`, `blissfull_sede_id` (localStorage)
 
-Regla de oro: **nunca mezclar lo dinámico con lo decorativo**. Se puede corregir textos y borrar secciones sin romper nada siempre que el contrato se mantenga.
+Regla de oro: **nunca mezclar lo dinámico con lo decorativo**.
 
 ## Sistema de diseño
 
-- Paleta en variables CSS: `--tt-gold`, `--tt-red`, `--tt-bg`... (fuente única de verdad, un solo lugar para cambiar colores)
-- Fondo de ladrillos = gradientes CSS apilados + dos brillos radiales (dorado y rojo), NO es imagen
-- Google Fonts: Bebas Neue (títulos) y Caveat (cursivas rojas) cargadas en el `<head>`
-- La tarjeta de producto (`tt-product-card`, `pc-price-pill`...) se reutiliza en grid (AJAX) y en el carrusel del index
+- Paleta en variables CSS: `--tt-gold`, `--tt-red`, `--tt-bg`... (fuente única de verdad)
+- Fondo de ladrillos = gradientes CSS apilados + dos brillos radiales (NO imagen)
+- Google Fonts: Bebas Neue (títulos) y Caveat (cursivas rojas)
+- La tarjeta de producto (`tt-product-card`, `pc-price-pill`...) se reutiliza en grid (AJAX) y carrusel del index
+- Tabler UI framework como base, custom-dark.css lo overridea
 
-## Respaldos y técnicas útiles
+## Base de datos
 
-- Tag git de resguardo: **`backup-pre-tito-redesign`** (para volver atrás en un segundo)
-- Validación: `php -l` sobre los 3 PHP + grep para verificar que IDs/onclicks/data-cat sigan existiendo tras cualquier cambio
-- El bug del admin no era código: era la columna `price_llevar` faltante en MySQL real (comparar `schema.sql` contra `SHOW COLUMNS`), aunque las imágenes se subieran bien
+**MariaDB 10.4.32** en XAMPP (root, sin password, db `tacomenu`). MySQL80 en puerto 3307 es irrelevante.
+
+Schema canónico: `schema.sql` (DDL + seed). Dump de producción: `database.sql`. Migración incremental: `migracion_sedes.sql`.
+
+**Gotcha recurrente: columnas faltantes.** El código PHP usa columnas que no existen en la BD real. Siempre comparar:
+```
+SHOW COLUMNS FROM product;   -- vs lo que usan ProductData::add(), products-view.php, products-action.php
+```
+Columnas conocidas que han causado este bug: `price_llevar`, `allow_halves`, `house_ingredients`, `tipo_division`.
+
+**Contraseña de usuario admin:** `admin`, hash `sha1(md5("admin"))` = `90b9aa7e25f80cf4f64e990b78a9fc5ebd6cecad`. (AGENTS viejo decía "password" pero el hash real NO coincide.) Hash débil pero funcional, no cambiar. El login está en `admin/core/app/action/access-action.php`.
+
+**Login admin por HTTP (para probar endpoints con sesión):**
+```powershell
+$sess = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+$base = "http://localhost/blissfull/admin"
+Invoke-WebRequest -Uri "$base/?action=access&opt=login" -Method POST -Body @{email="admin"; password="admin"} -WebSession $sess -UseBasicParsing -MaximumRedirection 5 | Out-Null
+
+
+## Desarrollo y validación
+
+**No hay composer, npm, tests, lint, typecheck, ni CI.** La validación es manual:
+
+```powershell
+# Syntax check PHP
+php -l admin\core\app\view\products-view.php
+php -l admin\core\app\action\products-action.php
+php -l admin\core\app\model\ProductData.php
+php -l core\app\view\index-view.php
+php -l core\app\view\product-grid-view.php
+
+# Verificar que identificadores críticos siguen existiendo tras cambios
+rg "openExtrasModal|btn_confirm_order|btn-category-ajax|data-cat|grid-title" core\app\view\index-view.php
+rg "openExtrasModal|btn_confirm_order|btn-category-ajax|data-cat|grid-title" core\app\view\product-grid-view.php
+
+# Verificar columnas de BD vs código
+& "C:\xampp\mysql\bin\mysql.exe" -u root tacomenu -e "SHOW COLUMNS FROM product;"
+# Comparar contra ProductData::add() y products-view.php
+```
+
+## Respaldos
+
+- Tag git: **`backup-pre-tito-redesign`** (volver atrás en un segundo)
+- XAMPP MariaDB se cae frecuentemente (tablas Aria corruptas). Si MySQL no arranca: eliminar archivos basura `master-*`, `mysql-relay-bin-*`, `relay-log-*`, `*.dmp` de `C:\xampp\mysql\data\`
+- Para verificar MySQL: `& "C:\xampp\mysql\bin\mysql.exe" -u root -e "select 1;"`
+
+## Estructura de archivos clave
+
+```
+admin/
+  core/app/model/       # 22 modelos (compartidos público+admin)
+  core/app/action/      # 13 action handlers (form processing)
+  core/app/view/        # 18 vistas admin (settings, products, sells...)
+  core/app/action/notifications-action.php  # JSON endpoint para alertas
+  core/app/view/settings-view.php  # Sedes, zonas, ingredientes, configuración
+  core/app/view/products-view.php  # Alta/edición de productos
+  admin/storage/products/  # Imágenes de producto subidas
+  admin/storage/sedes/     # Fotos de sedes subidas
+
+core/
+  app/view/index-view.php      # Página principal completa
+  app/view/product-grid-view.php  # Grid AJAX de productos
+  app/helpers/product-extras-helper.php  # Detección inteligente de ingredientes
+  app/layouts/layout.php       # Shell del sitio público
+
+assets/css/custom-dark.css     # Tema visual completo
+schema.sql                     # Schema canónico de BD
+```
+
+## Patrones de código importantes
+
+- **`ProductData::offerActive()`** verifica `offer_price > 0` directamente (no usa checkbox `is_offert`)
+- **`ClientData::del()`** hace SOFT-DELETE (marca `is_active=0`) y `getAll()` filtra `is_active=1`. NO borra físicamente: `buy.client_id` tiene FK y un DELETE duro de un cliente con ventas da error. `getById()` no filtra para no romper la sesión/ventas
+- **`ProductExtraData::addProductToAllGroups()`** es idempotente: chequea existencia antes de insertar
+- **`tt_build_sabores()`** en `product-extras-helper.php`: filtra productos con ingredientes fijos (`count($pay["sel"])>0`), excluye "a tu Preferencia"
+- **Estaciones** (`4_estaciones`, `2_estaciones`): el modal `openExtrasModal` renderiza radios por división (MITAD/CUARTO) con sabores como opciones
+- **`free_ingredients`**: cantidad de ingredientes gratis. Se detectan "house ingredients" por fuzzy match del texto de descripción contra el catálogo `product_extra`
+- **`unit_id`** puede ser NULL en la tabla `product` (se eliminó del formulario admin)
+- **Sedes/Zonas**: tabla pivot `sede_delivery_zone` con switch por sede×zona. Precio de zona base siempre es $1, el real está en la pivot

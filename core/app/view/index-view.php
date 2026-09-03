@@ -16,17 +16,53 @@ $zelle_contact = ConfigurationData::getByPreffix("zelle_contact")?ConfigurationD
 $binance_contact = ConfigurationData::getByPreffix("binance_contact")?ConfigurationData::getByPreffix("binance_contact")->val:"";
 $zones = DeliveryZoneData::getAll();
 $sedes = SedeData::getActives();
+function tt_safe_table_exists($table){
+  static $cache = array();
+  if(isset($cache[$table])){ return $cache[$table]; }
+  $ok = false;
+  try {
+    $r = Executor::doit("SHOW TABLES LIKE \"$table\"");
+    $ok = ($r[0] !== false && $r[0]->num_rows > 0);
+  } catch(\Throwable $e){ $ok = false; }
+  $cache[$table] = $ok;
+  return $ok;
+}
+function tt_safe_map_horarios($sede_id){
+  try {
+    if(class_exists("SedeHorarioData") && tt_safe_table_exists("sede_horario")){
+      return SedeHorarioData::mapForSede($sede_id);
+    }
+  } catch(\Throwable $e){}
+  $map = array();
+  foreach(array("domingo","lunes","martes","miercoles","jueves","viernes","sabado") as $d){
+    $map[$d] = array("open"=>"", "close"=>"");
+  }
+  return $map;
+}
 $sede_json = array();
 foreach($sedes as $sd){
   $deliv_map = array();
   foreach(SedeDeliveryZoneData::getBySede($sd->id) as $sdzd){ $deliv_map[$sdzd->delivery_zone_id] = floatval($sdzd->price); }
-  array_push($sede_json, array("id"=>$sd->id,"name"=>$sd->name,"address"=>$sd->address,"phone"=>$sd->phone,"delivery"=>$deliv_map));
+  $horarios = tt_safe_map_horarios($sd->id);
+  array_push($sede_json, array(
+    "id"=>$sd->id,
+    "name"=>$sd->name,
+    "address"=>$sd->address,
+    "phone"=>$sd->phone,
+    "horarios"=>$horarios,
+    "delivery"=>$deliv_map
+  ));
 }
 $sede_json = json_encode($sede_json);
 $bebidas_json = "[]";
 $bebida_base_cfg = ConfigurationData::getByPreffix("bebida_base");
 $bebida_base = ($bebida_base_cfg && $bebida_base_cfg->val!="" ) ? floatval($bebida_base_cfg->val) : 1.00;
-$bebidas_activas = BebidaData::getActive();
+$bebidas_activas = array();
+try {
+  if(class_exists("BebidaData") && tt_safe_table_exists("bebida")){
+    $bebidas_activas = BebidaData::getActive();
+  }
+} catch(\Throwable $e){ $bebidas_activas = array(); }
 if(count($bebidas_activas)>0){
   $bebidas_arr = array_map(function($b) use($bebida_base){ return array("id"=>intval($b->id),"sabor"=>$b->sabor,"medida"=>$b->medida,"sabor_options"=>$b->sabor_options,"es_gratis"=>intval($b->es_gratis),"precio"=>floatval($b->precio),"extra"=>max(0,floatval($b->precio)-$bebida_base)); }, $bebidas_activas);
   $bebidas_json = json_encode($bebidas_arr, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
@@ -39,6 +75,12 @@ function tt_cat_ic($cat_name){
   if(strpos($cn,"fria") !== false){ return "snow"; }
   if(strpos($cn,"pizza") !== false){ return "pie-chart-fill"; }
   return "circle-half";
+}
+function tt_sede_today($sede_id){
+  $h = tt_safe_map_horarios($sede_id);
+  $keys = array("domingo","lunes","martes","miercoles","jueves","viernes","sabado");
+  $today = $keys[(int)date("w")];
+  return array("open"=>trim((string)$h[$today]["open"]), "close"=>trim((string)$h[$today]["close"]));
 }
 $base_url = (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"]!="off" ? "https" : "http")."://".$_SERVER["HTTP_HOST"];
 $script_dir = str_replace("\\","/",dirname($_SERVER["SCRIPT_NAME"]));
@@ -73,7 +115,8 @@ if($flotante_pdata){
   $flotante_no_edit_cats = array(5,6,8);
   if(!in_array(intval($flotante_pdata->category_id), $flotante_no_edit_cats)){
     $extras_tmp = ProductExtraData::getByProductId($flotante_pdata->id);
-    if(trim((string)$flotante_pdata->tipo_division)!=""){
+    $flotante_tipo = trim((string)$flotante_pdata->tipo_division);
+    if($flotante_tipo === "2_estaciones" || $flotante_tipo === "4_estaciones"){
       $flotante_payload["sabores"] = tt_build_sabores(0);
     } else {
       $flotante_payload = tt_build_extras_payload($flotante_pdata->description, $flotante_pdata->free_ingredients, $extras_tmp, $flotante_pdata->house_ingredients);
@@ -81,6 +124,7 @@ if($flotante_pdata){
       $flotante_payload["gigante"] = in_array(intval($flotante_pdata->category_id), array(2))? 1 : 0;
     }
   }
+  $flotante_payload["price"] = ProductData::getEffectivePrice($flotante_pdata);
   $flotante_extras_json = htmlspecialchars(json_encode($flotante_payload), ENT_QUOTES);
   $flotante_extras_json_js = json_encode($flotante_payload, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
 }
@@ -113,6 +157,9 @@ foreach($horario_keys as $hk){
               <div class="flex-fill">
                 <div class="fw-bold h4 mb-1"><?php echo htmlspecialchars($sd->name); ?></div>
                 <div class="text-muted fs-6"><?php echo htmlspecialchars($sd->address); ?></div>
+                <?php $sd_today = tt_sede_today($sd->id); if($sd_today["open"]!="" || $sd_today["close"]!=""): ?>
+                <div class="small text-gold mt-1"><i class="bi bi-clock me-1"></i>Hoy: <?php echo htmlspecialchars(substr($sd_today["open"],0,5)); ?> - <?php echo htmlspecialchars(substr($sd_today["close"],0,5)); ?></div>
+                <?php endif; ?>
               </div>
             </div>
           </label>
@@ -135,7 +182,7 @@ foreach($horario_keys as $hk){
 <div class="modal modal-blur fade" id="modal-checkout" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header bg-primary">
+      <div class="modal-header" style="background: linear-gradient(135deg,#e0a96d,#b87e38); color: #000000;">
         <h5 class="modal-title fw-bold"><i class="bi bi-cart-check-fill me-2"></i> Estás a un paso de tu pedido</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -153,18 +200,20 @@ foreach($horario_keys as $hk){
             <input type="tel" id="order_phone" class="form-control" placeholder="Ej: 5215512345678">
          </div>
          <div class="mb-3">
-            <label class="form-check form-check-inline mt-1">
-              <input class="form-check-input" type="checkbox" id="order_pickup">
-              <span class="form-check-label fw-bold">PASARÉ A RECOGER EN LA SUCURSAL</span>
-            </label>
+            <div class="d-flex flex-column gap-2">
+              <label class="form-check mb-1">
+                <input class="form-check-input" type="checkbox" id="order_pickup">
+                <span class="form-check-label fw-bold">PASARÉ A RECOGER EN LA SUCURSAL</span>
+              </label>
+              <label class="form-check mb-1">
+                <input class="form-check-input" type="checkbox" id="order_dinein">
+                <span class="form-check-label fw-bold">COMER EN SUCURSAL</span>
+              </label>
+            </div>
          </div>
-<div class="mb-3">
+         <div class="mb-3" id="zone_container">
             <label class="form-label fw-bold">Zona de entrega</label>
             <div class="d-flex flex-column gap-2">
-              <label class="form-check">
-                <input class="form-check-input" type="radio" name="order_zone" id="order_zone_0" value="0" data-price="0" checked>
-                <span class="form-check-label">Comer en la sede / Recoger en sucursal <span class="text-muted small fw-normal">(gratis)</span></span>
-              </label>
               <?php foreach($zones as $z): ?>
               <label class="form-check">
                 <input class="form-check-input" type="radio" name="order_zone" id="order_zone_<?php echo $z->id; ?>" value="<?php echo $z->id; ?>" data-price="<?php echo $z->price; ?>">
@@ -176,6 +225,23 @@ foreach($horario_keys as $hk){
          <div class="mb-0" id="address_container">
             <label class="form-label fw-bold">Dirección de Entrega</label>
             <textarea id="order_address" class="form-control" rows="2" placeholder="Calle, número, cruzamientos..."></textarea>
+         </div>
+         <hr>
+         <div class="mb-3">
+            <label class="form-check form-check-inline mb-0">
+               <input class="form-check-input" type="checkbox" id="order_scheduled">
+               <span class="form-check-label fw-bold"><i class="bi bi-calendar-check me-1"></i>PROGRAMAR ESTE PEDIDO PARA MÁS TARDE</span>
+            </label>
+            <div id="schedule_box" class="d-none mt-2 row g-2">
+               <div class="col-6">
+                  <label class="form-label small fw-bold mb-1">Fecha</label>
+                  <input type="date" id="order_scheduled_date" class="form-control">
+               </div>
+               <div class="col-6">
+                  <label class="form-label small fw-bold mb-1">Hora</label>
+                  <input type="time" id="order_scheduled_time" class="form-control">
+               </div>
+            </div>
          </div>
          <hr>
          <div class="mb-2">
@@ -234,17 +300,20 @@ foreach($horario_keys as $hk){
 <div class="modal modal-blur fade" id="modal-extras" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header bg-primary">
+      <div class="modal-header" style="background: linear-gradient(135deg,#e0a96d,#b87e38); color: #000000;">
         <h5 class="modal-title fw-bold" id="extras_modal_title">Extras</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div id="extras_desc" class="alert alert-soft-primary rounded-3 py-2 px-3 small d-none mb-3 border-0"></div>
+        <div id="extras_desc" class="alert alert-soft-warning rounded-3 py-2 px-3 small d-none mb-3 border-0"></div>
         <div id="extras_reform_msg" class="alert alert-warning rounded-3 py-2 px-3 small d-none mb-3 border-0"></div>
         <div id="extras_hint" class="form-hint mb-3"></div>
         <div id="extra_sections"></div>
         <div class="bg-light rounded-3 p-3 mb-2">
-          <div class="d-flex justify-content-between fw-bold">
+          <div class="d-flex justify-content-between small text-muted">
+            <span>Extras:</span><span id="extras_subtotal">$0.00</span>
+          </div>
+          <div class="d-flex justify-content-between fw-bold mt-1">
             <span>Total del producto:</span><span id="extras_total">$0.00</span>
           </div>
         </div>
@@ -391,12 +460,7 @@ foreach($horario_keys as $hk){
       <div class="col-lg-5">
         <div class="tt-panel">
           <div class="tt-panel-title mb-3"><i class="bi bi-clock-fill text-gold me-2"></i>HORARIO DE ATENCIÓN</div>
-          <?php $dias_fin = array("Sábado","Domingo"); foreach($tt_hours as $dlabel => $dhours): ?>
-          <div class="tt-hours-row<?php echo in_array($dlabel,$dias_fin)?" tt-weekend":""; ?>">
-            <span class="tt-day"><?php echo $dlabel; ?></span>
-            <span class="tt-hours"><?php echo $dhours; ?></span>
-          </div>
-          <?php endforeach; ?>
+          <div id="horario-atencion"><div class="text-white-50 small">Elige una sede para ver su horario.</div></div>
           <div class="d-flex align-items-center gap-2 text-white-50 small mt-3 pt-3 border-top">
             <i class="bi bi-whatsapp text-gold"></i> Los pedidos por WhatsApp se atienden en el mismo horario.
           </div>
@@ -430,6 +494,9 @@ foreach($horario_keys as $hk){
                       <div class="fw-bold"><i class="bi bi-shop me-1 text-gold"></i><?php echo htmlspecialchars($sd->name); ?></div>
                       <div class="small text-white-50"><i class="bi bi-geo-alt me-1"></i><?php echo htmlspecialchars($sd->address); ?></div>
                       <div class="small text-white-50"><i class="bi bi-telephone me-1"></i><?php echo htmlspecialchars($sd->phone); ?></div>
+                      <?php $sd2_today = tt_sede_today($sd->id); if($sd2_today["open"]!="" || $sd2_today["close"]!=""): ?>
+                      <div class="small text-gold mt-1"><i class="bi bi-clock me-1"></i>Hoy: <?php echo htmlspecialchars(substr($sd2_today["open"],0,5)); ?> - <?php echo htmlspecialchars(substr($sd2_today["close"],0,5)); ?></div>
+                      <?php endif; ?>
                       <div class="tt-flip-hint small mt-2"><i class="bi bi-arrow-repeat me-1"></i>Toca para girar · ver mapa</div>
                     </div>
                   </div>
@@ -469,6 +536,7 @@ const BEBIDAS = <?php echo $bebidas_json; ?>;
 const BEBIDA_BASE = <?php echo $bebida_base; ?>;
 let currentCatId = "";
 let currentSearch = "";
+let pendingBasePrice = 0;
 let pendingExtrasPid = null;
 let pendingExtrasName = "";
 let pendingExtras = [];
@@ -479,10 +547,88 @@ function fmt(n){ return COIN + n.toFixed(2); }
 function fmtBs(n){ return BS_SYMBOL + " " + n.toFixed(2); }
 function fmtComma(n){ return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
 
+// ===== Horarios por sede =====
+function toMin(t) {
+  if (!t) return null;
+  const p = String(t).split(":");
+  const h = parseInt(p[0], 10), m = parseInt(p[1], 10);
+  if (isNaN(h) || isNaN(m)) return null;
+  return h * 60 + m;
+}
+function fmt12(t) {
+  if (!t) return "";
+  const p = String(t).split(":");
+  let h = parseInt(p[0], 10), m = parseInt(p[1], 10);
+  if (isNaN(h)) return "";
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12; if (h === 0) h = 12;
+  return h + ":" + (m < 10 ? "0" + m : m) + " " + ampm;
+}
+const TT_DAYS = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
+function todayKey() {
+  return TT_DAYS[new Date().getDay()] || "";
+}
+function getSedeClosedState() {
+  const sede = getSelectedSede();
+  let closed = false, sedeName = "", horario = "";
+  if (sede && sede.horarios) {
+    const h = sede.horarios[todayKey()] || {};
+    const om = toMin(h.open), cm = toMin(h.close);
+    if (om !== null && cm !== null) {
+      const now = new Date();
+      const cur = now.getHours() * 60 + now.getMinutes();
+      // Apertura == cierre (ventana de 0 min) = no atiende: se trata como cerrado
+      if (om === cm) {
+        closed = true;
+      } else {
+        closed = (cm > om) ? (cur < om || cur >= cm) : !(cur >= om || cur < cm);
+      }
+      if (closed) {
+        sedeName = sede.name;
+        horario = fmt12(h.open) + " - " + fmt12(h.close);
+      }
+    }
+  }
+  return { closed: closed, sedeName: sedeName, horario: horario };
+}
+
+function updateClosedRibbon() {
+  const ribbon = document.getElementById("sede-closed-ribbon");
+  if (!ribbon) { return; }
+  const st = getSedeClosedState();
+  if (st.closed) {
+    document.getElementById("sede-closed-name").textContent = st.sedeName;
+    document.getElementById("sede-closed-horario").textContent = "Atendemos hoy de " + st.horario;
+    ribbon.classList.remove("d-none");
+  } else {
+    ribbon.classList.add("d-none");
+  }
+}
+
+function sedeClosedGuard() {
+  const st = getSedeClosedState();
+  if (!st.closed) {
+    return false;
+  }
+  const closedMsg = "La sede <b>" + st.sedeName + "</b> está cerrada en este momento.<br>Horario de atención de hoy: <b>" + st.horario + "</b>.";
+  Swal.fire({
+    icon: "error",
+    title: "ESTAMOS CERRADOS",
+    html: closedMsg ? closedMsg : "Estamos cerrados en este momento.",
+    background: "#000000",
+    color: "#ffffff",
+    iconColor: "#ff2a2a",
+    confirmButtonText: "Entendido",
+    confirmButtonColor: "#ff2a2a",
+    customClass: { title: "tt-swal-closed-title" }
+  });
+  return true;
+}
+
 // ===== Flotante Hero =====
 function openFlotante() {
   if (!FLOTANTE_PID) return;
-  if (FLOTANTE_EXTRAS.length > 0) {
+  if (FLOTANTE_HAS_EDIT) {
     openExtrasModal(FLOTANTE_PID, FLOTANTE_NAME, JSON.stringify(FLOTANTE_EXTRAS));
   } else {
     addToCart(FLOTANTE_PID, FLOTANTE_NAME, "[]");
@@ -505,6 +651,47 @@ function setSedeUI() {
   const label = sede ? sede.name : "Elegir tu sede";
   if (headerEl) { headerEl.textContent = label; }
   if (checkoutEl) { checkoutEl.textContent = label; }
+  renderHorarioAtencion();
+  updateClosedRibbon();
+}
+
+const TT_DAY_LABELS = [["lunes","Lunes"],["martes","Martes"],["miercoles","Miércoles"],["jueves","Jueves"],["viernes","Viernes"],["sabado","Sábado"],["domingo","Domingo"]];
+function ttDayHours(h) {
+  if (!h) return "";
+  const om = toMin(h.open), cm = toMin(h.close);
+  if (om === null && cm === null) return "";
+  if (om !== null && cm !== null && om === cm) {
+    return fmt12(h.open) + " - " + fmt12(h.close);
+  }
+  if (om !== null && cm !== null) return fmt12(h.open) + " - " + fmt12(h.close);
+  if (om !== null) return "desde " + fmt12(h.open);
+  return fmt12(h.close) ? "hasta " + fmt12(h.close) : "";
+}
+function renderHorarioAtencion() {
+  const el = $("#horario-atencion");
+  if (!el.length) { return; }
+  const sede = getSelectedSede();
+  if (!sede || !sede.horarios) {
+    el.html('<div class="text-white-50 small">Elige una sede para ver su horario.</div>');
+    return;
+  }
+  const hasAny = TT_DAY_LABELS.some(function(d){
+    const h = sede.horarios[d[0]] || {};
+    return (h.open && h.close) ? true : false;
+  });
+  if (!hasAny) {
+    el.html('<div class="text-white-50 small"><i class="bi bi-info-circle text-gold me-1"></i>Esta sede aún no tiene horario configurado. El administrador debe definirlo en el módulo Horarios.</div>');
+    return;
+  }
+  let html = "";
+  TT_DAY_LABELS.forEach(function(d) {
+    const h = sede.horarios[d[0]] || {};
+    const t = ttDayHours(h);
+    const txt = t !== "" ? t : "Cerrado";
+    const weekend = (d[0] === "sabado" || d[0] === "domingo") ? " tt-weekend" : "";
+    html += '<div class="tt-hours-row' + weekend + '"><span class="tt-day">' + d[1] + '</span><span class="tt-hours">' + txt + '</span></div>';
+  });
+  el.html(html);
 }
 
 function selectSedeCard(id) {
@@ -563,7 +750,7 @@ function updateUI() {
 }
 
 function addToCart(pid, pname, extrasJson) {
-  if (typeof showStoreClosedAlert === "function" && showStoreClosedAlert()) { return; }
+  if (sedeClosedGuard()) { return; }
   $.post("./?action=cart&opt=add&ajax=1", { product_id: pid, extras: extrasJson || "[]" }, function(data) {
      $("#cart-container").html(data);
      $("#offcanvas-cart-container").html(data);
@@ -621,15 +808,13 @@ let pendingSel = [];
 let pendingFreeExtra = 0;
 
 function openExtrasModal(pid, pname, dataJson) {
-  if (typeof showStoreClosedAlert === "function" && showStoreClosedAlert()) { return; }
+  if (sedeClosedGuard()) { return; }
   pendingExtrasPid = pid;
   pendingExtrasName = pname;
   let data = {};
   try { data = JSON.parse(dataJson || "{}"); } catch(e) { data = {}; }
   pendingExtras = data.extras || [];
-let pendingBebidas = [];
-let pendingBasePrice = 0;
-
+  pendingBasePrice = parseFloat(data.price) || 0;
   pendingIngredients = data.ingredients || [];
   pendingFree = parseInt(data.free || 0, 10) || 0;
   pendingDivision = data.division === "2_estaciones" ? 2 : (data.division === "4_estaciones" ? 4 : 0);
@@ -782,14 +967,8 @@ function renderSaborIng(block, si) {
   const $box = $(".sabor-ing[data-block='" + block + "']");
   if (!sb) { $box.html(""); return; }
   let h = '<div class="small text-muted mb-1"><i class="bi bi-check2-circle me-1 text-success"></i>Incluye: ';
-  h += sb.ingredients.map(function(g){ return g.name; }).join(", ");
+  h += (sb.desc || sb.ingredients.map(function(g){ return g.name; }).join(", "));
   h += '</div>';
-  sb.ingredients.forEach(function(g, gi) {
-    h += '<div class="d-flex justify-content-between align-items-center mb-1 small">' +
-      '<span class="text-muted">' + g.name + '</span>' +
-      extraBtnHtml(block + "-" + gi, g.price) +
-      '</div>';
-  });
   $box.html(h);
 }
 
@@ -861,22 +1040,22 @@ function refreshIngPriceLabels() {
 }
 
 function updateExtrasTotal() {
-  let total = 0;
+  let extrasTotal = 0;
   const ingIdx = [];
   $(".ing-opt input:checked").each(function(){ ingIdx.push(parseInt($(this).data("idx"))); });
   for (let i = pendingFreeExtra; i < ingIdx.length; i++) {
     const e = pendingIngredients[ingIdx[i]];
-    if (e) { total += parseFloat(e.price); }
+    if (e) { extrasTotal += parseFloat(e.price); }
   }
   $(".extra-opt input:checked").each(function(){
     if ($(this).data("sec") === "ing") { return; }
-    total += parseFloat($(this).data("price"));
+    extrasTotal += parseFloat($(this).data("price"));
   });
-  extraToggles().forEach(function(x){ total += x.price; });
+  extraToggles().forEach(function(x){ extrasTotal += x.price; });
   const selB = $(".bebida-radio:checked");
-  if (selB.length) { total += parseFloat(selB.data("extra")) || 0; }
-  $("#extras_subtotal").text(fmt(total));
-  $("#extras_total").text(fmt(pendingBasePrice + total));
+  if (selB.length) { extrasTotal += parseFloat(selB.data("extra")) || 0; }
+  $("#extras_subtotal").text(fmt(extrasTotal));
+  $("#extras_total").text(fmt(pendingBasePrice + extrasTotal));
   refreshIngPriceLabels();
 }
 
@@ -974,17 +1153,39 @@ function deliveryPriceFor(sede, zoneId) {
   return zoneDefault;
 }
 
+function filterZonesBySede() {
+  var sede = getSelectedSede();
+  $("input[name='order_zone']").each(function() {
+    var zoneId = String($(this).val());
+    if (zoneId === "0") return;
+    var $label = $(this).closest("label");
+    var $priceTag = $label.find(".text-primary");
+    if (sede && sede.delivery && sede.delivery[zoneId] !== undefined) {
+      var sp = parseFloat(sede.delivery[zoneId]) || 0;
+      $(this).attr("data-price", sp);
+      $priceTag.text("+" + COIN + sp.toFixed(2));
+      $label.show();
+    } else {
+      $label.hide();
+      if ($(this).is(":checked")) {
+        $(this).prop("checked", false);
+      }
+    }
+  });
+}
 function updateCheckoutUI() {
   const isPickup = $("#order_pickup").is(":checked");
+  const isDineIn = $("#order_dinein").is(":checked");
   const zoneSel = $("input[name='order_zone']:checked").val();
-  const delivery = !isPickup && zoneSel !== "0";
+  const inStore = isPickup || isDineIn;
+  const delivery = !inStore && !!zoneSel;
   const deliveryPrice = delivery ? deliveryPriceFor(getSelectedSede(), zoneSel) : 0;
   const t = computeTotals(getCartItems(), delivery, deliveryPrice);
   const paySel = $(".payment-method:checked");
   const isPM = paySel.data("pm") == 1;
 
   $("#ck_subtotal").text(fmt(t.subtotal));
-  $("#ck_delivery").text(delivery ? fmt(t.delivery) : "Comer en la sede / Recoger");
+  $("#ck_delivery").text(delivery ? fmt(t.delivery) : (inStore ? "—" : "Comer/Recoger en sucursal"));
   $("#ck_total").text(fmt(t.total));
   $("#ck_total_bs").text(bcvRate > 0 ? fmtBs(t.total * bcvRate) : "Bs a confirmar");
 
@@ -1004,17 +1205,17 @@ function itemsWhatsAppText(items, delivery) {
     let extrasTxt = "";
     (it.extras || []).forEach(function(e){
       unit += parseFloat(e.price);
-      if (parseFloat(e.price) > 0) { extrasTxt += "    - " + e.name + " (+" + fmt(parseFloat(e.price)) + ")%0A"; }
-      else if (e.div === 1) { extrasTxt += "    - " + e.name + " (gratis)%0A"; }
+      if (parseFloat(e.price) > 0) { extrasTxt += "    - " + e.name + " (+" + fmt(parseFloat(e.price)) + ")\n"; }
+      else if (e.div === 1) { extrasTxt += "    - " + e.name + " (gratis)\n"; }
     });
     let bebidasTxt = "";
     (it.bebidas || []).forEach(function(b){
       unit += parseFloat(b.precio);
       const sabor_txt = b.sabor_elegido ? " (" + b.sabor_elegido + ")" : "";
       const tag = parseFloat(b.precio) > 0 ? "(+" + fmt(parseFloat(b.precio)) + ")" : "(gratis)";
-      bebidasTxt += "    - 🥤 " + b.sabor + " " + b.medida + sabor_txt + " " + tag + "%0A";
+      bebidasTxt += "    - 🥤 " + b.sabor + " " + b.medida + sabor_txt + " " + tag + "\n";
     });
-    lines.push("- " + it.q + " x " + it.name + "%0A" + extrasTxt + bebidasTxt + "    (" + fmt(unit) + ") = " + fmt(unit * it.q) + "%0A");
+    lines.push("- " + it.q + " x " + it.name + "\n" + extrasTxt + bebidasTxt + "    (" + fmt(unit) + ") = " + fmt(unit * it.q) + "\n");
   });
   return lines.join("");
 }
@@ -1068,6 +1269,7 @@ $(document).ready(function() {
   $("#btn_checkout_sede").click(function() { openSedeModal(); });
 
   setSedeUI();
+  filterZonesBySede();
   if (!getSelectedSede()) {
     setTimeout(function() { openSedeModal(); }, 600);
   } else {
@@ -1115,25 +1317,50 @@ $(document).ready(function() {
     .on("click", ".extra-btn", onExtraBtn);
   $("#btn_confirm_extras").click(confirmExtras);
 
-  // Pickup Toggle
-  $("#order_pickup").change(function() {
-    if($(this).is(":checked")) {
+  // Pickup / Dine-In Toggle
+  function applyOrderModeUI() {
+    const inStore = $("#order_pickup").is(":checked") || $("#order_dinein").is(":checked");
+    if (inStore) {
       $("#address_container").fadeOut();
-      $("input[name='order_zone'][value='0']").prop("checked", true);
-      $("input[name='order_zone']").prop("disabled", true);
+      $("#zone_container").fadeOut();
+      $("input[name='order_zone']").prop("checked", false).prop("disabled", true);
     } else {
       $("#address_container").fadeIn();
+      $("#zone_container").fadeIn();
       $("input[name='order_zone']").prop("disabled", false);
     }
     updateCheckoutUI();
+  }
+  $("#order_pickup").change(function() {
+    if($(this).is(":checked")) { $("#order_dinein").prop("checked", false); }
+    applyOrderModeUI();
+  });
+  $("#order_dinein").change(function() {
+    if($(this).is(":checked")) { $("#order_pickup").prop("checked", false); }
+    applyOrderModeUI();
   });
 
   // Zone / Payment Method
   $("input[name='order_zone']").change(updateCheckoutUI);
   $(".payment-method").change(updateCheckoutUI);
 
+  // Schedule (programar pedido) toggle
+  $("#order_scheduled").change(function() {
+    if ($(this).is(":checked")) {
+      $("#schedule_box").removeClass("d-none");
+      if (!$("#order_scheduled_date").val()) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        $("#order_scheduled_date").val(tomorrow.toISOString().slice(0, 10));
+      }
+      if (!$("#order_scheduled_time").val()) { $("#order_scheduled_time").val("12:00"); }
+    } else {
+      $("#schedule_box").addClass("d-none");
+    }
+  });
+
   // Refresh totals when checkout opens
-  $("#modal-checkout").on("shown.bs.modal", function() { updateCheckoutUI(); });
+  $("#modal-checkout").on("shown.bs.modal", function() { filterZonesBySede(); updateCheckoutUI(); });
 
   // Clear invalid state while typing
   $("#order_name, #order_phone, #order_address").on("input", function() {
@@ -1141,7 +1368,7 @@ $(document).ready(function() {
   });
 
   // BCV Rate
-  let bcvRate = <?php echo $bcv_rate_js; ?>;
+  bcvRate = <?php echo $bcv_rate_js; ?>;
   function bcvLoadRate(showSpinner) {
     $.get("./?action=bcv&opt=get", function(data) {
       try {
@@ -1157,7 +1384,7 @@ $(document).ready(function() {
 
   // Confirm Order
   $("#btn_confirm_order").click(async function() {
-    if (typeof showStoreClosedAlert === "function" && showStoreClosedAlert()) { return; }
+    if (sedeClosedGuard()) { return; }
     const sede = getSelectedSede();
     if (!sede) {
       Swal.fire({ icon: "warning", title: "Elige tu sede", text: "Primero selecciona la sede que te queda más cerca, así tu pedido llega al WhatsApp correcto.", confirmButtonColor: "#b87e38" }).then(function(){ openSedeModal(); });
@@ -1167,6 +1394,8 @@ $(document).ready(function() {
     const phone = $("#order_phone").val().trim();
     let address = $("#order_address").val().trim();
     const isPickup = $("#order_pickup").is(":checked");
+    const isDineIn = $("#order_dinein").is(":checked");
+    const inStore = isPickup || isDineIn;
     const zoneSel = $("input[name='order_zone']:checked").val();
     const paymethodId = $(".payment-method:checked").val();
     const paymethodName = $(".payment-method:checked").data("name");
@@ -1183,24 +1412,50 @@ $(document).ready(function() {
       Swal.fire({ icon: "warning", title: "Teléfono inválido", text: "Escribe un número de teléfono válido (mínimo 7 dígitos, sin letras).", confirmButtonColor: "#b87e38" });
       return;
     }
-    if (isPickup) { address = "Recoger en sucursal"; }
+    let orderModeLabel = "";
+    if (isPickup) { orderModeLabel = "Recoger en sucursal"; address = "Recoger en sucursal"; }
+    else if (isDineIn) { orderModeLabel = "Comer en sucursal"; address = "Comer en sucursal"; }
     else if (address.length < 5) {
       $("#order_address").addClass("is-invalid").focus();
       Swal.fire({ icon: "warning", title: "Dirección inválida", text: "Escribe una dirección de entrega válida (al menos 5 caracteres, con más detalle).", confirmButtonColor: "#b87e38" });
       return;
     }
-    if (!isPickup && zoneSel === "0") {
-      Swal.fire({ icon: "warning", title: "Zona de entrega", text: "Por favor selecciona tu zona de entrega (o marca que pasarás a recoger).", confirmButtonColor: "#b87e38" });
+    if (!inStore && !zoneSel) {
+      Swal.fire({ icon: "warning", title: "Zona de entrega", text: "Selecciona tu zona de entrega, o marca que comerás o recogerás en sucursal.", confirmButtonColor: "#b87e38" });
       return;
     }
 
-    const delivery = !isPickup;
-    const zoneOpt = delivery ? $("#order_zone option:selected") : null;
+    const delivery = !inStore && !!zoneSel;
+    const $zoneChecked = $("input[name='order_zone']:checked");
     const deliveryPrice = delivery ? deliveryPriceFor(sede, zoneSel) : 0;
-    const zoneName = delivery ? zoneOpt.text() : "Recoger en sucursal";
+    const zoneName = delivery ? $zoneChecked.closest("label").find(".form-check-label").clone().children().remove().end().text().trim() : orderModeLabel;
     const items = getCartItems();
     const t = computeTotals(items, delivery, deliveryPrice);
     const note = $("#order_note").val().trim().replace(/\n/g, ", ");
+
+    const isScheduled = $("#order_scheduled").is(":checked");
+    const schedDate = $("#order_scheduled_date").val();
+    const schedTime = $("#order_scheduled_time").val();
+    let scheduledAt = "";
+    let scheduledLabel = "";
+    if (isScheduled) {
+      if (!schedDate || !schedTime) {
+        Swal.fire({ icon: "warning", title: "Falta fecha u hora", text: "Selecciona la fecha y la hora para programar tu pedido.", confirmButtonColor: "#b87e38" });
+        return;
+      }
+      const dt = new Date(schedDate + "T" + schedTime + ":00");
+      const MIN_LEAD_MS = 3 * 60 * 60 * 1000; // mínimo 3 horas de anticipación
+      if (isNaN(dt.getTime()) || dt <= new Date()) {
+        Swal.fire({ icon: "warning", title: "Fecha inválida", text: "La fecha y hora del pedido programado debe ser futura.", confirmButtonColor: "#b87e38" });
+        return;
+      }
+      if (dt.getTime() - Date.now() < MIN_LEAD_MS) {
+        Swal.fire({ icon: "warning", title: "Anticipación mínima", text: "Los pedidos programados deben hacerse con al menos <b>3 horas</b> de anticipación. Elige una fecha/hora posterior.", confirmButtonColor: "#b87e38" });
+        return;
+      }
+      scheduledAt = schedDate + " " + schedTime + ":00";
+      scheduledLabel = schedDate + " " + fmt12(schedTime);
+    }
 
     const btn = $(this);
     btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm me-2"></span> Enviando...');
@@ -1212,33 +1467,53 @@ $(document).ready(function() {
       sede_id: sede.id,
       paymethod_id: paymethodId,
       delivery_zone_id: delivery ? zoneSel : "",
-      note: note
+      note: note,
+      scheduled_at: scheduledAt
     }, function(res) {
-      clearCart();
-
-      const whatsappNum = sede.phone ? String(sede.phone).replace(/\D/g, "") : "<?php echo $whatsapp_number; ?>";
-      let msg = "*NUEVA ORDEN - ALIANZAS BLISSFUL*%0A%0A";
-      msg += "*Sede:* " + sede.name + "%0A";
-      msg += "*Cliente:* " + name + "%0A";
-      msg += "*Teléfono:* " + phone + "%0A";
-      if(delivery){
-        msg += "*Dirección:* " + address + "%0A";
-        msg += "*Zona (Delivery):* " + zoneName + "%0A";
-        msg += "*Delivery:* " + fmt(t.delivery) + "%0A";
-      } else {
-        msg += "*Entrega:* Recoger en sucursal%0A";
+      let buyCode = String(res || "").trim();
+      if (!buyCode) {
+        var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        buyCode = "";
+        for (var ci = 0; ci < 11; ci++) { buyCode += chars.charAt(Math.floor(Math.random() * chars.length)); }
       }
-      msg += "*Pago:* " + paymethodName + "%0A%0A";
-      if(note){ msg += "*Nota:* " + note + "%0A"; }
-      msg += "*Productos:*%0A" + itemsWhatsAppText(items, delivery);
-      msg += "%0A*------------------------------*%0A";
-      msg += "*SUBTOTAL (US$): " + fmt(t.subtotal) + "*%0A";
-      msg += "*TOTAL (US$): " + fmt(t.total) + "*%0A";
-      msg += "*TOTAL (Bs): " + (bcvRate > 0 ? fmtBs(t.total * bcvRate) : "a confirmar") + "*%0A";
-      msg += "*------------------------------*%0A";
-      msg += isPM ? "_El cliente pagó/pagará el monto indicado. Solicita el capture de pago por este chat antes de confirmar._" : "_El cliente confirmará el pago._";
 
-      window.open("https://api.whatsapp.com/send?phone=" + whatsappNum + "&text=" + msg, '_blank');
+      const whatsappNum = (sede.phone ? String(sede.phone).replace(/\D/g, "") : "<?php echo preg_replace('/\D/','', $whatsapp_number); ?>").replace(/^0+/, "");
+      // Build a compact WhatsApp message to avoid URL length truncation
+      let msg = "*NUEVA ORDEN - ALIANZAS BLISSFUL*\n\n";
+      msg += "*Código:* " + buyCode + "\n\n";
+      msg += "*Sede:* " + (sede.name || "") + "\n";
+      msg += "*Cliente:* " + name + "\n";
+      msg += "*Teléfono:* " + phone + "\n";
+      if(delivery){
+        msg += "*Dirección:* " + address + "\n";
+        msg += "*Zona:* " + zoneName + "\n";
+        msg += "*Delivery:* " + fmt(t.delivery) + "\n";
+      } else {
+        msg += "*Entrega:* " + orderModeLabel + "\n";
+      }
+      if (isScheduled) {
+        msg += "*Programado:* " + scheduledLabel + "\n";
+      }
+      msg += "*Pago:* " + paymethodName + "\n\n";
+      if(note){ msg += "*Nota:* " + note + "\n"; }
+      msg += "*Productos:*\n" + itemsWhatsAppText(items, delivery);
+      msg += "\n*SUBTOTAL (US$): " + fmt(t.subtotal) + "*\n";
+      msg += "*TOTAL (US$): " + fmt(t.total) + "*\n";
+      msg += "*TOTAL (Bs): " + (bcvRate > 0 ? fmtBs(t.total * bcvRate) : "a confirmar") + "*\n";
+      msg += isPM ? "_El cliente pagó/pagará el monto. Solicita el capture._" : "_El cliente confirmará el pago._";
+
+      function waEncode(s){
+        return encodeURIComponent(s)
+          .replace(/%2A/g, "*")
+          .replace(/%5F/g, "_")
+          .replace(/%250A/g, "%0A");
+      }
+      const waUrl = "https://wa.me/" + whatsappNum + "?text=" + waEncode(msg);
+      var opened = false;
+      var w = window.open(waUrl, '_blank');
+      if (w) { opened = true; }
+
+      clearCart();
       $("#modal-checkout").modal("hide");
       Swal.fire({
         icon: "success",

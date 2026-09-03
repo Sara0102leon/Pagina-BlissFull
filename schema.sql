@@ -88,6 +88,9 @@ create table product (
 	offer_price float ,
 	offer_finish date ,
 	free_ingredients int not null default 0 ,
+	house_ingredients varchar(255) ,
+	tipo_division varchar(20) ,
+	allow_halves boolean default 0 ,
 	category_id int ,
 	sede_id int ,
 	unit_id int ,
@@ -174,6 +177,10 @@ create table buy (
 	sede_id int,
 	capture varchar(255),
 	note varchar(500),
+	scheduled_at datetime,
+	notified varchar(100) not null default '',
+	chatwoot_conversation_id bigint,
+	chatwoot_contact_id bigint,
 	foreign key(paymethod_id) references paymethod(id),
 	foreign key(coupon_id) references coupon(id),
 	foreign key(client_id) references client(id),
@@ -243,11 +250,24 @@ create table sede (
 	name varchar(200) not null,
 	address varchar(500),
 	phone varchar(20) not null,
+	horario_open time null default null,
+	horario_close time null default null,
 	image varchar(255) default '',
 	maps varchar(500) default '',
+	chatwoot_group_conversation_id bigint,
 	is_active boolean default 1,
 	created_at datetime default current_timestamp
 );
+
+create table sede_horario (
+	id int not null auto_increment primary key,
+	sede_id int not null,
+	dia varchar(20) not null,
+	hora_open varchar(5) default null,
+	hora_close varchar(5) default null,
+	unique key uq_sede_dia (sede_id, dia)
+);
+
 
 insert into sede (name, address, phone) values
 ("Blissfull Villa Roca", "Villa Roca (sucursal principal)", "+584120000001"),
@@ -321,6 +341,12 @@ insert into configuration(name,label,kind,val) value ("bank_account","Numero de 
 insert into configuration(name,label,kind,val) value ("bank_card","Numero de Tarjeta",1,"");
 /* for whatsapp */
 insert into configuration(name,label,kind,val) value ("general_whatsapp","Numero de WhatsApp (ej: 521...)",1,"+5215574506232");
+
+insert into configuration(name,label,kind,val) value ("general_chatwoot_base_url","Chatwoot URL Base",1,"https://chat.alianzablissful.com");
+insert into configuration(name,label,kind,val) value ("general_chatwoot_account_id","Chatwoot Account ID",1,"1");
+insert into configuration(name,label,kind,val) value ("general_chatwoot_access_token","Chatwoot Access Token",1,"");
+insert into configuration(name,label,kind,val) value ("general_chatwoot_webhook_secret","Chatwoot Webhook Secret",1,"");
+insert into configuration(name,label,kind,val) value ("general_chatwoot_app_token","Chatwoot API Token (Dashboard App)",1,"");
 /* datos de pago venezolanos */
 insert into configuration(name,label,kind,val) value ("pago_movil_bank","Pago Móvil - Banco",1,"");
 insert into configuration(name,label,kind,val) value ("pago_movil_ci","Pago Móvil - Cédula",1,"");

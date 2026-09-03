@@ -1,6 +1,20 @@
 <?php 
 if(!isset($_SESSION["user_id"])){ Core::redir("./");}
 
+if(isset($_GET["opt"]) && $_GET["opt"]=="rows"){
+	header("Content-Type: text/html; charset=utf-8");
+	$buys = BuyData::getAll();
+	$pending_map = array();
+	$q_pend = Executor::doit("select id, TIMESTAMPDIFF(MINUTE, created_at, NOW()) as m from buy where status_id=1");
+	foreach(Model::many($q_pend[0], new BuyData()) as $r){ $pending_map[$r->id] = intval($r->m); }
+	$coin = ConfigurationData::getByPreffix("general_coin")->val;
+	ob_start();
+	include __DIR__."/../partials/sells-table-rows.php";
+	$html = ob_get_clean();
+	echo trim($html);
+	exit;
+}
+
 if(isset($_GET["opt"]) && $_GET["opt"]=="status"){
 	$buy = BuyData::getById($_GET["id"]);
 	if(!$buy){ Core::redir("./?view=sells&opt=all"); }

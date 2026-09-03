@@ -8,7 +8,6 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="add"){
 		$client->lastname = $_POST["lastname"];
 		$client->address = $_POST["address"];
 		$client->phone = $_POST["phone"];
-		$client->email = $_POST["email"];
 		$client->password = sha1(md5($_POST["password"]));
 		$client->add();
 		Core::redir("./?view=clients&opt=all");
@@ -21,7 +20,6 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="upd"){
 		$client->lastname = $_POST["lastname"];
 		$client->address = $_POST["address"];
 		$client->phone = $_POST["phone"];
-		$client->email = $_POST["email"];
 		$client->update();
 		Core::redir("./?view=clients&opt=all");
 	}

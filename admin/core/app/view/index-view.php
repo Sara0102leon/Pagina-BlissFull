@@ -26,7 +26,7 @@ if(isset($_SESSION["user_id"])){
         <div class="row align-items-center">
           <div class="col-10">
             <h3 class="h1">Hola, Legobox</h3>
-            <div class="markdown text-muted">Legobox es un microframework para el desarrollo rapido y ligero de proyectos en PHP.</div>
+            <div class="markdown text-muted">Legobox es un microframework para el desarrollo rápido y ligero de proyectos en PHP.</div>
           </div>
         </div>
       </div>

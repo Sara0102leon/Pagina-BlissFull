@@ -24,7 +24,9 @@ class ClientData {
 		Executor::doit($sql);
 	}
 	public function del(){
-		$sql = "delete from ".self::$tablename." where id=$this->id";
+		// Soft-delete: oculta el cliente (no borra fisicamente)
+		// para no romper las ventas asociadas (FK buy.client_id)
+		$sql = "update ".self::$tablename." set is_active=0 where id=$this->id";
 		Executor::doit($sql);
 	}
 
@@ -47,7 +49,7 @@ class ClientData {
 	}
 
 	public static function getAll(){
-		$sql = "select * from ".self::$tablename."";
+		$sql = "select * from ".self::$tablename." where is_active=1";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ClientData());
 	}

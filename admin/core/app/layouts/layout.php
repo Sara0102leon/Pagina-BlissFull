@@ -141,15 +141,21 @@ $sys_open = $sys_active!="" ? " show" : "";
             </button>
 
             <div class="nav-item dropdown me-2" id="notif-wrap">
-              <a href="#" class="icon-btn" data-bs-toggle="dropdown" aria-label="Notificaciones" title="Pedidos pendientes de pago">
+              <a href="#" class="icon-btn" data-bs-toggle="dropdown" aria-label="Notificaciones" title="Pedidos pendientes de pago y pedidos programados">
                 <i class="bi bi-bell"></i>
                 <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" style="font-size: 0.65rem;">0</span>
               </a>
-              <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow dropdown-menu-card shadow">
+              <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow dropdown-menu-card shadow" style="max-width: 420px;">
                 <div class="dropdown-header d-flex align-items-center border-bottom">
-                  <span class="fw-bold h5 mb-0"><i class="bi bi-bell-fill text-danger me-1"></i> Pedidos sin pagar (30+ min)</span>
+                  <span class="fw-bold h5 mb-0"><i class="bi bi-calendar-check text-info me-1"></i> Pedidos programados</span>
+                  <span class="ms-auto badge bg-info text-dark" id="notif-sch-count">0</span>
                 </div>
-                <div id="notif-list" class="list-group list-group-flush overflow-auto" style="max-height: 65vh;"></div>
+                <div id="notif-list-scheduled" class="list-group list-group-flush overflow-auto border-bottom" style="max-height: 40vh;"></div>
+                <div class="dropdown-header d-flex align-items-center border-bottom">
+                  <span class="fw-bold h6 mb-0"><i class="bi bi-bell-fill text-danger me-1"></i> Pedidos sin pagar (30+ min)</span>
+                  <span class="ms-auto badge bg-danger" id="notif-pend-count">0</span>
+                </div>
+                <div id="notif-list" class="list-group list-group-flush overflow-auto" style="max-height: 40vh;"></div>
                 <div class="dropdown-header border-top d-flex justify-content-between">
                   <span class="small text-muted" id="notif-updated"></span>
                   <a href="./?view=sells&opt=all" class="small fw-bold link-primary">Ver todas las ventas <i class="bi bi-arrow-right"></i></a>
@@ -188,8 +194,10 @@ $sys_open = $sys_active!="" ? " show" : "";
 
     <style>
       @keyframes notifFlash{ 0%,100%{ transform: translate(-50%,-50%) scale(1); } 50%{ transform: translate(-50%,-50%) scale(1.6); } }
+      @keyframes notifToastIn{ from{ transform: translateX(120%); opacity:0; } to{ transform: translateX(0); opacity:1; } }
       #notif-badge.anim-flash{ animation: notifFlash 0.5s ease-in-out 2; }
       .notif-item{ border-left: 4px solid rgba(184,126,56,0.4); }
+      .notif-item.notif-sch{ border-left-color: rgba(23,162,184,0.6); }
       .notif-item:hover{ border-left-width: 4px; }
       .tt-admin-loader {
         position: fixed;
@@ -242,7 +250,6 @@ $sys_open = $sys_active!="" ? " show" : "";
       })();
 
       function initNotifications(){
-        var lastCount = -1;
         var LEVEL = {
           risk:     { label: "Riesgo de no pagar",   color: "#b87e38" },
           critical: { label: "Posible pedido falso", color: "#e0a96d" }
@@ -258,6 +265,7 @@ $sys_open = $sys_active!="" ? " show" : "";
         function renderOrders(orders){
           if(!orders || !orders.length){
             $("#notif-list").html('<div class="text-center py-4 text-muted small"><i class="bi bi-check-circle text-success d-block h3 mb-1"></i>No hay pedidos sin pago a tiempo</div>');
+            $("#notif-pend-count").text("0");
             return;
           }
           var html = "";
@@ -276,7 +284,41 @@ $sys_open = $sys_active!="" ? " show" : "";
             html += '</a>';
           });
           $("#notif-list").html(html);
+          $("#notif-pend-count").text(orders.length);
           $("#notif-updated").text("Actualizado: " + new Date().toLocaleTimeString());
+        }
+
+        function fmtUntil(sec){
+          sec = Math.max(0, parseInt(sec) || 0);
+          var d = Math.floor(sec/86400), h = Math.floor((sec%86400)/3600), m = Math.floor((sec%3600)/60);
+          if(d > 0){ return "en " + d + "d " + h + "h"; }
+          if(h > 0){ return "en " + h + "h " + m + "m"; }
+          return "en " + m + "m";
+        }
+
+        function renderScheduled(list){
+          var $el = $("#notif-list-scheduled");
+          var $cnt = $("#notif-sch-count");
+          if(!list || !list.length){
+            $el.html('<div class="text-center py-3 text-muted small"><i class="bi bi-calendar-x text-muted d-block h4 mb-1"></i>No hay pedidos programados pendientes</div>');
+            $cnt.text("0");
+            return;
+          }
+          var html = "";
+          list.slice().sort(function(a,b){ return a.scheduled_ts - b.scheduled_ts; }).forEach(function(o){
+            var when = fmtUntil(o.diff);
+            html += '<a class="list-group-item list-group-item-action notif-item notif-sch" href="./?view=sells&opt=open&id=' + o.id + '">';
+            html += '<div class="d-flex align-items-start">';
+            html += '<div class="flex-fill">';
+            html += '<div class="fw-bold small"><i class="bi bi-calendar-check me-1 text-info"></i>#' + o.id + ' \u00b7 ' + o.client + '</div>';
+            html += '<div class="small text-muted">' + o.scheduled_at + ' \u00b7 ' + o.paymethod + ' \u00b7 $' + Number(o.total).toFixed(2) + (o.phone ? ' \u00b7 ' + o.phone : '') + '</div>';
+            html += '</div>';
+            html += '<span class="ms-2 badge rounded-pill text-white" style="background:#17a2b8;"><i class="bi bi-hourglass-split me-1"></i>' + when + '</span>';
+            html += '</div>';
+            html += '</a>';
+          });
+          $el.html(html);
+          $cnt.text(list.length);
         }
 
         function flashBell(){
@@ -285,20 +327,167 @@ $sys_open = $sys_active!="" ? " show" : "";
           setTimeout(function(){ $b.removeClass("anim-flash"); }, 1100);
         }
 
+        // Sonidos de notificación (MP3) - uno por tipo de aviso
+        var SOUNDS = {
+          retraso: "./storage/sounds/aviso_de_retraso.mp3",        // pedido sin pago 30+ min
+          tiempo:  "./storage/sounds/aviso_de_tiempo.mp3",         // hitos de pedido programado
+          creado:  "./storage/sounds/pedido_programado_creado.mp3",// nuevo pedido PROGRAMADO
+          nueva:   "./storage/sounds/nueva_orden.mp3"              // nuevo pedido NORMAL (no programado)
+        };
+        var _audioUnlocked = false;
+        // Reproduce un sonido (se ignora si el navegador aún no permite audio)
+        function playSound(key){
+          var file = SOUNDS[key];
+          if(!file){ return; }
+          try{
+            var a = new Audio(file);
+            a.volume = 1;
+            a.play().catch(function(){});
+          }catch(e){}
+        }
+        // Reproduce cada tipo una vez, espaciados, para no saturar
+        function playSounds(keys){
+          var seen = {};
+          var list = [];
+          (keys || []).forEach(function(k){ if(!seen[k]){ seen[k]=true; list.push(k); } });
+          list.forEach(function(k, i){
+            setTimeout(function(){ playSound(k); }, i*450);
+          });
+        }
+        // Desbloquea el audio en la interacción del usuario (política de autoplay).
+        // IMPORTANTE: debe reproducirse un audio CON VOLUMEN dentro del gesto para que
+        // el navegador autorice los siguientes play() con sonido. Un probe muteado/volumen 0
+        // NO desbloquea el audio en Chrome. Se re-intenta en cada interacción hasta lograrlo.
+        function unlockAudio(){
+          if(_audioUnlocked){ return; }
+          try{
+            var probe = new Audio(SOUNDS.nueva);
+            probe.volume = 0.05;
+            var p = probe.play();
+            if(p && p.then){
+              p.then(function(){ _audioUnlocked = true; }).catch(function(){});
+            } else {
+              _audioUnlocked = true;
+            }
+          }catch(e){}
+        }
+
+        // Toasts en la esquina superior derecha
+        function ensureToastWrap(){
+          if(document.getElementById("notif-toast-wrap")){ return; }
+          var w = document.createElement("div");
+          w.id = "notif-toast-wrap";
+          w.style.cssText = "position:fixed;top:16px;right:16px;z-index:100000;display:flex;flex-direction:column;gap:10px;max-width:360px;";
+          document.body.appendChild(w);
+        }
+        function showToast(title, msg){
+          ensureToastWrap();
+          var t = document.createElement("div");
+          t.style.cssText = "background:linear-gradient(135deg,#2a1c10,#1a140c);color:#f5e6c8;border:1px solid #e0a96d;border-left:5px solid #e0a96d;border-radius:10px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.5);display:flex;gap:10px;align-items:flex-start;animation:notifToastIn .3s ease;";
+          t.innerHTML = '<i class="bi bi-calendar-check" style="font-size:1.3rem;color:#e0a96d;"></i><div style="flex:1;"><div style="font-weight:700;margin-bottom:2px;">'+title+'</div><div style="font-size:.85rem;opacity:.9;">'+msg+'</div></div>';
+          var close = document.createElement("button");
+          close.innerHTML = "&times;";
+          close.style.cssText = "background:none;border:none;color:#e0a96d;font-size:1.1rem;cursor:pointer;padding:0 2px;";
+          close.onclick = function(){ t.remove(); };
+          t.appendChild(close);
+          document.getElementById("notif-toast-wrap").appendChild(t);
+          setTimeout(function(){ t.style.opacity="0"; t.style.transition="opacity .4s"; setTimeout(function(){ t.remove(); }, 400); }, 7500);
+        }
+
         function loadNotifications(){
           $.getJSON("./?action=notifications&opt=json", function(res){
             if(!res || !res.ok){ return; }
-            var count = res.count || 0;
-            if(count > 0){
-              $("#notif-badge").removeClass("d-none").text(count > 99 ? "99+" : count);
+            var pend = res.count || 0;
+            var sch  = res.scheduled_count || 0;
+            var total = pend + sch;
+            if(total > 0){
+              $("#notif-badge").removeClass("d-none").text(total > 99 ? "99+" : total);
             } else {
               $("#notif-badge").addClass("d-none").text("0");
             }
-            if(lastCount >= 0 && count > lastCount){ flashBell(); }
-            lastCount = count;
+            // Avisos recién disparados -> sonido + toast + parpadeo
+            var sounds = [];
+
+            // NUEVO pedido (cualquier tipo): detectado por id no visto antes
+            var justSch = []; // pedidos programados recién creados en ESTA consulta
+            var maxIdThisPoll = _lastSeenId;
+            if(res.recent && res.recent.length){
+              res.recent.forEach(function(o){
+                if(o.id > maxIdThisPoll){ maxIdThisPoll = o.id; }
+                if(_seenOrders.indexOf(o.id) >= 0){ return; }
+                _seenOrders.push(o.id);
+                // En la PRIMERA consulta de la sesión, si no teníamos un id guardado
+                // simplemente registramos el baseline sin sonar. Si sí lo teníamos,
+                // cualquier pedido con id mayor al visto antes SÍ suena (aunque se
+                // haya recargado la página entre tanto).
+                if(_first && _lastSeenId === 0){ return; }
+                if(_first && o.id <= _lastSeenId){ return; }
+                if(o.scheduled){
+                  sounds.push("creado"); // sonido de pedido programado
+                  justSch.push(o.id);
+                  flashBell();
+                  showToast("🔔 Nuevo pedido programado - #" + o.id, "" + o.client + " &mdash; programado para " + o.scheduled_at);
+                } else {
+                  sounds.push("nueva"); // sonido de pedido normal
+                  flashBell();
+                  showToast("🔔 Nuevo pedido - #" + o.id, "" + o.client + " &mdash; " + o.paymethod + " $" + Number(o.total).toFixed(2));
+                }
+              });
+            }
+            // Actualiza el id máximo visto y lo persiste
+            if(maxIdThisPoll > _lastSeenId){ _lastSeenId = maxIdThisPoll; trackLastSeenId(); }
+
+            // Hitos de pedidos programados (24h, 6h, 1h, 15min). 'created' y los de un pedido recién creado se omiten para no repetir sonido
+            if(res.new_alerts && res.new_alerts.length){
+              res.new_alerts.forEach(function(a){
+                if(a.hook === "created"){ return; }
+                if(justSch.indexOf(a.id) >= 0){ return; } // ya sonó al crearse
+                sounds.push("tiempo");
+                flashBell();
+                showToast("🔔 " + a.label + " - pedido #" + a.id, "" + a.client + " &mdash; programado para " + a.scheduled_at);
+              });
+            }
+
+            // Pedidos sin pago 30+ min (nuevos)
+            if(res.orders && res.orders.length){
+              res.orders.forEach(function(o){
+                if(_seenPend.indexOf(o.id) >= 0){ return; }
+                _seenPend.push(o.id);
+                if(_first){ return; }
+                sounds.push("retraso");
+                flashBell();
+                showToast("🔔 Pedido sin pago 30+ min - #" + o.id, "" + o.client + " &mdash; " + o.paymethod + " $" + Number(o.total).toFixed(2));
+              });
+            } else if(total > 0 && _totalPrev >= 0 && total > _totalPrev){
+              flashBell();
+            }
+            _first = false;
+            if(sounds.length){ playSounds(sounds); }
+            _totalPrev = total;
             renderOrders(res.orders || []);
+            renderScheduled(res.scheduled || []);
           }).fail(function(){});
         }
+        // Estado recordado entre consultas para detectar avisos nuevos.
+        // Se persiste el último id de pedido visto en sessionStorage para que,
+        // si el admin recarga la página dentro de la misma sesión de navegador,
+        // los pedidos NUEVOS (con id mayor) sigan notificándose con sonido.
+        var _seenOrders = [];
+        var _seenPend = [];
+        var _totalPrev = -1;
+        var _first = true;
+        var _lastSeenId = 0;
+        try{
+          _lastSeenId = parseInt(sessionStorage.getItem("blissfull_last_buy_id") || "0", 10) || 0;
+        }catch(e){}
+        function trackLastSeenId(){
+          try{ sessionStorage.setItem("blissfull_last_buy_id", String(_lastSeenId)); }catch(e){}
+        }
+
+        // Desbloquea el audio en la primera interacción del usuario (política de autoplay).
+        // Se re-intenta en cada interacción hasta que el navegador autorice el audio.
+        document.addEventListener("click", unlockAudio);
+        document.addEventListener("keydown", unlockAudio);
 
         loadNotifications();
         setInterval(loadNotifications, 20000);

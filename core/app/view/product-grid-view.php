@@ -61,6 +61,7 @@ if($cat_id>0 && count($products)==0 && in_array($cat_id, array(5,6))){
     }
   }
   $has_edit = !in_array(intval($p->category_id), $no_edit_cats);
+  $pizza_edit_json["price"] = ProductData::getEffectivePrice($p);
   $pizza_edit_json_str = htmlspecialchars(json_encode($pizza_edit_json), ENT_QUOTES);
   ?>
   <div class="col-12 col-sm-6 col-md-4 col-lg-3">

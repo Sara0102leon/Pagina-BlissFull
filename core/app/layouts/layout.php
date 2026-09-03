@@ -7,6 +7,7 @@
     <title>Alianzas Blissful - Menú Digital</title>
     <link rel="icon" type="image/png" href="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/assets/img/favicon.png">
     <link rel="shortcut icon" type="image/x-icon" href="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/favicon.ico">
+    <meta name="facebook-domain-verification" content="qrvapznaazsiqazbrl2m1r0plekb22" />
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -114,6 +115,8 @@
     $bcv_row = ConfigurationData::getByPreffix("bcv_rate");
     if($bcv_row && $bcv_row->val){ $bcv_rate_header = floatval($bcv_row->val); }
     $whatsapp_footer = ConfigurationData::getByPreffix("general_whatsapp")?ConfigurationData::getByPreffix("general_whatsapp")->val:"+5215574506232";
+    $fb_footer = trim(ConfigurationData::getByPreffix("general_facebook")?ConfigurationData::getByPreffix("general_facebook")->val:"");
+    $ig_footer = trim(ConfigurationData::getByPreffix("general_instagram")?ConfigurationData::getByPreffix("general_instagram")->val:"");
     $horario_open_raw = ConfigurationData::getByPreffix("horario_open")?ConfigurationData::getByPreffix("horario_open")->val:"11:00";
     $horario_close_raw = ConfigurationData::getByPreffix("horario_close")?ConfigurationData::getByPreffix("horario_close")->val:"23:00";
     $horario_open_raw = $horario_open_raw=="" ? "11:00" : $horario_open_raw;
@@ -159,11 +162,8 @@
     $h_close_parts = explode(":", $h_close_str);
     $h_open_min = (int)$h_open_parts[0]*60 + (int)(isset($h_open_parts[1]) ? $h_open_parts[1] : 0);
     $h_close_min = (int)$h_close_parts[0]*60 + (int)(isset($h_close_parts[1]) ? $h_close_parts[1] : 0);
-    if($h_close_min > $h_open_min){
-      $store_closed = ($now_min < $h_open_min || $now_min >= $h_close_min);
-    }else{
-      $store_closed = !($now_min >= $h_open_min || $now_min < $h_close_min);
-    }
+    // El cierre se maneja por sede (sedeClosedGuard en el frontend), no globalmente.
+    $store_closed = false;
     // Display: use per-day schedule if set, otherwise general
     if($usar_horario_hoy){
       $h_open_d = date("g:i A", strtotime($h_open_str));
@@ -239,21 +239,19 @@
         </div>
       </header>
 
-      <?php if($store_closed): ?>
-      <!-- CINTA SUPERIOR: sistema cerrado fuera del horario del admin -->
-      <div class="tt-ribbon d-print-none">
+      <!-- CINTA SUPERIOR: cierre por sede (dinámica según la sede elegida) -->
+      <div id="sede-closed-ribbon" class="tt-ribbon d-print-none d-none">
         <i class="bi bi-clock-history"></i>
-        <span>ESTAMOS CERRADOS</span>
+        <span class="tt-ribbon-msg">ESTAMOS CERRADOS</span>
         <span class="tt-ribbon-sep">·</span>
-        <span class="tt-ribbon-time">Abrimos hoy a las <?php echo $horario_open_display; ?></span>
+        <span class="tt-ribbon-time" id="sede-closed-name"></span>
         <span class="tt-ribbon-sep">·</span>
-        <span class="tt-ribbon-time">Atendemos de <?php echo $horario_display; ?></span>
+        <span class="tt-ribbon-time" id="sede-closed-horario"></span>
       </div>
-      <?php endif; ?>
 
       <!-- Offcanvas Cart (Mobile/Desktop Swipe) -->
       <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
-        <div class="offcanvas-header bg-primary">
+        <div class="offcanvas-header" style="background: linear-gradient(135deg,#e0a96d,#b87e38); color: #000000;">
           <h5 class="offcanvas-title fw-bold" id="offcanvasCartLabel"><i class="bi bi-bag-heart me-2"></i> Mi Orden</h5>
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
@@ -333,9 +331,9 @@
                 <img src="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/assets/img/logo.png" alt="Alianzas Blissful" class="brand-logo mb-3" style="filter: brightness(1);">
                 <p class="text-white-50 small mb-3">Disfruta de la mejor experiencia gastronómica desde tu celular. Escanea, ordena y disfruta.</p>
                 <div class="d-flex gap-2">
-                   <a href="#" class="social-icon" title="Facebook"><i class="bi bi-facebook"></i></a>
-                   <a href="#" class="social-icon" title="Instagram"><i class="bi bi-instagram"></i></a>
-                   <a href="https://api.whatsapp.com/send?phone=<?php echo preg_replace('/\D/','',$whatsapp_footer); ?>" class="social-icon" target="_blank" rel="noopener" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                   <a href="<?php echo $fb_footer ? (preg_match('/^https?:\/\//i',$fb_footer) ? $fb_footer : "https://facebook.com/".ltrim($fb_footer,"@")) : "#"; ?>" class="social-icon" title="Facebook" target="_blank" rel="noopener"><i class="bi bi-facebook"></i></a>
+                   <a href="<?php echo $ig_footer ? (preg_match('/^https?:\/\//i',$ig_footer) ? $ig_footer : "https://instagram.com/".ltrim($ig_footer,"@")) : "#"; ?>" class="social-icon" title="Instagram" target="_blank" rel="noopener"><i class="bi bi-instagram"></i></a>
+                   <a href="https://wa.me/<?php echo preg_replace('/\D/','',$whatsapp_footer); ?>" class="social-icon" target="_blank" rel="noopener" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
                 </div>
               </div>
               <div class="col-6 col-md-3 col-lg-2">
@@ -349,7 +347,7 @@
               <div class="col-6 col-md-4 col-lg-3">
                 <h4 class="h5 mb-3">Horario</h4>
                 <ul class="list-unstyled small d-grid gap-1 mb-0">
-                  <li><span class="tt-hand tt-hand-sm">Todos los días</span> <span class="float-end text-white fw-bold"><?php echo $horario_display; ?></span></li>
+                  <li><span class="tt-hand tt-hand-sm">Horarios por sede</span> <span class="float-end text-white fw-bold">consulta tu sede</span></li>
                   <li class="text-white-50">Entrega a domicilio y recogida en sucursal.</li>
                 </ul>
               </div>
@@ -358,7 +356,7 @@
                 <ul class="list-unstyled small d-grid gap-2 mb-0">
                   <li class="d-flex gap-2"><i class="bi bi-geo-alt-fill text-gold mt-1"></i><span class="text-white-50"><?php echo $footer_sede ? htmlspecialchars($footer_sede->address) : "Av. Principal #123"; ?></span></li>
                   <li class="d-flex gap-2"><i class="bi bi-telephone-fill text-gold mt-1"></i><span class="text-white-50"><?php echo $footer_sede ? htmlspecialchars($footer_sede->phone) : "555-MENU"; ?></span></li>
-                  <li class="d-flex gap-2"><i class="bi bi-whatsapp text-gold mt-1"></i><a href="https://api.whatsapp.com/send?phone=<?php echo preg_replace('/\D/','',$whatsapp_footer); ?>" target="_blank" rel="noopener" class="text-white-50">Pedir por WhatsApp</a></li>
+                   <li class="d-flex gap-2"><i class="bi bi-whatsapp text-gold mt-1"></i><a href="https://wa.me/<?php echo preg_replace('/\D/','',$whatsapp_footer); ?>" target="_blank" rel="noopener" class="text-white-50">Pedir por WhatsApp</a></li>
                 </ul>
               </div>
             </div>

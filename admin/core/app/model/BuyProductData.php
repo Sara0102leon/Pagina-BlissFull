@@ -39,19 +39,37 @@ class BuyProductData {
 	}
 
 	public function add(){
+		$cols = $this->existingColumns();
 		$extras_sql = "NULL";
 		if($this->extras!=""){
 			$esc = mysqli_real_escape_string(Database::getCon(), $this->extras);
 			$extras_sql = "\"$esc\"";
 		}
 		$bebidas_sql = "NULL";
-		if($this->bebidas!=""){
+		if($this->bebidas!="" && isset($cols["bebidas"])){
 			$esc = mysqli_real_escape_string(Database::getCon(), $this->bebidas);
 			$bebidas_sql = "\"$esc\"";
 		}
-		$sql = "insert into ".self::$tablename." (buy_id,product_id,q,extras,bebidas) ";
-		$sql .= "value (\"$this->buy_id\",$this->product_id,$this->q,$extras_sql,$bebidas_sql)";
+		$names = array("buy_id","product_id","q","extras");
+		$vals = array("\"$this->buy_id\"",$this->product_id,$this->q,$extras_sql);
+		if(isset($cols["bebidas"])){
+			$names[] = "bebidas";
+			$vals[] = $bebidas_sql;
+		}
+		$sql = "insert into ".self::$tablename." (".implode(",",$names).") ";
+		$sql .= "value (".implode(",",$vals).")";
 		return Executor::doit($sql);
+	}
+
+	private function existingColumns(){
+		$cols = array();
+		try {
+			$r = Executor::doit("SHOW COLUMNS FROM ".self::$tablename);
+			if($r[0] !== false){
+				while($row = $r[0]->fetch_assoc()){ $cols[strtolower($row["Field"])] = true; }
+			}
+		} catch(\Throwable $e){}
+		return $cols;
 	}
 
 	public static function delById($id){

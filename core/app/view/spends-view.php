@@ -38,7 +38,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
             <tr>
               <th>Concepto</th>
               <th>Monto</th>
-              <th>Categoria</th>
+              <th>Categoría</th>
               <th>Usuario</th>
               <th>Fecha</th>
               <th class="w-1"></th>
@@ -102,9 +102,9 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
             <input type="number" step="any" name="amount" class="form-control" required placeholder="Monto">
           </div>
           <div class="mb-3">
-            <label class="form-label">Categoria*</label>
+            <label class="form-label">Categoría*</label>
             <select name="category_id" class="form-control" required>
-              <option value="">-- SELECCIONE CATEGORIA --</option>
+              <option value="">-- SELECCIONE CATEGORÍA --</option>
               <?php foreach(CategoryData::getAll() as $c):?>
               <option value="<?php echo $c->id; ?>"><?php echo $c->name; ?></option>
               <?php endforeach; ?>
@@ -152,9 +152,9 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
             <input type="number" step="any" name="amount" value="<?php echo htmlspecialchars($spend->amount);?>" class="form-control" required placeholder="Monto">
           </div>
           <div class="mb-3">
-            <label class="form-label">Categoria*</label>
+            <label class="form-label">Categoría*</label>
             <select name="category_id" class="form-control" required>
-              <option value="">-- SELECCIONE CATEGORIA --</option>
+              <option value="">-- SELECCIONE CATEGORÍA --</option>
               <?php foreach(CategoryData::getAll() as $c):?>
               <option value="<?php echo $c->id; ?>" <?php if($spend->category_id==$c->id){ echo "selected";}?>><?php echo $c->name; ?></option>
               <?php endforeach; ?>

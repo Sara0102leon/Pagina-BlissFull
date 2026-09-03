@@ -245,6 +245,7 @@ $settings = ConfigurationData::getAll();
               <input type="text" name="address" class="form-control" placeholder="Dirección / Referencia">
             </div>
             <div class="col-md-3">
+              <label class="form-label small text-muted mb-0">WhatsApp de la sede</label>
               <input type="text" name="phone" class="form-control" placeholder="WhatsApp (+58412...)" required>
             </div>
             <div class="col-md-1">
@@ -444,77 +445,86 @@ $(function(){
 </script>
 <?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="horarios"):?>
 <?php
-$days = array(
-  "horario_lunes" => "Lunes",
-  "horario_martes" => "Martes",
-  "horario_miercoles" => "Miércoles",
-  "horario_jueves" => "Jueves",
-  "horario_viernes" => "Viernes",
-  "horario_sabado" => "Sábado",
-  "horario_domingo" => "Domingo"
+$sedes_h = SedeData::getAll();
+$dias = array(
+  "lunes"=>"Lunes",
+  "martes"=>"Martes",
+  "miercoles"=>"Miércoles",
+  "jueves"=>"Jueves",
+  "viernes"=>"Viernes",
+  "sabado"=>"Sábado",
+  "domingo"=>"Domingo"
 );
-$h_open_cfg = ConfigurationData::getByPreffix("horario_open");
-$h_close_cfg = ConfigurationData::getByPreffix("horario_close");
+$active_sede = isset($_GET["sede"]) ? intval($_GET["sede"]) : (count($sedes_h)>0 ? intval($sedes_h[0]->id) : 0);
 ?>
 <div class="page-header d-print-none">
   <div class="container-xl">
     <div class="row g-2 align-items-center">
       <div class="col">
-        <h2 class="page-title">Horarios de Atención</h2>
+        <h2 class="page-title">Horarios por Sede</h2>
       </div>
     </div>
   </div>
 </div>
 <div class="page-body">
   <div class="container-xl">
-    <div class="card mb-3">
-      <div class="card-status-top bg-green"></div>
-      <div class="card-header">
-        <h3 class="card-title">Apertura y Cierre (cintas de Abierto/Cerrado)</h3>
-        <p class="text-muted small mb-0 ms-3">Fuera de este rango la página del cliente muestra las cintas de CERRADO y bloquea los pedidos.</p>
-      </div>
-      <form method="post" action="./?action=settings&opt=updhorario">
-        <div class="card-body">
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label">Hora de apertura</label>
-              <input type="time" class="form-control" name="horario_open" value="<?php echo htmlspecialchars($h_open_cfg?$h_open_cfg->val:"11:00"); ?>">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Hora de cierre</label>
-              <input type="time" class="form-control" name="horario_close" value="<?php echo htmlspecialchars($h_close_cfg?$h_close_cfg->val:"23:00"); ?>">
-            </div>
+    <?php if(count($sedes_h)==0): ?>
+      <div class="alert alert-warning">No hay sedes registradas. Primero crea una sede en la pestaña <b>Sedes</b>.</div>
+    <?php else: ?>
+    <ul class="nav nav-pills mb-3" role="tablist">
+      <?php foreach($sedes_h as $sh): ?>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link <?php echo intval($sh->id)==$active_sede ? 'active' : ''; ?>" data-bs-toggle="pill" data-bs-target="#horsede-<?php echo $sh->id; ?>" type="button" role="tab">
+          <i class="bi bi-shop me-1"></i> <?php echo htmlspecialchars($sh->name); ?>
+        </button>
+      </li>
+      <?php endforeach; ?>
+    </ul>
+    <div class="tab-content">
+      <?php foreach($sedes_h as $sh):
+      $map = SedeHorarioData::mapForSede($sh->id); ?>
+      <div class="tab-pane fade <?php echo intval($sh->id)==$active_sede ? 'show active' : ''; ?>" id="horsede-<?php echo $sh->id; ?>" role="tabpanel">
+        <div class="card">
+          <div class="card-status-top bg-info"></div>
+          <div class="card-header">
+            <h3 class="card-title">Horario de atención — <?php echo htmlspecialchars($sh->name); ?></h3>
+            <p class="text-muted small mb-0 ms-3">Horario por día de la semana. Deja vacío un día si esa sede no atiende ese día.</p>
           </div>
-          <div class="form-hint mt-2">Ejemplo: 11:00 AM abre y 11:00 PM cierra. El cliente ve "Estamos cerrados · Abrimos a las..." con esta hora.</div>
+          <form method="post" action="./?action=settings&opt=updhorariosede">
+            <input type="hidden" name="sede_id" value="<?php echo $sh->id; ?>">
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-vcenter">
+                  <thead>
+                    <tr>
+                      <th>Día</th>
+                      <th class="w-25">Apertura</th>
+                      <th class="w-25">Cierre</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php foreach($dias as $dk => $dl):
+                    $ro = $map[$dk]["open"];
+                    $rc = $map[$dk]["close"]; ?>
+                    <tr>
+                      <td class="fw-bold"><?php echo $dl; ?></td>
+                      <td><input type="time" class="form-control" name="open[<?php echo $dk; ?>]" value="<?php echo htmlspecialchars($ro!==null?substr($ro,0,5):""); ?>"></td>
+                      <td><input type="time" class="form-control" name="close[<?php echo $dk; ?>]" value="<?php echo htmlspecialchars($rc!==null?substr($rc,0,5):""); ?>"></td>
+                    </tr>
+                    <?php endforeach; ?>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card-footer text-end">
+              <button type="submit" class="btn btn-success"><i class="bi bi-check-lg me-1"></i> Guardar Horarios</button>
+            </div>
+          </form>
         </div>
-        <div class="card-footer text-end">
-          <button type="submit" class="btn btn-success">Guardar Apertura y Cierre</button>
-        </div>
-      </form>
-    </div>
-    <div class="card">
-      <div class="card-status-top bg-info"></div>
-      <div class="card-header">
-        <h3 class="card-title">Horario de atención por día (sección "te esperamos")</h3>
-        <p class="text-muted small mb-0 ms-3">Se muestra en la página del cliente. Si un día queda vacío, usa el rango de Apertura y Cierre.</p>
       </div>
-      <div class="card-body">
-        <form method="post" action="./?action=settings&opt=updhorarios">
-          <div class="row g-3">
-            <?php foreach($days as $key => $label): ?>
-            <?php $row = ConfigurationData::getByPreffix($key); ?>
-            <div class="col-md-6">
-              <label class="form-label"><?php echo $label; ?></label>
-              <input type="text" class="form-control" name="<?php echo $key; ?>" value="<?php echo htmlspecialchars($row->val); ?>" placeholder="10:00 - 22:00">
-            </div>
-            <?php endforeach; ?>
-          </div>
-          <div class="form-footer mt-3">
-            <button type="submit" class="btn btn-success w-100">Guardar Horarios</button>
-          </div>
-        </form>
-      </div>
+      <?php endforeach; ?>
     </div>
+    <?php endif; ?>
   </div>
 </div>
 

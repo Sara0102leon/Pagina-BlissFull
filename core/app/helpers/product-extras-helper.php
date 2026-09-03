@@ -111,7 +111,7 @@ function tt_build_sabores($sede_id){
   $prods = ProductData::getPublicsByCategoryId(2, intval($sede_id));
   if(!is_array($prods)){ return $sabores; }
   foreach($prods as $p){
-    if(trim((string)$p->tipo_division)!=""){ continue; }
+    if(in_array(trim((string)$p->tipo_division), array("2_estaciones", "4_estaciones"))){ continue; }
     $extras = ProductExtraData::getByProductId($p->id);
     $pay = tt_build_extras_payload($p->description, $p->free_ingredients, $extras, $p->house_ingredients);
     // Solo pizzas con ingredientes fijos (las "elige tu preferencia" quedan fuera)
@@ -122,7 +122,7 @@ function tt_build_sabores($sede_id){
     foreach($pay["ingredients"] as $ing_item){
       $ing[] = array("name"=>$ing_item["name"],"price"=>$ing_item["price"]);
     }
-    $sabores[] = array("id"=>intval($p->id),"name"=>trim((string)$p->name),"ingredients"=>$ing);
+    $sabores[] = array("id"=>intval($p->id),"name"=>trim((string)$p->name),"desc"=>trim((string)$p->description),"ingredients"=>$ing);
   }
   return $sabores;
 }

@@ -40,7 +40,7 @@ $total = 0;
                 $extras_txt = array();
                 $extras_lines = "";
                 if(isset($s["extras"]) && count($s["extras"])>0){
-                  foreach($s["extras"] as $e){ $extras_sum += floatval($e["price"]); $extras_txt[] = $e["name"]; $extras_lines .= "%0A    - ".htmlspecialchars($e["name"]).(floatval($e["price"])>0 ? " (+".$coin_symbol.number_format(floatval($e["price"]),2).")" : " (gratis)"); }
+                  foreach($s["extras"] as $e){ $extras_sum += floatval($e["price"]); $extras_txt[] = $e["name"]; $extras_lines .= "\n    - ".htmlspecialchars($e["name"]).(floatval($e["price"])>0 ? " (+".$coin_symbol.number_format(floatval($e["price"]),2).")" : " (gratis)"); }
                 }
                 $bebidas_sum = 0;
                 $bebidas_txt = array();
@@ -52,13 +52,13 @@ $total = 0;
                     if(isset($bd["sabor_elegido"]) && $bd["sabor_elegido"]!=""){ $bebs .= " (".$bd["sabor_elegido"].")"; }
                     $bebs .= (floatval($bd["precio"])>0) ? " (+$".number_format(floatval($bd["precio"]),2,".",",").")" : " (gratis)";
                     $bebidas_txt[] = $bebs;
-                    $bebidas_lines .= "%0A    - 🥤 ".htmlspecialchars($bebs);
+                    $bebidas_lines .= "\n    - 🥤 ".htmlspecialchars($bebs);
                   }
                 }
                 $unit = ProductData::getEffectivePrice($p) + $extras_sum + $bebidas_sum;
                 $subtotal = $unit*$s["q"];
                 $total += $subtotal;
-                $items_text .= "- ".$s["q"]." x ".htmlspecialchars($p->name).$extras_lines.$bebidas_lines."%0A    (".$coin_symbol.number_format($unit,2).") = ".$coin_symbol.number_format($subtotal,2)."%0A";
+                $items_text .= "- ".$s["q"]." x ".htmlspecialchars($p->name).$extras_lines.$bebidas_lines."\n    (".$coin_symbol.number_format($unit,2).") = ".$coin_symbol.number_format($subtotal,2)."\n";
                 ?>
                 <tr>
                   <td class="px-4">
@@ -187,23 +187,27 @@ $total = 0;
               address: address
             }, function(response) {
               // Step 2: Open WhatsApp
-              const whatsapp_num = "<?php echo $whatsapp_number; ?>";
+              const whatsapp_num = ("<?php echo preg_replace('/\D/','', $whatsapp_number); ?>").replace(/^0+/, "");
               const coin = "<?php echo $coin_symbol; ?>";
               const total = "<?php echo number_format($total, 2); ?>";
               
-              let message = "*NUEVA ORDEN REGISTRADA - ALIANZAS BLISSFUL*%0A%0A";
-              message += "*Cliente:* " + name + "%0A";
-              message += "*Teléfono:* " + phone + "%0A";
-              message += "*Dirección:* " + address + "%0A%0A";
-              message += "*Productos:*%0A";
+              let message = "*NUEVA ORDEN REGISTRADA - ALIANZAS BLISSFUL*\n\n";
+              message += "*Cliente:* " + name + "\n";
+              message += "*Teléfono:* " + phone + "\n";
+              message += "*Dirección:* " + address + "\n\n";
+              message += "*Productos:*\n";
               message += "<?php echo $items_text; ?>";
-              message += "%0A*------------------------------*%0A";
-              message += "*TOTAL: " + coin + total + "*%0A";
-              message += "*------------------------------*%0A%0A";
-              message += "_Enviado desde el Menú Digital_";
+              message += "\n*TOTAL: " + coin + total + "*\n";
+              message += "\n_Enviado desde el Menú Digital_";
 
-              const url = "https://api.whatsapp.com/send?phone=" + whatsapp_num + "&text=" + message;
-              window.open(url, '_blank');
+              function waEncode(s){
+                return encodeURIComponent(s)
+                  .replace(/%2A/g, "*")
+                  .replace(/%5F/g, "_")
+                  .replace(/%250A/g, "%0A");
+              }
+              const waUrl = "https://wa.me/" + whatsapp_num + "?text=" + waEncode(message);
+              window.open(waUrl, '_blank');
               
               // Clear cart and redirect to success or home
               window.location.href = "./?view=products&opt=all&msg=order_success";
