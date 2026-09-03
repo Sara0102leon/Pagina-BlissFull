@@ -157,7 +157,8 @@ $total = 0;
             const $alert = $("#frequent_alert");
             if (phone.length < 7) { $alert.addClass("d-none"); return; }
             freq_timer = setTimeout(function() {
-              $.post("./?action=cart&opt=check", { phone: phone }, function(res) {
+              const name = $("#order_name").val().trim();
+              $.post("./?action=cart&opt=check", { phone: phone, name: name }, function(res) {
                 if (res && res.frequent) {
                   $alert.removeClass("d-none");
                 } else {

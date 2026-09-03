@@ -212,10 +212,15 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="buy"){
 else if(isset($_GET["opt"]) && $_GET["opt"]=="check"){
 	header("Content-Type: application/json");
 	$phone = trim(isset($_POST["phone"])?$_POST["phone"]:"");
+	$name  = trim(isset($_POST["name"])?$_POST["name"]:"");
 	$frequent = false;
 	$orders = 0;
 	if($phone!=""){
-		$sql = "select cl.id, count(b.id) as c from client cl left join buy b on b.client_id=cl.id and b.status_id<>3 where cl.phone=\"$phone\" group by cl.id order by c desc limit 1";
+		// La identidad es nombre + teléfono: solo se acumula hacia "cliente frecuente"
+		// si coincide la combinación. Si no hay nombre, se cae a coincidir solo teléfono.
+		$cond = "cl.phone=\"$phone\"";
+		if($name!=""){ $cond .= " and lower(trim(cl.name))=lower(trim(\"$name\"))"; }
+		$sql = "select cl.id, count(b.id) as c from client cl left join buy b on b.client_id=cl.id and b.status_id<>3 where $cond group by cl.id order by c desc limit 1";
 		$query = Executor::doit($sql);
 		$row = Model::one($query[0],new BuyData());
 		if($row){ $orders = intval($row->c); $frequent = $orders>=8; }
