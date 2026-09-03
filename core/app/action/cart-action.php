@@ -123,17 +123,13 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="buy"){
 			$phone = trim($_POST["phone"]);
 			$name = trim($_POST["name"]);
 
-			// 1) mismo telefono + mismo nombre -> cliente recurrente
+			// Un cliente se identifica SOLO con la combinación nombre + teléfono.
+			// Si coincide la misma combinación, se reutiliza y se acumulan sus pedidos
+			// (el conteo hacia "cliente frecuente"). Si solo coincide el teléfono o
+			// solo el nombre, se trata como un cliente DIFERENTE.
 			$sql = "select * from client where phone=\"$phone\" and lower(trim(name))=lower(trim(\"$name\")) order by id desc limit 1";
 			$query = Executor::doit($sql);
 			$client = Model::one($query[0],new ClientData());
-
-			// 2) mismo telefono pero nombre diferente -> se usa el cliente existente
-			if($client==null){
-				$sql = "select * from client where phone=\"$phone\" order by id desc limit 1";
-				$query = Executor::doit($sql);
-				$client = Model::one($query[0],new ClientData());
-			}
 
 			if($client==null){
 				$client = new ClientData();
@@ -170,6 +166,15 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="buy"){
 			$buy->capture = isset($_POST["capture"])?$_POST["capture"]:"";
 			$buy->note = isset($_POST["note"])?trim($_POST["note"]):"";
 			$buy->scheduled_at = isset($_POST["scheduled_at"])?trim($_POST["scheduled_at"]):"";
+			// Validación servidor: los pedidos programados exigen mínimo 3 horas de anticipación
+			if($buy->scheduled_at!=""){
+				$ts = strtotime($buy->scheduled_at);
+				$min_lead = 3*60*60; // 3 horas
+				$min_ts = time() + $min_lead;
+				if(!$ts || $ts <= time() || $ts < $min_ts){
+					$buy->scheduled_at = "";
+				}
+			}
 			$buy->status_id= 1;
 			$b = $buy->add();
 

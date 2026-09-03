@@ -178,6 +178,7 @@ create table buy (
 	capture varchar(255),
 	note varchar(500),
 	scheduled_at datetime,
+	notified varchar(100) not null default '',
 	chatwoot_conversation_id bigint,
 	chatwoot_contact_id bigint,
 	foreign key(paymethod_id) references paymethod(id),

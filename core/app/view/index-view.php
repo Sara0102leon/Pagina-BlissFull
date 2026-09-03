@@ -577,7 +577,12 @@ function getSedeClosedState() {
     if (om !== null && cm !== null) {
       const now = new Date();
       const cur = now.getHours() * 60 + now.getMinutes();
-      closed = (cm > om) ? (cur < om || cur >= cm) : !(cur >= om || cur < cm);
+      // Apertura == cierre (ventana de 0 min) = no atiende: se trata como cerrado
+      if (om === cm) {
+        closed = true;
+      } else {
+        closed = (cm > om) ? (cur < om || cur >= cm) : !(cur >= om || cur < cm);
+      }
       if (closed) {
         sedeName = sede.name;
         horario = fmt12(h.open) + " - " + fmt12(h.close);
@@ -651,6 +656,17 @@ function setSedeUI() {
 }
 
 const TT_DAY_LABELS = [["lunes","Lunes"],["martes","Martes"],["miercoles","Miércoles"],["jueves","Jueves"],["viernes","Viernes"],["sabado","Sábado"],["domingo","Domingo"]];
+function ttDayHours(h) {
+  if (!h) return "";
+  const om = toMin(h.open), cm = toMin(h.close);
+  if (om === null && cm === null) return "";
+  if (om !== null && cm !== null && om === cm) {
+    return fmt12(h.open) + " - " + fmt12(h.close);
+  }
+  if (om !== null && cm !== null) return fmt12(h.open) + " - " + fmt12(h.close);
+  if (om !== null) return "desde " + fmt12(h.open);
+  return fmt12(h.close) ? "hasta " + fmt12(h.close) : "";
+}
 function renderHorarioAtencion() {
   const el = $("#horario-atencion");
   if (!el.length) { return; }
@@ -659,10 +675,19 @@ function renderHorarioAtencion() {
     el.html('<div class="text-white-50 small">Elige una sede para ver su horario.</div>');
     return;
   }
+  const hasAny = TT_DAY_LABELS.some(function(d){
+    const h = sede.horarios[d[0]] || {};
+    return (h.open && h.close) ? true : false;
+  });
+  if (!hasAny) {
+    el.html('<div class="text-white-50 small"><i class="bi bi-info-circle text-gold me-1"></i>Esta sede aún no tiene horario configurado. El administrador debe definirlo en el módulo Horarios.</div>');
+    return;
+  }
   let html = "";
   TT_DAY_LABELS.forEach(function(d) {
     const h = sede.horarios[d[0]] || {};
-    const txt = (h.open && h.close) ? fmt12(h.open) + " - " + fmt12(h.close) : "Cerrado";
+    const t = ttDayHours(h);
+    const txt = t !== "" ? t : "Cerrado";
     const weekend = (d[0] === "sabado" || d[0] === "domingo") ? " tt-weekend" : "";
     html += '<div class="tt-hours-row' + weekend + '"><span class="tt-day">' + d[1] + '</span><span class="tt-hours">' + txt + '</span></div>';
   });
@@ -1419,8 +1444,13 @@ $(document).ready(function() {
         return;
       }
       const dt = new Date(schedDate + "T" + schedTime + ":00");
+      const MIN_LEAD_MS = 3 * 60 * 60 * 1000; // mínimo 3 horas de anticipación
       if (isNaN(dt.getTime()) || dt <= new Date()) {
         Swal.fire({ icon: "warning", title: "Fecha inválida", text: "La fecha y hora del pedido programado debe ser futura.", confirmButtonColor: "#b87e38" });
+        return;
+      }
+      if (dt.getTime() - Date.now() < MIN_LEAD_MS) {
+        Swal.fire({ icon: "warning", title: "Anticipación mínima", text: "Los pedidos programados deben hacerse con al menos <b>3 horas</b> de anticipación. Elige una fecha/hora posterior.", confirmButtonColor: "#b87e38" });
         return;
       }
       scheduledAt = schedDate + " " + schedTime + ":00";

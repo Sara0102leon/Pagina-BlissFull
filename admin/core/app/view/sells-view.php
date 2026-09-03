@@ -44,65 +44,8 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
-          <?php foreach($buys as $b):
-            $discount = 0;
-            // $coupon handling skipped due to missing model
-            ?>
-            <tr>
-              <td><a href="./?view=sells&opt=open&id=<?php echo $b->id; ?>" class="btn btn-sm btn-default">Detalles</a></td>
-              <td>#<?php echo $b->id; ?>
-                <?php if(intval($b->chatwoot_conversation_id)>0):?>
-                  <a href="<?php echo ChatwootData::baseUrl(); ?>/accounts/<?php echo ChatwootData::accountId(); ?>/conversations/<?php echo intval($b->chatwoot_conversation_id); ?>" target="_blank" rel="noopener" class="ms-1" title="Ver conversación en Chatwoot"><i class="bi bi-chat-dots text-success"></i></a>
-                <?php endif; ?>
-              </td>
-              <td><?php echo $b->getClient()->getFullname(); ?></td>
-              <td><?php $b_sede = $b->getSede(); echo $b_sede ? htmlspecialchars($b_sede->name) : '-'; ?></td>
-              <td><?php echo $coin; ?> <?php echo number_format($b->getTotal()-$discount,2,".",","); ?></td>
-              <td><?php echo $b->getPaymethod()->name; ?></td>
-              <td>
-                <?php if($b->status_id==1):?>
-                  <?php if(!empty($b->scheduled_at) && strtotime($b->scheduled_at) > time()):?>
-                    <span class="badge bg-info text-dark" title="Pedido programado"><i class="bi bi-calendar-check me-1"></i>Programado</span>
-                  <?php elseif(intval($pending_map[$b->id])>=30):?>
-                    <span class="badge bg-danger text-white" title="30+ minutos sin pago ni señales del cliente"><i class="bi bi-bell-fill me-1"></i>Sin señales de pago</span>
-                  <?php else:?>
-                    <span class="badge bg-warning text-dark">Pendiente</span>
-                  <?php endif;?>
-                <?php else:?>
-                  <?php echo $b->getStatus()->name; ?>
-                <?php endif;?>
-              </td>
-              <td><?php echo $b->created_at; ?></td>
-              <td>
-                <?php if(!empty($b->scheduled_at)): ?>
-                  <span class="badge bg-info-lt" title="Pedido programado"><i class="bi bi-clock me-1"></i><?php echo date("d/m/Y h:i A", strtotime($b->scheduled_at)); ?></span>
-                <?php else: ?>
-                  <span class="text-muted">-</span>
-                <?php endif; ?>
-              </td>
-              <td>
-                <?php if($b->status_id==3):?>
-                  <span class="badge bg-danger text-white"><i class="bi bi-x-lg me-1"></i>Cancelado</span>
-                <?php elseif($b->status_id!=5):?>
-                  <?php $is_pickup = ($b->delivery_zone_id=="" || strpos(strtolower($b->getClient()->address), "sucursal") !== false); ?>
-                  <?php $st = intval($b->status_id); ?>
-                  <div class="btn-list flex-nowrap">
-                    <button type="button" class="btn btn-info btn-sm btn-status-change <?php echo $st>=2?'disabled opacity-50':''; ?>" data-id="<?php echo $b->id;?>" data-status="2" title="Pagado" <?php echo $st>=2?'disabled':''; ?>><i class="bi bi-currency-dollar"></i></button>
-                    <?php if(!$is_pickup): ?>
-                    <button type="button" class="btn btn-success btn-sm btn-status-change <?php echo $st!=2?'disabled opacity-50':''; ?>" data-id="<?php echo $b->id;?>" data-status="4" title="Enviado (requiere marcarlo como pagado antes)" <?php echo $st!=2?'disabled':''; ?>><i class="bi bi-truck"></i></button>
-                    <?php endif; ?>
-                    <button type="button" class="btn btn-primary btn-sm btn-status-change <?php echo ($st!=2 && $st!=4)?'disabled opacity-50':''; ?>" data-id="<?php echo $b->id;?>" data-status="5" title="Finalizado (requiere pagado)" <?php echo ($st!=2 && $st!=4)?'disabled':''; ?>><i class="bi bi-check-lg"></i></button>
-                    <button type="button" class="btn btn-danger btn-sm btn-status-change <?php echo $st>=2?'disabled opacity-50':''; ?>" data-id="<?php echo $b->id;?>" data-status="3" title="Cancelar (solo si aún no ha pagado)" <?php echo $st>=2?'disabled':''; ?>><i class="bi bi-x-lg"></i></button>
-                  </div>
-                <?php elseif($b->status_id==5):?>
-                  <span class="badge bg-success text-white"><i class="bi bi-check-lg me-1"></i>Finalizado</span>
-                <?php else:?>
-                  <i class="bi bi-check-lg text-success"></i>
-                <?php endif;?>
-              </td>
-            </tr>
-          <?php endforeach; ?>
+          <tbody id="sells-tbody">
+          <?php include __DIR__."/../partials/sells-table-rows.php"; ?>
           </tbody>
         </table>
         </div>
@@ -115,6 +58,41 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
 </div>
 <script>
 $(function(){
+  // --- Auto-refresh de la tabla (nueva fila arriba / estado actualizado) ---
+  var SELLS_POLL_MS = 15000;
+  var $tbody = $("#sells-tbody");
+  var $table = $tbody.closest("table");
+  var $bodyTarget = $("body");
+  var lastRowCount = $tbody.find("tr").length;
+  $tbody.attr("data-rowcount", lastRowCount);
+  function refreshSells(){
+    $.get("./?action=sells&opt=rows")
+      .done(function(html){
+        if(typeof html != "string" || html === "") return;
+        var $new = $("<div>").html(html);
+        var rows = $new.find("tr");
+        if(!rows.length) return;
+        var prevCount = parseInt($tbody.attr("data-rowcount"), 10) || 0;
+        $tbody.html(rows).attr("data-rowcount", rows.length);
+        if(rows.length > prevCount && prevCount > 0){
+          var newest = rows.first().find("td").eq(1).text().trim();
+          var toast = $('<div class="toast align-items-center text-bg-success border-0" role="alert">'+
+            '<div class="d-flex"><div class="toast-body">Pedido <strong>'+newest+'</strong> nuevo en Ventas</div>'+
+            '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div></div>');
+          toast.appendTo($bodyTarget);
+          if(window.bootstrap && bootstrap.Toast){ new bootstrap.Toast(toast,{delay:3500}).show(); }
+          setTimeout(function(){ toast.remove(); }, 4000);
+        }
+        if($table.length && window.bootstrap && bootstrap.Table){
+          try{ bootstrap.Table.getOrCreateInstance($table.get(0)).refresh?.(); }catch(e){}
+        }
+      })
+      .fail(function(){});
+  }
+  if($tbody.length){
+    setInterval(refreshSells, SELLS_POLL_MS);
+  }
+
   var STATUS_CONF = {
     2: { title: "¿Marcar como PAGADO?", icon: "success", color: "#e0a96d", confirmText: "Sí, marcar pagado", doneText: "Pedido marcado como pagado" },
     4: { title: "¿Marcar como ENVIADO?", icon: "question", color: "#e0a96d", confirmText: "Sí, marcar enviado", doneText: "Pedido marcado como enviado" },
@@ -144,7 +122,7 @@ $(function(){
       $.get("./?action=sells&opt=status&id=" + id + "&status=" + status)
         .done(function(){
           Swal.fire({ icon: "success", title: cfg.doneText, toast: true, position: "top-end", timer: 2500, showConfirmButton: false });
-          setTimeout(function(){ location.reload(); }, 900);
+          if(typeof refreshSells == "function"){ refreshSells(); }
         })
         .fail(function(){
           $btn.prop("disabled", false).html('<i class="bi bi-exclamation-triangle"></i>');

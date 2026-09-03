@@ -40,7 +40,6 @@ if($user==null){ Core::redir("./");}
             <tr>
               <th>Nombre</th>
               <th>Teléfono</th>
-              <th>Email</th>
               <th>Pedidos</th>
               <th class="w-1"></th>
             </tr>
@@ -50,7 +49,6 @@ if($user==null){ Core::redir("./");}
             <tr>
               <td><?php echo $cat->getFullname(); ?></td>
               <td><?php echo $cat->phone; ?></td>
-              <td><?php echo $cat->email; ?></td>
               <td>
                 <?php $n = isset($counts[$cat->id]) ? $counts[$cat->id] : 0; ?>
                 <?php echo $n; ?>
@@ -106,10 +104,6 @@ if($user==null){ Core::redir("./");}
             <input type="text" class="form-control" name="address" placeholder="Dirección">
           </div>
           <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" class="form-control" name="email" required placeholder="Email">
-          </div>
-          <div class="mb-3">
             <label class="form-label">Teléfono</label>
             <input type="text" class="form-control" name="phone" placeholder="Teléfono">
           </div>
@@ -159,10 +153,6 @@ $cat = ClientData::getById($_GET["id"]);
           <div class="mb-3">
             <label class="form-label">Dirección</label>
             <input type="text" class="form-control" name="address" value="<?php echo $cat->address; ?>" placeholder="Dirección">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" class="form-control" name="email" value="<?php echo $cat->email; ?>" required placeholder="Email">
           </div>
           <div class="mb-3">
             <label class="form-label">Teléfono</label>

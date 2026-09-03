@@ -45,7 +45,7 @@ class BuyData {
 				case "capture": $vals[] = ($this->capture!="" ? "\"$this->capture\"" : "NULL"); break;
 				case "note": $vals[] = ($this->note!="" ? "\"$this->note\"" : "NULL"); break;
 				case "scheduled_at": $vals[] = $sched_sql; break;
-				default: $vals[] = "\"$this->$f\"";
+				default: $vals[] = "\"".$this->{$f}."\"";
 			}
 		}
 		$sql = "insert into ".self::$tablename." (".implode(",",$names).") ";
