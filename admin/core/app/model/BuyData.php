@@ -21,8 +21,8 @@ class BuyData {
 	}
 
 	public function getStatus(){ return StatusData::getById($this->status_id);}
-	public function getClient(){ return ClientData::getById($this->client_id);}
-	public function getPaymethod(){ return PaymethodData::getById($this->paymethod_id);}
+	public function getClient(){ return ($this->client_id && intval($this->client_id)>0) ? ClientData::getById($this->client_id) : null; }
+	public function getPaymethod(){ return ($this->paymethod_id && intval($this->paymethod_id)>0) ? PaymethodData::getById($this->paymethod_id) : null; }
 	public function getDeliveryZone(){ return $this->delivery_zone_id ? DeliveryZoneData::getById($this->delivery_zone_id) : null; }
 	public function getSede(){ return $this->sede_id ? SedeData::getById($this->sede_id) : null; }
 

@@ -469,18 +469,20 @@ $sys_open = $sys_active!="" ? " show" : "";
           }).fail(function(){});
         }
         // Estado recordado entre consultas para detectar avisos nuevos.
-        // Se persiste el último id de pedido visto en sessionStorage para que,
-        // si el admin recarga la página dentro de la misma sesión de navegador,
-        // los pedidos NUEVOS (con id mayor) sigan notificándose con sonido.
+        // Se persiste el último id de pedido visto (localStorage compartido entre
+        // pestañas/sesiones, con respaldo en sessionStorage) para que, si el admin
+        // recarga la página o la reabre más tarde, los pedidos NUEVOS (con id mayor)
+        // sigan notificándose con sonido.
         var _seenOrders = [];
         var _seenPend = [];
         var _totalPrev = -1;
         var _first = true;
         var _lastSeenId = 0;
         try{
-          _lastSeenId = parseInt(sessionStorage.getItem("blissfull_last_buy_id") || "0", 10) || 0;
+          _lastSeenId = parseInt(localStorage.getItem("blissfull_last_buy_id") || sessionStorage.getItem("blissfull_last_buy_id") || "0", 10) || 0;
         }catch(e){}
         function trackLastSeenId(){
+          try{ localStorage.setItem("blissfull_last_buy_id", String(_lastSeenId)); }catch(e){}
           try{ sessionStorage.setItem("blissfull_last_buy_id", String(_lastSeenId)); }catch(e){}
         }
 
