@@ -1078,6 +1078,10 @@ function confirmExtras() {
   } else {
     const ingIdx = [];
     $(".ing-opt input:checked").each(function(){ ingIdx.push(parseInt($(this).data("idx"))); });
+    if (pendingFreeExtra > 0 && ingIdx.length < pendingFreeExtra) {
+      Swal.fire({ icon: "warning", title: "Elige tus ingredientes gratis", text: "Esta pizza incluye " + pendingFreeExtra + " ingredientes gratuitos. Selecciona al menos " + pendingFreeExtra + " antes de continuar.", confirmButtonColor: "#b87e38" });
+      return;
+    }
     for (let i = 0; i < ingIdx.length; i++) {
       const e = pendingIngredients[ingIdx[i]];
       if (!e) { continue; }
