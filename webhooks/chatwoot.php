@@ -43,7 +43,15 @@ if($event !== "message_created"){
 }
 
 $conversation_id = isset($data["conversation"]["id"]) ? intval($data["conversation"]["id"]) : 0;
-$message_type    = isset($data["message_type"]) ? intval($data["message_type"]) : -1;
+$mt_raw          = isset($data["message_type"]) ? $data["message_type"] : -1;
+if(is_string($mt_raw)){
+	$mt_raw = strtolower(trim($mt_raw));
+	if($mt_raw === "incoming"){ $message_type = 0; }
+	elseif($mt_raw === "outgoing"){ $message_type = 1; }
+	else { $message_type = -1; }
+} else {
+	$message_type = intval($mt_raw);
+}
 $content         = isset($data["content"]) ? strval($data["content"]) : "";
 $contact_id      = isset($data["sender"]["id"]) ? intval($data["sender"]["id"]) : "";
 

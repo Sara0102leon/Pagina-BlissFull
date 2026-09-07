@@ -80,6 +80,9 @@ class ChatwootData {
 		if(preg_match('/#([A-Za-z0-9_-]{11})/', $content, $m)){
 			return $m[1];
 		}
+		if(preg_match('/c[oó]digo[:\s*]*([A-Za-z0-9_-]{11})/iu', $content, $m)){
+			return $m[1];
+		}
 		return null;
 	}
 
