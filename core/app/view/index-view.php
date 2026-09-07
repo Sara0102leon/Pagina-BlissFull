@@ -274,6 +274,7 @@ foreach($horario_keys as $hk){
             <div class="d-flex justify-content-between mb-1">
               <span class="text-muted">Delivery</span><span id="ck_delivery">$0.00</span>
             </div>
+            <div id="ck_delivery_note" class="small text-gold mb-1" style="display:none"></div>
             <hr class="my-2">
             <div class="d-flex justify-content-between fw-bold h5 mb-1">
               <span>TOTAL (US$)</span><span id="ck_total">$0.00</span>
@@ -1190,6 +1191,16 @@ function updateCheckoutUI() {
 
   $("#ck_subtotal").text(fmt(t.subtotal));
   $("#ck_delivery").text(delivery ? fmt(t.delivery) : (inStore ? "—" : "Comer/Recoger en sucursal"));
+  if (delivery) {
+    const dcount = deliveryCount(getCartItems());
+    if (dcount > 1) {
+      $("#ck_delivery_note").text("× " + dcount + " entregas: cada 3 pizzas gigantes requieren 1 entrega extra").show();
+    } else {
+      $("#ck_delivery_note").hide();
+    }
+  } else {
+    $("#ck_delivery_note").hide();
+  }
   $("#ck_total").text(fmt(t.total));
   $("#ck_total_bs").text(bcvRate > 0 ? fmtBs(t.total * bcvRate) : "Bs a confirmar");
 
@@ -1241,7 +1252,7 @@ function giantDeliveriesNote(items) {
   const giant = giantPizzaTotal(items);
   if (giant > 3) {
     const d = Math.ceil(giant / 3);
-    return "*Entregas:* " + d + " (" + giant + " pizzas gigantes, cada 3 por entrega)\n";
+    return "*Entregas:* " + d + " entregas — cada 3 pizzas gigantes equivalen a 1 entrega, por lo que el delivery se multiplica por " + d + ".\n";
   }
   return "";
 }
@@ -1513,7 +1524,8 @@ $(document).ready(function() {
       if(delivery){
         msg += "*Dirección:* " + address + "\n";
         msg += "*Zona:* " + zoneName + "\n";
-        msg += "*Delivery:* " + fmt(t.delivery) + "\n";
+        const dcount = deliveryCount(items);
+        msg += "*Delivery:* " + fmt(t.delivery) + (dcount > 1 ? " (" + dcount + " entregas × " + fmt(t.delivery / dcount) + " c/u)" : "") + "\n";
       } else {
         msg += "*Entrega:* " + orderModeLabel + "\n";
       }
