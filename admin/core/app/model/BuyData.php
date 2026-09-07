@@ -158,12 +158,27 @@ class BuyData {
 	public  function getTotal(){
 		$products = BuyProductData::getAllByBuyId($this->id);
 		$total=0;
+		$giant=0;
+		$zone = $this->getDeliveryZone();
+		$isDelivery = ($zone != null);
 		foreach ($products as $px) {
 			$p = ProductData::getById($px->product_id);
-			$total+=(ProductData::getEffectivePrice($p) + $px->getExtrasTotal())*$px->q;
+			if(!$p){ continue; }
+			$price = ProductData::getEffectivePrice($p);
+			$price_llevar = ProductData::offerActive($p) ? $price : floatval($p->price_llevar);
+			$unit = ($isDelivery && $price_llevar > 0) ? $price_llevar : $price;
+			$total += ($unit + $px->getExtrasTotal()) * $px->q;
+			if(intval($p->category_id) === 2){ $giant += intval($px->q); }
 		}
-		$zone = $this->getDeliveryZone();
-		if($zone){ $total += floatval($zone->price); }
+		if($zone){
+			$deliveries = $giant > 3 ? intval(ceil($giant / 3)) : 1;
+			$zonePrice = floatval($zone->price);
+			if($this->sede_id && $this->delivery_zone_id){
+				$sedePrice = SedeDeliveryZoneData::getPrice($this->sede_id, $this->delivery_zone_id);
+				if($sedePrice !== null){ $zonePrice = $sedePrice; }
+			}
+			$total += $zonePrice * $deliveries;
+		}
 		return $total;
 	}
 
