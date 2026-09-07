@@ -280,11 +280,42 @@ class ChatwootData {
 	}
 
 	// ------------------------------------------------------------
-	// Envío de mensaje a una conversación via API de Chatwoot
+	// Activa/desactiva el indicador "escribiendo..." en la conversación
+	// ------------------------------------------------------------
+	public static function toggleTyping($conversationId, $status){
+		$token = self::accessToken();
+		if($token==="" || !$conversationId){ return false; }
+		$url = self::baseUrl()."/api/v1/accounts/".self::accountId()."/conversations/".$conversationId."/toggle_typing_status";
+		$data = json_encode(array("typing_status"=>$status));
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+			"Content-Type: application/json",
+			"api_access_token: ".$token
+		));
+		curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+		curl_exec($ch);
+		curl_close($ch);
+		return true;
+	}
+
+	// ------------------------------------------------------------
+	// Envío de mensaje a una conversación via API de Chatwoot.
+	// Simula "escribiendo" y espera un tiempo proporcional a la
+	// longitud para evitar baneos por envíos automatizados de WhatsApp.
 	// ------------------------------------------------------------
 	public static function sendMessage($conversationId, $content){
 		$token = self::accessToken();
 		if($token==="" || !$conversationId){ return false; }
+
+		// Indicador "escribiendo..." y pausa humana (min 1.2s, max 4s)
+		self::toggleTyping($conversationId, "on");
+		$chars = mb_strlen((string)$content);
+		$delay = min(4.0, max(1.2, $chars * 0.05));
+		usleep(intval($delay * 1000000));
+
 		$url = self::baseUrl()."/api/v1/accounts/".self::accountId()."/conversations/".$conversationId."/messages";
 		$data = json_encode(array("content"=>$content));
 
@@ -300,6 +331,8 @@ class ChatwootData {
 		$resp = curl_exec($ch);
 		$http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
+
+		self::toggleTyping($conversationId, "off");
 		return ($http>=200 && $http<300);
 	}
 

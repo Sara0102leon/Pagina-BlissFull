@@ -12,32 +12,36 @@ $token = isset($_GET["token"]) ? htmlspecialchars($_GET["token"]) : "";
 <title>Blissfull Ventas</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f5f1EA;color:#1a0004;font-size:13px}
+body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:radial-gradient(ellipse at 50% 20%,#1c1210 0%,#0d0a09 65%,#000 100%);color:#ffffff;font-size:13px;min-height:100vh}
 .wrap{padding:12px}
-h1{font-size:14px;margin:0 0 10px;color:#b87e38;text-transform:uppercase;letter-spacing:.5px}
-.card{background:#fff;border:1px solid #e4dfd5;border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.row{display:flex;justify-content:space-between;padding:3px 0}
-.row .k{color:#8a7f6d}
-.row .v{font-weight:600;text-align:right;max-width:62%}
-.badge{display:inline-block;padding:3px 9px;border-radius:999px;color:#fff;font-weight:600;font-size:12px}
-.b-1{background:#f0ad4e}.b-2{background:#e0a96d}.b-3{background:#d9534f}.b-4{background:#0275d8}.b-5{background:#5cb85c}
-.empty{color:#8a7f6d;font-style:italic;text-align:center;padding:14px 0}
-.buttons{display:flex;flex-direction:column;gap:6px}
-.btn{display:block;width:100%;padding:9px;border:none;border-radius:6px;color:#fff;font-weight:700;font-size:13px;cursor:pointer}
+h1{font-family:'Bebas Neue','Outfit',sans-serif;font-size:18px;margin:0 0 10px;color:#e0a96d;text-transform:uppercase;letter-spacing:1.5px}
+.card{background:rgba(5,5,5,0.85);border:1px solid rgba(184,126,56,0.35);border-radius:12px;padding:12px;margin-bottom:10px;box-shadow:0 8px 22px rgba(0,0,0,.35)}
+.row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(184,126,56,0.18)}
+.row:last-child{border-bottom:none}
+.row .k{color:rgba(255,255,255,0.62)}
+.row .v{font-weight:600;text-align:right;max-width:62%;color:#ffffff;word-break:break-word}
+.row .v code{color:#e0a96d}
+.row .v a{color:#e0a96d;text-decoration:none}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;color:#000;font-weight:700;font-size:11px}
+.b-1{background:#f0ad4e}.b-2{background:#e0a96d}.b-3{background:#e63946;color:#fff}.b-4{background:#0275d8;color:#fff}.b-5{background:#5cb85c}
+.empty{color:rgba(255,255,255,0.62);font-style:italic;text-align:center;padding:16px 0}
+.buttons{display:flex;flex-direction:column;gap:8px}
+.btn{display:block;width:100%;padding:11px;border:none;border-radius:10px;color:#000;font-weight:800;font-size:13px;cursor:pointer;background:linear-gradient(135deg,#e0a96d,#b87e38);letter-spacing:.3px}
 .btn:disabled{opacity:.45;cursor:not-allowed}
-.btn:hover:not(:disabled){filter:brightness(.94)}
-.btn-paid{background:#5cb85c}
-.btn-ship{background:#0275d8}
-.btn-cancel{background:#d9534f}
-.note{font-size:11px;color:#8a7f6d;text-align:center;margin-top:8px}
+.btn:hover:not(:disabled){filter:brightness(1.08)}
+.btn-paid{background:linear-gradient(135deg,#e0a96d,#b87e38)}
+.btn-ship{background:linear-gradient(135deg,#e0a96d,#b87e38)}
+.btn-cancel{background:#e63946;color:#fff}
+.note{font-size:11px;color:rgba(255,255,255,0.5);text-align:center;margin-top:8px}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
-.cfg-toggle{display:block;width:100%;padding:9px;border:none;border-radius:6px;background:#e9e2d6;color:#7a5a2a;font-weight:700;font-size:13px;cursor:pointer;text-align:left}
+.cfg-toggle{display:block;width:100%;padding:10px;border:none;border-radius:8px;background:rgba(184,126,56,0.15);color:#e0a96d;font-weight:700;font-size:13px;cursor:pointer;text-align:left}
 .cfg-body{margin-top:10px}
-.cfg-label{display:block;font-size:12px;color:#8a7f6d;margin-bottom:4px}
-.cfg-msg{width:100%;min-height:80px;padding:8px;border:1px solid #e4dfd5;border-radius:6px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box}
-.cfg-hint{font-size:11px;color:#8a7f6d;margin:4px 0 8px}
-.btn-save{background:#b87e38}
+.cfg-label{display:block;font-size:12px;color:rgba(255,255,255,0.62);margin-bottom:4px}
+.cfg-msg{width:100%;min-height:80px;padding:8px;border:1px solid rgba(184,126,56,0.35);border-radius:8px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box;background:#0d0a09;color:#ffffff}
+.cfg-hint{font-size:11px;color:rgba(255,255,255,0.5);margin:4px 0 8px}
+.cfg-hint code{color:#e0a96d}
+.btn-save{background:linear-gradient(135deg,#e0a96d,#b87e38)}
 </style>
 </head>
 <body>

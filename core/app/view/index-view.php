@@ -1143,7 +1143,7 @@ function computeTotals(items, delivery, deliveryPrice) {
     (it.bebidas || []).forEach(function(b){ unit += parseFloat(b.precio); });
     subtotal += unit * it.q;
   });
-  const deliveryCost = delivery ? deliveryPrice : 0;
+  const deliveryCost = delivery ? deliveryPrice * deliveryCount(items) : 0;
   return { subtotal: subtotal, delivery: deliveryCost, total: subtotal + deliveryCost };
 }
 
@@ -1224,11 +1224,21 @@ function itemsWhatsAppText(items, delivery) {
   return lines.join("");
 }
 
-function giantDeliveriesNote(items) {
+function giantPizzaTotal(items) {
   let giant = 0;
   (items || []).forEach(function(it){
     if (parseInt(it.category_id, 10) === 2) { giant += parseInt(it.q, 10) || 0; }
   });
+  return giant;
+}
+
+function deliveryCount(items) {
+  const giant = giantPizzaTotal(items);
+  return giant > 3 ? Math.ceil(giant / 3) : 1;
+}
+
+function giantDeliveriesNote(items) {
+  const giant = giantPizzaTotal(items);
   if (giant > 3) {
     const d = Math.ceil(giant / 3);
     return "*Entregas:* " + d + " (" + giant + " pizzas gigantes, cada 3 por entrega)\n";
