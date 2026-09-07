@@ -61,6 +61,7 @@ h1{font-family:'Bebas Neue','Outfit',sans-serif;font-size:18px;margin:0 0 10px;c
 <script>
 var API = "./chatwoot-app-api.php?token=" + encodeURIComponent(<?php echo json_encode($token); ?>);
 var conversationId = null;
+var lastSaleKey = null;
 
 function statusBadge(s){
   var map = {1:"Pendiente",2:"Pagado",3:"Cancelado",4:"Enviado",5:"Finalizado"};
@@ -73,6 +74,7 @@ function field(k,v){
 }
 
 function renderSale(s){
+  lastSaleKey = s.id + ':' + s.status;
   var linkedButtons = '';
   var isDelivery = s.zona || s.address;
   if(s.status === 1){
@@ -134,15 +136,31 @@ function doStatus(kw, btn){
 }
 
 function loadInfo(){
-  if(!conversationId){ document.getElementById('content').innerHTML='<div class="empty">Sin conversación.</div>'; return; }
+  if(!conversationId){
+    if(lastSaleKey !== 'noconv'){
+      lastSaleKey = 'noconv';
+      document.getElementById('content').innerHTML='<div class="empty">Sin conversación.</div>';
+    }
+    return;
+  }
   fetch(API + '&action=info&id=' + conversationId)
     .then(function(r){ return r.json(); })
     .then(function(j){
-      if(j && j.linked && j.sale){ renderSale(j.sale); }
-      else { document.getElementById('content').innerHTML = '<div class="empty">' + (j.message||'Sin venta vinculada para esta conversación.') + '</div>'; }
+      if(j && j.linked && j.sale){
+        var key = j.sale.id + ':' + j.sale.status;
+        if(key !== lastSaleKey){ renderSale(j.sale); }
+      } else {
+        if(lastSaleKey !== 'empty'){
+          lastSaleKey = 'empty';
+          document.getElementById('content').innerHTML = '<div class="empty">' + (j && j.message ? j.message : 'Sin venta vinculada para esta conversación.') + '</div>';
+        }
+      }
     })
-    .catch(function(){ document.getElementById('content').innerHTML='<div class="empty">Error al consultar.</div>'; });
+    .catch(function(){});
 }
+
+// Refresco automático: detecta pedidos nuevos vinculados a la conversación
+setInterval(loadInfo, 4000);
 
 // Handshake con Chatwoot: pedimos el appContext
 function handleMessage(event){
