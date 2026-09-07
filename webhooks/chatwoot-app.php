@@ -62,8 +62,7 @@ function renderSale(s){
       '<button class="btn btn-cancel" data-kw="cancelado">✕ Cancelar</button>';
   } else if(s.status === 2){
     linkedButtons =
-      '<button class="btn btn-ship" data-kw="enviado">🚚 Marcar Enviado</button>' +
-      '<button class="btn btn-paid" data-kw="finalizado">✓ Finalizar</button>';
+      '<button class="btn btn-ship" data-kw="enviado">🚚 Marcar Enviado</button>';
   }
   var maps = s.sede_maps
     ? '<a href="'+s.sede_maps+'" target="_blank" rel="noopener">Ver en Google Maps ↗</a>'

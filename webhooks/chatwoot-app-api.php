@@ -48,7 +48,7 @@ if($action === "status"){
 		echo json_encode(array("ok"=>false,"error"=>"invalid status"));
 		exit;
 	}
-	$res = ChatwootData::applyTransition($buy, $keyword);
+	$res = ChatwootData::applyTransition($buy, $keyword, $id);
 	$res["sale"] = ChatwootData::saleInfo($buy);
 	echo json_encode(array_merge(array("ok"=>true), $res));
 	exit;

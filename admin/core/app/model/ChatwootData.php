@@ -122,7 +122,7 @@ class ChatwootData {
 	// Aplica una transición de estado a un buy según keyword/acción.
 	// Retorna: array(status, changed, group_sent)
 	// ------------------------------------------------------------
-	public static function applyTransition($buy, $keyword){
+	public static function applyTransition($buy, $keyword, $conversationId=null){
 		$cur = intval($buy->status_id);
 		$changed = false;
 		$group_sent = false;
@@ -134,18 +134,37 @@ class ChatwootData {
 					$buy->change_status();
 					$changed = true;
 					// Resumen de entrega al grupo de delivery de la sede
-					$sede = $buy->getSede();
-					$group_id = $sede ? $sede->chatwoot_group_conversation_id : null;
-					if($group_id){
-						$group_sent = self::sendMessage($group_id, self::buildGroupMessage($buy));
+					$dest = self::deliveryTarget($buy);
+					if($dest){
+						$group_sent = self::sendMessage($dest, self::buildGroupMessage($buy));
 					}
 				}
 				break;
 
 			case "enviado":
-				if($cur >= 2 && $cur !== 5){
-					$buy->cascadeToFinal();
+				if($cur === 2){
+					// Enviado
+					$buy->status_id = 4;
+					$buy->change_status();
 					$changed = true;
+					// Mensaje editable al cliente en su propio chat
+					$conv = ($conversationId !== null && intval($conversationId) > 0)
+						? intval($conversationId)
+						: intval($buy->chatwoot_conversation_id);
+					if($conv){
+						$msg = self::getConfig("general_chatwoot_msg_enviado",
+							"Tu pedido #".$buy->code." ha sido enviado. ¡Gracias por tu compra!");
+						$msg = str_replace("#CODIGO", $buy->code, $msg);
+						self::sendMessage($conv, $msg);
+					}
+					// Aviso de entrega al grupo de delivery
+					$dest = self::deliveryTarget($buy);
+					if($dest){
+						$group_sent = self::sendMessage($dest, self::buildGroupMessage($buy));
+					}
+					// Autocompletado
+					$buy->status_id = 5;
+					$buy->change_status();
 				}
 				break;
 
@@ -167,6 +186,19 @@ class ChatwootData {
 		}
 
 		return array("status"=>intval($buy->status_id), "changed"=>$changed, "group_sent"=>$group_sent);
+	}
+
+	// ------------------------------------------------------------
+	// Destino del aviso de delivery: prioriza el grupo por sede;
+	// si no existe, usa la configuración temporal general.
+	// ------------------------------------------------------------
+	public static function deliveryTarget($buy){
+		$sede = $buy->getSede();
+		if($sede && !empty($sede->chatwoot_group_conversation_id)){
+			return $sede->chatwoot_group_conversation_id;
+		}
+		$fallback = self::getConfig("general_chatwoot_delivery_conversation_id", "");
+		return ($fallback !== "") ? $fallback : null;
 	}
 
 	// ------------------------------------------------------------
