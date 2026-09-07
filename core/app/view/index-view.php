@@ -1224,6 +1224,18 @@ function itemsWhatsAppText(items, delivery) {
   return lines.join("");
 }
 
+function giantDeliveriesNote(items) {
+  let giant = 0;
+  (items || []).forEach(function(it){
+    if (parseInt(it.category_id, 10) === 2) { giant += parseInt(it.q, 10) || 0; }
+  });
+  if (giant > 3) {
+    const d = Math.ceil(giant / 3);
+    return "*Entregas:* " + d + " (" + giant + " pizzas gigantes, cada 3 por entrega)\n";
+  }
+  return "";
+}
+
 $(document).ready(function() {
   // Hero "PEDIR AHORA" smooth scroll
   $("#btn-go-menu").on("click", function(e) {
@@ -1501,6 +1513,7 @@ $(document).ready(function() {
       msg += "*Pago:* " + paymethodName + "\n\n";
       if(note){ msg += "*Nota:* " + note + "\n"; }
       msg += "*Productos:*\n" + itemsWhatsAppText(items, delivery);
+      msg += giantDeliveriesNote(items);
       msg += "\n*SUBTOTAL (US$): " + fmt(t.subtotal) + "*\n";
       msg += "*TOTAL (US$): " + fmt(t.total) + "*\n";
       msg += "*TOTAL (Bs): " + (bcvRate > 0 ? fmtBs(t.total * bcvRate) : "a confirmar") + "*\n";

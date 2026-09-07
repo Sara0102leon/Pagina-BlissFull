@@ -32,12 +32,27 @@ h1{font-size:14px;margin:0 0 10px;color:#b87e38;text-transform:uppercase;letter-
 .note{font-size:11px;color:#8a7f6d;text-align:center;margin-top:8px}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
+.cfg-toggle{display:block;width:100%;padding:9px;border:none;border-radius:6px;background:#e9e2d6;color:#7a5a2a;font-weight:700;font-size:13px;cursor:pointer;text-align:left}
+.cfg-body{margin-top:10px}
+.cfg-label{display:block;font-size:12px;color:#8a7f6d;margin-bottom:4px}
+.cfg-msg{width:100%;min-height:80px;padding:8px;border:1px solid #e4dfd5;border-radius:6px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box}
+.cfg-hint{font-size:11px;color:#8a7f6d;margin:4px 0 8px}
+.btn-save{background:#b87e38}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Blissfull · Ventas</h1>
   <div id="content"><div class="empty"><span class="spin"></span> Cargando…</div></div>
+  <div class="card">
+    <button type="button" class="cfg-toggle" id="cfg-toggle">⚙️ Configurar mensaje de envío</button>
+    <div class="cfg-body" id="cfg-body" style="display:none">
+      <label class="cfg-label">Mensaje que se envía al cliente al marcar Enviado</label>
+      <textarea class="cfg-msg" id="cfg-msg" rows="4"></textarea>
+      <div class="cfg-hint">Usa <code>#CODIGO</code> para insertar el código del pedido.</div>
+      <button type="button" class="btn btn-save" id="cfg-save">Guardar mensaje</button>
+    </div>
+  </div>
 </div>
 <script>
 var API = "./chatwoot-app-api.php?token=" + encodeURIComponent(<?php echo json_encode($token); ?>);
@@ -141,6 +156,52 @@ function handleMessage(event){
 }
 window.addEventListener('message', handleMessage);
 window.parent.postMessage('chatwoot-dashboard-app:fetch-info', '*');
+
+// ---------- Configuración del mensaje de envío ----------
+function loadConfig(){
+  fetch(API + '&action=config')
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if(j && j.ok){ document.getElementById('cfg-msg').value = j.msg_enviado || ''; }
+    })
+    .catch(function(){});
+}
+
+function saveConfig(){
+  var btn = document.getElementById('cfg-save');
+  var msg = document.getElementById('cfg-msg').value;
+  var original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Guardando…';
+  fetch(API + '&action=save_config', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: 'msg=' + encodeURIComponent(msg)
+  })
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      btn.disabled = false;
+      btn.innerHTML = original;
+      if(j && j.ok){ document.getElementById('cfg-msg').value = j.msg_enviado || msg; alert('Mensaje guardado.'); }
+      else { alert('No se pudo guardar. ' + (j && j.error ? j.error : '')); }
+    })
+    .catch(function(){
+      btn.disabled = false;
+      btn.innerHTML = original;
+      alert('Error de red. Intenta de nuevo.');
+    });
+}
+
+document.getElementById('cfg-toggle').addEventListener('click', function(){
+  var body = document.getElementById('cfg-body');
+  if(body.style.display === 'none'){
+    body.style.display = 'block';
+    loadConfig();
+  } else {
+    body.style.display = 'none';
+  }
+});
+document.getElementById('cfg-save').addEventListener('click', saveConfig);
 </script>
 </body>
 </html>

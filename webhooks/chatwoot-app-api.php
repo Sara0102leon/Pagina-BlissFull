@@ -5,6 +5,8 @@
 //   ?action=info&id=<conversation_display_id>     -> info de venta vinculada
 //   ?action=status&id=<conversation_display_id>&status=<keyword>
 //         keyword: pago_recibido | enviado | finalizado | cancelado
+//   ?action=config                                -> mensaje editable actual
+//   ?action=save_config  (POST msg=...)           -> guardar mensaje editable
 
 require_once __DIR__ . "/_bootstrap.php";
 
@@ -18,6 +20,28 @@ if(ChatwootData::appToken()==="" || $token !== ChatwootData::appToken()){
 }
 
 $action = isset($_GET["action"]) ? $_GET["action"] : "";
+
+// ---------- CONFIG (mensaje editable) ----------
+if($action === "config"){
+	echo json_encode(array(
+		"ok"=>true,
+		"msg_enviado"=>ChatwootData::getConfig("general_chatwoot_msg_enviado",
+			"Tu pedido #CODIGO ha sido enviado. ¡Gracias por tu compra!")
+	));
+	exit;
+}
+
+if($action === "save_config"){
+	$msg = isset($_POST["msg"]) ? $_POST["msg"] : (isset($_GET["msg"]) ? $_GET["msg"] : null);
+	if($msg === null){
+		echo json_encode(array("ok"=>false,"error"=>"no msg"));
+		exit;
+	}
+	ConfigurationData::updateValFromName("general_chatwoot_msg_enviado", trim($msg));
+	echo json_encode(array("ok"=>true,"msg_enviado"=>trim($msg)));
+	exit;
+}
+
 $id = isset($_GET["id"]) ? intval($_GET["id"]) : 0;
 
 if(!$id){

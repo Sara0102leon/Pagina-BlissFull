@@ -93,7 +93,6 @@ class ChatwootData {
 		$sede = $buy->getSede();
 		$client = $buy->getClient();
 		$paymethod = $buy->getPaymethod();
-		$coin = ConfigurationData::getByPreffix("general_coin")->val;
 
 		$lines = array();
 		$lines[] = "PEDIDO PAGADO - ALIANZAS BLISSFUL";
@@ -113,12 +112,88 @@ class ChatwootData {
 		if(!empty($buy->scheduled_at)){
 			$lines[] = "Programado: ".date("d/m/Y h:i A", strtotime($buy->scheduled_at));
 		}
+
+		$productLines = self::buildProductsLines($buy);
+		if(count($productLines) > 0){
+			$lines[] = "------------------------------------";
+			$lines[] = "Productos:";
+			foreach($productLines as $pl){ $lines[] = $pl; }
+		}
+
+		$giant = self::giantPizzaCount($buy);
+		if($giant > 3){
+			$deliveries = intval(ceil($giant / 3));
+			$lines[] = "Entregas: ".$deliveries." (".$giant." pizzas gigantes, cada 3 por entrega)";
+		}
+
 		$lines[] = "Pago: ".($paymethod?$paymethod->name:"-");
-		$lines[] = "Total: ".$coin." ".number_format($buy->getTotal(),2,".",",");
 		if(!empty($buy->note)){
 			$lines[] = "Nota: ".$buy->note;
 		}
 		return implode("\n", $lines);
+	}
+
+	// ------------------------------------------------------------
+	// Cuenta el total de pizzas gigantes (categoria 2) del pedido
+	// ------------------------------------------------------------
+	public static function giantPizzaCount($buy){
+		$count = 0;
+		foreach(BuyProductData::getAllByBuyId($buy->id) as $bp){
+			$p = $bp->getProduct();
+			if($p && intval($p->category_id) === 2){
+				$count += intval($bp->q);
+			}
+		}
+		return $count;
+	}
+
+	// ------------------------------------------------------------
+	// Lista de productos SIN precios. Las pizzas gigantes se
+	// particionan en entregas de 3 cuando son mas de 3.
+	// ------------------------------------------------------------
+	public static function buildProductsLines($buy){
+		$others = array();
+		$giantNames = array();
+
+		foreach(BuyProductData::getAllByBuyId($buy->id) as $bp){
+			$p = $bp->getProduct();
+			if(!$p){ continue; }
+			$q = intval($bp->q);
+			if($q <= 0){ continue; }
+			if(intval($p->category_id) === 2){
+				$giantNames[$p->name] = (isset($giantNames[$p->name]) ? $giantNames[$p->name] : 0) + $q;
+			} else {
+				$others[$p->name] = (isset($others[$p->name]) ? $others[$p->name] : 0) + $q;
+			}
+		}
+
+		$lines = array();
+		foreach($others as $name => $q){
+			$lines[] = "- ".$q." x ".$name;
+		}
+
+		$giantTotal = array_sum($giantNames);
+		if($giantTotal > 0){
+			if($giantTotal <= 3){
+				foreach($giantNames as $name => $q){
+					$lines[] = "- ".$q." x ".$name;
+				}
+			} else {
+				$flat = array();
+				foreach($giantNames as $name => $q){
+					for($i = 0; $i < $q; $i++){ $flat[] = $name; }
+				}
+				$chunks = array_chunk($flat, 3);
+				foreach($chunks as $idx => $chunk){
+					$counts = array_count_values($chunk);
+					$parts = array();
+					foreach($counts as $n => $c){ $parts[] = $c." x ".$n; }
+					$lines[] = "- Entrega ".($idx + 1).": ".implode(", ", $parts);
+				}
+			}
+		}
+
+		return $lines;
 	}
 
 	// ------------------------------------------------------------
@@ -157,7 +232,7 @@ class ChatwootData {
 					if($conv){
 						$msg = self::getConfig("general_chatwoot_msg_enviado",
 							"Tu pedido #".$buy->code." ha sido enviado. ¡Gracias por tu compra!");
-						$msg = str_replace("#CODIGO", $buy->code, $msg);
+						$msg = str_ireplace("#CODIGO", $buy->code, $msg);
 						self::sendMessage($conv, $msg);
 					}
 					// Aviso de entrega al grupo de delivery

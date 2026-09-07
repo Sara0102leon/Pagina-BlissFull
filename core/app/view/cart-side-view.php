@@ -48,6 +48,7 @@ if(isset($_SESSION["cart"])){
             "q"=>intval($s["q"]),
             "price"=>ProductData::getEffectivePrice($p),
             "price_llevar"=>ProductData::offerActive($p) ? ProductData::getEffectivePrice($p) : floatval($p->price_llevar),
+            "category_id"=>intval($p->category_id),
             "extras"=>isset($s["extras"])?$s["extras"]:array(),
             "bebidas"=>isset($s["bebidas"])?$s["bebidas"]:array()
           );
