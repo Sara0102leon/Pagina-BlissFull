@@ -43,6 +43,7 @@ h1{font-family:'Bebas Neue','Outfit',sans-serif;font-size:18px;margin:0 0 10px;c
 .cfg-hint code{color:#e0a96d}
 .btn-save{background:linear-gradient(135deg,#e0a96d,#b87e38)}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 <div class="wrap">
@@ -62,6 +63,20 @@ h1{font-family:'Bebas Neue','Outfit',sans-serif;font-size:18px;margin:0 0 10px;c
 var API = "./chatwoot-app-api.php?token=" + encodeURIComponent(<?php echo json_encode($token); ?>);
 var conversationId = null;
 var lastSaleKey = null;
+
+function toast(icon, title){
+  Swal.fire({
+    toast: true,
+    position: "top-end",
+    showConfirmButton: false,
+    timer: 2500,
+    timerProgressBar: true,
+    icon: icon,
+    title: title,
+    background: "#0d0a09",
+    color: "#ffffff"
+  });
+}
 
 function statusBadge(s){
   var map = {1:"Pendiente",2:"Pagado",3:"Cancelado",4:"Enviado",5:"Finalizado"};
@@ -121,17 +136,17 @@ function doStatus(kw, btn){
   fetch(API + '&action=status&id=' + conversationId + '&status=' + kw)
     .then(function(r){ return r.json(); })
     .then(function(j){
-      if(j && j.ok && j.sale){ renderSale(j.sale); }
+      if(j && j.ok && j.sale){ renderSale(j.sale); toast('success', (j.label || 'Venta actualizada.')); }
       else {
         btn.disabled = false;
         btn.innerHTML = original;
-        alert('No se pudo actualizar. ' + (j && j.error ? j.error : ''));
+        toast('error', 'No se pudo actualizar. ' + (j && j.error ? j.error : ''));
       }
     })
     .catch(function(){
       btn.disabled = false;
       btn.innerHTML = original;
-      alert('Error de red. Intenta de nuevo.');
+      toast('error', 'Error de red. Intenta de nuevo.');
     });
 }
 
@@ -204,13 +219,13 @@ function saveConfig(){
     .then(function(j){
       btn.disabled = false;
       btn.innerHTML = original;
-      if(j && j.ok){ document.getElementById('cfg-msg').value = j.msg_enviado || msg; alert('Mensaje guardado.'); }
-      else { alert('No se pudo guardar. ' + (j && j.error ? j.error : '')); }
+      if(j && j.ok){ document.getElementById('cfg-msg').value = j.msg_enviado || msg; toast('success', 'Mensaje guardado.'); }
+      else { toast('error', 'No se pudo guardar. ' + (j && j.error ? j.error : '')); }
     })
     .catch(function(){
       btn.disabled = false;
       btn.innerHTML = original;
-      alert('Error de red. Intenta de nuevo.');
+      toast('error', 'Error de red. Intenta de nuevo.');
     });
 }
 

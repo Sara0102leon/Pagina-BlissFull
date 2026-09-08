@@ -74,7 +74,8 @@ if($action === "status"){
 	}
 	$res = ChatwootData::applyTransition($buy, $keyword, $id);
 	$res["sale"] = ChatwootData::saleInfo($buy);
-	echo json_encode(array_merge(array("ok"=>true), $res));
+	$labels = array("pago_recibido"=>"Marcado como Pagado","enviado"=>"Marcado como Enviado","finalizado"=>"Marcado como Finalizado","cancelado"=>"Pedido cancelado");
+	echo json_encode(array_merge(array("ok"=>true,"label"=>$labels[$keyword]), $res));
 	exit;
 }
 
