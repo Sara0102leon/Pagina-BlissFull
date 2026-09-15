@@ -402,6 +402,26 @@ body.admin-jobie {
   box-shadow: 0 0 0 0.25rem rgba(139, 21, 56, 0.14);
   color: var(--bl-gold-light);
 }
+/* Switches: verde cuando están activos */
+.app-content .form-switch .form-check-input:checked {
+  background-color: #2fb344;
+  border-color: #2fb344;
+}
+.app-content .form-switch .form-check-input:focus {
+  border-color: #2fb344;
+  box-shadow: 0 0 0 0.25rem rgba(47, 179, 68, 0.25);
+}
+/* Mini-switch de "Agotado por sede" en Bebidas */
+.app-content .form-switch.form-switch-sm .form-check-input {
+  width: 1.6em;
+  height: 0.9rem;
+  margin-top: 0.2em;
+  background-position: left 0.08rem center;
+  background-size: 0.6rem;
+}
+.app-content .form-switch.form-switch-sm .form-check-input:checked {
+  background-position: left 0.95rem center;
+}
 .app-content .form-label { color: var(--bl-gold-light); }
 .app-content .input-group-text {
   background-color: var(--bl-red-light);

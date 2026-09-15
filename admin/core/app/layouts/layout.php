@@ -27,7 +27,7 @@ $sys_open = $sys_active!="" ? " show" : "";
     <link href="./dist/css/tabler-vendors.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="assets/bootstrap-icons/bootstrap-icons.css">
     <!-- Admin Jobie Style (cargado al final para sobreescribir Tabler) -->
-    <link rel="stylesheet" href="assets/css/admin-custom.css?v=8">
+    <link rel="stylesheet" href="assets/css/admin-custom.css?v=9">
     <!-- Guía interactiva del panel (tour con spotlight) -->
     <link rel="stylesheet" href="assets/css/admin-tour.css?v=3">
     <script src="assets/jquery/jquery.min.js"></script>

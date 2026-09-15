@@ -613,8 +613,7 @@ function tt_beb_agotado_col($b, $all_sedes_beb, $agotado_map){
   $out = "";
   foreach($all_sedes_beb as $sd){
     $chk = isset($agotado_map[intval($b->id)]) && in_array(intval($sd->id), $agotado_map[intval($b->id)]);
-    $out .= '<label class="form-check form-switch d-inline-block mb-0 me-2" title="Agotado en '.htmlspecialchars($sd->name).'">';
-    $out .= '<span class="me-1 small d-block">'.htmlspecialchars($sd->name).'</span>';
+    $out .= '<label class="form-check form-switch form-switch-sm d-inline-block mb-0 me-1" title="'.htmlspecialchars($sd->name).'">';
     $out .= '<input class="form-check-input bebida-agotado" type="checkbox" data-bebida="'.intval($b->id).'" data-sede="'.intval($sd->id).'" '.($chk?"checked":"").'>';
     $out .= '</label>';
   }
@@ -652,10 +651,6 @@ function tt_beb_agotado_col($b, $all_sedes_beb, $agotado_map){
             <label class="form-label">Medida</label>
             <input type="text" name="medida" class="form-control" placeholder="Ej: 1.5 Litros" required>
           </div>
-          <div class="col-md-3">
-            <label class="form-label">Sabores (opcional)</label>
-            <input type="text" name="sabor_options" class="form-control" placeholder="Ej: Uva, Piña, Kolita">
-          </div>
           <div class="col-md-2">
             <label class="form-label">Precio</label>
             <div class="input-group">
@@ -678,7 +673,7 @@ function tt_beb_agotado_col($b, $all_sedes_beb, $agotado_map){
           <div class="col-md-1">
             <button type="submit" class="btn btn-success w-100">Agregar</button>
           </div>
-          <p class="text-muted small mb-0 mt-1 col-12">La pizza gigante incluye <strong>1 refresco gratis de litro y medio</strong>. Marca <strong>Gratis</strong> los que van incluidos (ej: Golden y Up7) y completa sus <strong>Sabores</strong> por si tienen variedad. Los demás refrescos "pagan la diferencia": se cobra <strong>precio − $1.00</strong>.</p>
+          <p class="text-muted small mb-0 mt-1 col-12">La pizza gigante incluye <strong>1 refresco gratis de litro y medio</strong>. Marca <strong>Gratis</strong> los que van incluidos (ej: Golden y Up7). Los demás refrescos "pagan la diferencia": se cobra <strong>precio − $1.00</strong>.</p>
         </form>
       </div>
     </div>
@@ -695,7 +690,6 @@ function tt_beb_agotado_col($b, $all_sedes_beb, $agotado_map){
               <tr>
                 <th>Sabor</th>
                 <th>Medida</th>
-                <th>Sabores</th>
                 <th>Precio</th>
                 <th>Gratis</th>
                 <th>Activa</th>
@@ -708,7 +702,6 @@ function tt_beb_agotado_col($b, $all_sedes_beb, $agotado_map){
               <tr>
                 <td><input type="text" class="form-control" value="<?php echo htmlspecialchars($b->sabor); ?>" data-bebida-sabor="<?php echo $b->id; ?>" required></td>
                 <td><input type="text" class="form-control" value="<?php echo htmlspecialchars($b->medida); ?>" data-bebida-medida="<?php echo $b->id; ?>" required></td>
-                <td style="min-width:180px;"><input type="text" class="form-control" value="<?php echo htmlspecialchars($b->sabor_options); ?>" placeholder="Separados por coma" data-bebida-sabores="<?php echo $b->id; ?>"></td>
                 <td style="min-width:120px;">
                   <div class="input-group">
                     <span class="input-group-text">$</span>
@@ -753,7 +746,6 @@ function tt_beb_agotado_col($b, $all_sedes_beb, $agotado_map){
               <tr>
                 <th>Sabor</th>
                 <th>Medida</th>
-                <th>Sabores</th>
                 <th>Precio</th>
                 <th>Gratis</th>
                 <th>Activa</th>
@@ -766,7 +758,6 @@ function tt_beb_agotado_col($b, $all_sedes_beb, $agotado_map){
               <tr>
                 <td><input type="text" class="form-control" value="<?php echo htmlspecialchars($b->sabor); ?>" data-bebida-sabor="<?php echo $b->id; ?>" required></td>
                 <td><input type="text" class="form-control" value="<?php echo htmlspecialchars($b->medida); ?>" data-bebida-medida="<?php echo $b->id; ?>" required></td>
-                <td style="min-width:180px;"><input type="text" class="form-control" value="<?php echo htmlspecialchars($b->sabor_options); ?>" placeholder="Separados por coma" data-bebida-sabores="<?php echo $b->id; ?>"></td>
                 <td style="min-width:120px;">
                   <div class="input-group">
                     <span class="input-group-text">$</span>
@@ -807,12 +798,11 @@ $(function(){
     var id = $(this).data("id");
     var sabor = $('input[data-bebida-sabor="' + id + '"]').val().trim();
     var medida = $('input[data-bebida-medida="' + id + '"]').val().trim();
-    var sabores = $('input[data-bebida-sabores="' + id + '"]').val().trim();
     var precio = $('input[data-bebida-precio="' + id + '"]').val();
     var gratis = $('.bebida-gratis[data-id="' + id + '"]').is(":checked") ? 1 : 0;
     var act = $('.bebida-active[data-id="' + id + '"]').is(":checked") ? 1 : 0;
     if(sabor === "" || medida === ""){ Swal.fire({ icon:"warning", title:"Faltan datos", text:"Indica el sabor y la medida." }); return; }
-    $.post("./?action=settings&opt=updbebida", { id: id, sabor: sabor, medida: medida, sabor_options: sabores, precio: precio, es_gratis: gratis, is_active: act })
+    $.post("./?action=settings&opt=updbebida", { id: id, sabor: sabor, medida: medida, precio: precio, es_gratis: gratis, is_active: act })
       .done(function(){ Swal.fire({ icon:"success", title:"Guardado", text:"Refresco actualizado", timer:1200, showConfirmButton:false }); })
       .fail(function(){ Swal.fire({ icon:"error", title:"Error", text:"No se pudo guardar." }); });
   });
