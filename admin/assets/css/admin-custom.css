@@ -422,6 +422,26 @@ body.admin-jobie {
 .app-content .form-switch.form-switch-sm .form-check-input:checked {
   background-position: left 0.95rem center;
 }
+/* Switch de "Agotado por sede": miniswitch + nombre de la sede debajo */
+.app-content .tt-beb-sede {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: top;
+  width: 74px;
+}
+.app-content .tt-beb-sede .form-check-input {
+  margin: 0;
+  flex: 0 0 auto;
+}
+.app-content .tt-beb-sede-name {
+  font-size: 0.58rem;
+  line-height: 1.05;
+  color: var(--bl-gold-light);
+  text-align: center;
+  margin-top: 2px;
+  word-break: break-word;
+}
 .app-content .form-label { color: var(--bl-gold-light); }
 .app-content .input-group-text {
   background-color: var(--bl-red-light);
