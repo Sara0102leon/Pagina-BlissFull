@@ -14,7 +14,7 @@ foreach($buys as $b):
     <td><a href="./?view=sells&opt=open&id=<?php echo $b->id; ?>" class="btn btn-sm btn-default">Detalles</a></td>
     <td>#<?php echo $b->id; ?>
       <?php if(intval($b->chatwoot_conversation_id)>0):?>
-        <a href="<?php echo ChatwootData::baseUrl(); ?>/accounts/<?php echo ChatwootData::accountId(); ?>/conversations/<?php echo intval($b->chatwoot_conversation_id); ?>" target="_blank" rel="noopener" class="ms-1" title="Ver conversación en Chatwoot"><i class="bi bi-chat-dots text-success"></i></a>
+        <a href="<?php echo ChatwootData::frontUrl(); ?>/accounts/<?php echo ChatwootData::accountId(); ?>/conversations/<?php echo intval($b->chatwoot_conversation_id); ?>" target="_blank" rel="noopener" class="ms-1" title="Ver conversación en Chatwoot"><i class="bi bi-chat-dots text-success"></i></a>
       <?php endif; ?>
     </td>
     <td><?php echo $b->getClient()->getFullname(); ?></td>

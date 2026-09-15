@@ -47,4 +47,5 @@ INSERT IGNORE INTO configuration (name,label,kind,val) VALUES
 ("general_chatwoot_account_id","Chatwoot Account ID",1,"1"),
 ("general_chatwoot_access_token","Chatwoot Access Token",1,""),
 ("general_chatwoot_webhook_secret","Chatwoot Webhook Secret",1,""),
-("general_chatwoot_app_token","Chatwoot API Token (Dashboard App)",1,"");
+("general_chatwoot_app_token","Chatwoot API Token (Dashboard App)",1,""),
+("general_chatwoot_front_url","Chatwoot URL (Ventana Chat)",1,"https://prueba.alianzablissful.com");
