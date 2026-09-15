@@ -613,10 +613,12 @@ function tt_beb_agotado_col($b, $all_sedes_beb, $agotado_map){
   $out = "";
   foreach($all_sedes_beb as $sd){
     $chk = isset($agotado_map[intval($b->id)]) && in_array(intval($sd->id), $agotado_map[intval($b->id)]);
-    $out .= '<label class="form-check form-switch form-switch-sm d-inline-block mb-0 me-1 tt-beb-sede" title="Agotado en '.htmlspecialchars($sd->name).'">';
+    $out .= '<div class="tt-beb-sede" title="Agotado en '.htmlspecialchars($sd->name).'">';
+    $out .= '<label class="form-check form-switch form-switch-sm mb-0 d-inline-block">';
     $out .= '<input class="form-check-input bebida-agotado" type="checkbox" data-bebida="'.intval($b->id).'" data-sede="'.intval($sd->id).'" '.($chk?"checked":"").'>';
-    $out .= '<span class="tt-beb-sede-name">'.htmlspecialchars($sd->name).'</span>';
     $out .= '</label>';
+    $out .= '<span class="tt-beb-sede-name">'.htmlspecialchars($sd->name).'</span>';
+    $out .= '</div>';
   }
   return $out;
 }
