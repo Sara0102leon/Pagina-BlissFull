@@ -341,7 +341,7 @@ $sys_open = $sys_active!="" ? " show" : "";
           if(!file){ return; }
           try{
             var a = new Audio(file);
-            a.volume = 0.2;
+a.volume = 0.25;
             a.play().catch(function(){});
           }catch(e){}
         }
