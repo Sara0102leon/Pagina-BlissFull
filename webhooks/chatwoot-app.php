@@ -50,12 +50,15 @@ h1{font-family:'Bebas Neue','Outfit',sans-serif;font-size:18px;margin:0 0 10px;c
   <h1>Blissfull · Ventas</h1>
   <div id="content"><div class="empty"><span class="spin"></span> Cargando…</div></div>
   <div class="card">
-    <button type="button" class="cfg-toggle" id="cfg-toggle">⚙️ Configurar mensaje de envío</button>
+    <button type="button" class="cfg-toggle" id="cfg-toggle">⚙️ Configurar mensajes al cliente</button>
     <div class="cfg-body" id="cfg-body" style="display:none">
-      <label class="cfg-label">Mensaje que se envía al cliente al marcar Enviado</label>
+      <label class="cfg-label">Mensaje al marcar Enviado</label>
       <textarea class="cfg-msg" id="cfg-msg" rows="4"></textarea>
       <div class="cfg-hint">Usa <code>#CODIGO</code> para insertar el código del pedido.</div>
-      <button type="button" class="btn btn-save" id="cfg-save">Guardar mensaje</button>
+      <label class="cfg-label">Mensaje al cancelar el pedido</label>
+      <textarea class="cfg-msg" id="cfg-msg-cancelado" rows="3"></textarea>
+      <div class="cfg-hint">También puedes usar <code>#CODIGO</code>.</div>
+      <button type="button" class="btn btn-save" id="cfg-save">Guardar mensajes</button>
     </div>
   </div>
 </div>
@@ -199,7 +202,10 @@ function loadConfig(){
   fetch(API + '&action=config')
     .then(function(r){ return r.json(); })
     .then(function(j){
-      if(j && j.ok){ document.getElementById('cfg-msg').value = j.msg_enviado || ''; }
+      if(j && j.ok){
+        document.getElementById('cfg-msg').value = j.msg_enviado || '';
+        document.getElementById('cfg-msg-cancelado').value = j.msg_cancelado || '';
+      }
     })
     .catch(function(){});
 }
@@ -207,26 +213,37 @@ function loadConfig(){
 function saveConfig(){
   var btn = document.getElementById('cfg-save');
   var msg = document.getElementById('cfg-msg').value;
+  var msgCancel = document.getElementById('cfg-msg-cancelado').value;
   var original = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '<span class="spin"></span> Guardando…';
-  fetch(API + '&action=save_config', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-    body: 'msg=' + encodeURIComponent(msg)
-  })
-    .then(function(r){ return r.json(); })
-    .then(function(j){
-      btn.disabled = false;
-      btn.innerHTML = original;
-      if(j && j.ok){ document.getElementById('cfg-msg').value = j.msg_enviado || msg; toast('success', 'Mensaje guardado.'); }
-      else { toast('error', 'No se pudo guardar. ' + (j && j.error ? j.error : '')); }
-    })
-    .catch(function(){
-      btn.disabled = false;
-      btn.innerHTML = original;
-      toast('error', 'Error de red. Intenta de nuevo.');
-    });
+  Promise.all([
+    fetch(API + '&action=save_config&which=enviado', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: 'msg=' + encodeURIComponent(msg)
+    }).then(function(r){ return r.json(); }),
+    fetch(API + '&action=save_config&which=cancelado', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: 'msg=' + encodeURIComponent(msgCancel)
+    }).then(function(r){ return r.json(); })
+  ]).then(function(results){
+    btn.disabled = false;
+    btn.innerHTML = original;
+    var ok = results.every(function(j){ return j && j.ok; });
+    if(ok){
+      if(results[0] && results[0].msg_enviado){ document.getElementById('cfg-msg').value = results[0].msg_enviado; }
+      if(results[1] && results[1].msg_cancelado){ document.getElementById('cfg-msg-cancelado').value = results[1].msg_cancelado; }
+      toast('success', 'Mensajes guardados.');
+    } else {
+      toast('error', 'No se pudo guardar.');
+    }
+  }).catch(function(){
+    btn.disabled = false;
+    btn.innerHTML = original;
+    toast('error', 'Error de red. Intenta de nuevo.');
+  });
 }
 
 document.getElementById('cfg-toggle').addEventListener('click', function(){

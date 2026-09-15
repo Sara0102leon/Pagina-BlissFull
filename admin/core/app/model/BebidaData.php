@@ -2,7 +2,7 @@
 class BebidaData {
 	public static $tablename = "bebida";
 
-	public $id, $sabor, $medida, $sabor_options, $precio, $es_gratis, $is_active;
+	public $id, $sabor, $medida, $sabor_options, $precio, $es_gratis, $is_active, $agotado_sedes = array();
 
 	public function __construct(){
 		$this->id = null;
@@ -46,6 +46,50 @@ class BebidaData {
 		$sql = "select * from ".self::$tablename." where is_active=1 order by es_gratis desc, sabor asc, medida asc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new BebidaData());
+	}
+
+	// Bebidas activas + sedes donde está agotada (pivot bebida_sede)
+	public static function getActiveWithSedes(){
+		$rows = self::getActive();
+		$map = self::agotadoMap();
+		foreach($rows as $b){
+			$b->agotado_sedes = isset($map[intval($b->id)]) ? $map[intval($b->id)] : array();
+		}
+		return $rows;
+	}
+
+	// bebida_id => array(sede_id)
+	public static function agotadoMap(){
+		$map = array();
+		try {
+			$q = Executor::doit("select bebida_id, sede_id from bebida_sede where agotado=1");
+			$r = $q[0];
+			if($r){
+				while($row = $r->fetch_assoc()){
+					$map[intval($row["bebida_id"])][] = intval($row["sede_id"]);
+				}
+			}
+		} catch(\Throwable $e){}
+		return $map;
+	}
+
+	public static function esAgotadaEn($bebida_id, $sede_id){
+		if(!$bebida_id || !$sede_id){ return false; }
+		try {
+			$q = Executor::doit("select agotado from bebida_sede where bebida_id=".intval($bebida_id)." and sede_id=".intval($sede_id));
+			$r = $q[0];
+			if($r && ($row = $r->fetch_assoc()) && intval($row["agotado"])==1){ return true; }
+		} catch(\Throwable $e){}
+		return false;
+	}
+
+	public static function setAgotado($bebida_id, $sede_id, $agotado){
+		$bebida_id = intval($bebida_id);
+		$sede_id = intval($sede_id);
+		$agotado = $agotado ? 1 : 0;
+		$sql = "insert into bebida_sede (bebida_id, sede_id, agotado) values ($bebida_id, $sede_id, $agotado) ";
+		$sql .= "on duplicate key update agotado=$agotado";
+		return Executor::doit($sql);
 	}
 }
 ?>

@@ -1114,7 +1114,10 @@ body {
 .form-label { color: #ffffff; }
 .form-check-label { color: var(--tt-text); }
 .form-check-input { background-color: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.25); }
-.form-check-input:checked { background-color: var(--tt-gold); border-color: var(--tt-gold); }
+.form-check-input:checked { background-color: var(--tt-green, #2fb344); border-color: var(--tt-green, #2fb344); }
+.form-check-input:focus { border-color: var(--tt-green, #2fb344); box-shadow: 0 0 0 0.25rem rgba(47, 179, 68, 0.25); }
+.tt-beb-agotado { opacity: 0.55; }
+.tt-beb-agotado .form-check-label { text-decoration: line-through; }
 .form-hint { color: var(--tt-muted); }
 
 /* ================= ALERTS ================= */

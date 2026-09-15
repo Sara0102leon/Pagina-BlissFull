@@ -263,6 +263,16 @@ class ChatwootData {
 					$buy->status_id = 3;
 					$buy->change_status();
 					$changed = true;
+					// Mensaje editable al cliente en su propio chat
+					$conv = ($conversationId !== null && intval($conversationId) > 0)
+						? intval($conversationId)
+						: intval($buy->chatwoot_conversation_id);
+					if($conv){
+						$msg = self::getConfig("general_chatwoot_msg_cancelado",
+							"Tu pedido #".$buy->code." ha sido cancelado.");
+						$msg = str_ireplace("#CODIGO", $buy->code, $msg);
+						self::sendMessage($conv, $msg);
+					}
 				}
 				break;
 		}

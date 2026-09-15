@@ -60,11 +60,14 @@ $bebida_base = ($bebida_base_cfg && $bebida_base_cfg->val!="" ) ? floatval($bebi
 $bebidas_activas = array();
 try {
   if(class_exists("BebidaData") && tt_safe_table_exists("bebida")){
-    $bebidas_activas = BebidaData::getActive();
+    $bebidas_activas = BebidaData::getActiveWithSedes();
   }
 } catch(\Throwable $e){ $bebidas_activas = array(); }
 if(count($bebidas_activas)>0){
-  $bebidas_arr = array_map(function($b) use($bebida_base){ return array("id"=>intval($b->id),"sabor"=>$b->sabor,"medida"=>$b->medida,"sabor_options"=>$b->sabor_options,"es_gratis"=>intval($b->es_gratis),"precio"=>floatval($b->precio),"extra"=>max(0,floatval($b->precio)-$bebida_base)); }, $bebidas_activas);
+  $bebidas_arr = array_map(function($b) use($bebida_base){
+    $agot = (isset($b->agotado_sedes) && is_array($b->agotado_sedes)) ? array_map("intval", $b->agotado_sedes) : array();
+    return array("id"=>intval($b->id),"sabor"=>$b->sabor,"medida"=>$b->medida,"sabor_options"=>$b->sabor_options,"es_gratis"=>intval($b->es_gratis),"precio"=>floatval($b->precio),"extra"=>max(0,floatval($b->precio)-$bebida_base),"agotado_sedes"=>$agot);
+  }, $bebidas_activas);
   $bebidas_json = json_encode($bebidas_arr, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
 }
 function tt_cat_ic($cat_name){
@@ -907,12 +910,18 @@ function openExtrasModal(pid, pname, dataJson) {
     html += '<div class="fw-bold mb-1 tt-beb-head"><i class="bi bi-cup-straw me-1 text-gold"></i>REFRESCO litro y medio</div>';
     html += '<div class="small text-muted mb-2">Tu pizza gigante incluye 1 refresco gratis. Elige uno; si prefieres otro, se cobra la diferencia.</div>';
     const gratisOpts = bebidasGratisOpciones();
+    const ttSedeId = getSelectedSede() ? String(getSelectedSede().id) : null;
+    const ttBebistaAgotada = function(b) {
+      if (!ttSedeId || !b || !b.agotado_sedes) { return false; }
+      return b.agotado_sedes.indexOf(Number(ttSedeId)) !== -1;
+    };
     if (gratisOpts.length > 0) {
       html += '<div class="fw-bold small mt-2 mb-1 text-uppercase tt-beb-sub">REFRESCO GRATIS · elige el sabor</div>';
       gratisOpts.forEach(function(o) {
-        html += '<label class="form-check mb-1 bebida-opt">';
-        html += '<input class="form-check-input bebida-radio" type="radio" name="bebida_sel" data-idx="' + o.id + '" data-extra="0" data-flav="' + ttAttr(o.sabor_elegido) + '">';
-        html += '<span class="form-check-label">' + o.rotulo + ' <span class="tt-beb-tag">GRATIS</span></span>';
+        const agotado = ttBebistaAgotada(o);
+        html += '<label class="form-check mb-1 bebida-opt' + (agotado ? ' tt-beb-agotado' : '') + '">';
+        html += '<input class="form-check-input bebida-radio" type="radio" name="bebida_sel" data-idx="' + o.id + '" data-extra="0" data-flav="' + ttAttr(o.sabor_elegido) + '"' + (agotado ? ' disabled' : '') + '>';
+        html += '<span class="form-check-label">' + o.rotulo + ' <span class="tt-beb-tag">GRATIS</span>' + (agotado ? ' <span class="badge bg-danger ms-1">AGOTADO</span>' : '') + '</span>';
         html += '</label>';
       });
     }
@@ -920,9 +929,10 @@ function openExtrasModal(pid, pname, dataJson) {
     if (cargo.length > 0) {
       html += '<div class="fw-bold small mt-2 mb-1 text-uppercase tt-beb-sub">REFRESCOS DIFERENTES (PAGAS LA DIFERENCIA)</div>';
       cargo.forEach(function(b) {
-        html += '<label class="form-check mb-1 bebida-opt">';
-        html += '<input class="form-check-input bebida-radio" type="radio" name="bebida_sel" data-idx="' + b.id + '" data-extra="' + (parseFloat(b.extra) || 0) + '" data-flav="' + ttAttr("") + '">';
-        html += '<span class="form-check-label">' + b.sabor + ' ' + b.medida + ' <span class="text-primary fw-bold">' + brPrice(parseFloat(b.precio) || 0) + '</span></span>';
+        const agotado = ttBebistaAgotada(b);
+        html += '<label class="form-check mb-1 bebida-opt' + (agotado ? ' tt-beb-agotado' : '') + '">';
+        html += '<input class="form-check-input bebida-radio" type="radio" name="bebida_sel" data-idx="' + b.id + '" data-extra="' + (parseFloat(b.extra) || 0) + '" data-flav="' + ttAttr("") + '"' + (agotado ? ' disabled' : '') + '>';
+        html += '<span class="form-check-label">' + b.sabor + ' ' + b.medida + ' <span class="text-primary fw-bold">' + brPrice(parseFloat(b.precio) || 0) + '</span>' + (agotado ? ' <span class="badge bg-danger ms-1">AGOTADO</span>' : '') + '</span>';
         html += '</label>';
       });
     }
@@ -939,9 +949,9 @@ function bebidasGratisOpciones() {
     if (parseInt(b.es_gratis) !== 1) { return; }
     const opciones = b.sabor_options && String(b.sabor_options).trim() !== "" ? String(b.sabor_options).split(",").map(function(o){ return String(o).trim(); }).filter(Boolean) : [];
     if (opciones.length > 0) {
-      opciones.forEach(function(f) { opts.push({ id: b.id, sabor: b.sabor, medida: b.medida, sabor_elegido: f, rotulo: f }); });
+      opciones.forEach(function(f) { opts.push({ id: b.id, sabor: b.sabor, medida: b.medida, sabor_elegido: f, rotulo: f, agotado_sedes: b.agotado_sedes || [] }); });
     } else {
-      opts.push({ id: b.id, sabor: b.sabor, medida: b.medida, sabor_elegido: "", rotulo: b.sabor });
+      opts.push({ id: b.id, sabor: b.sabor, medida: b.medida, sabor_elegido: "", rotulo: b.sabor, agotado_sedes: b.agotado_sedes || [] });
     }
   });
   return opts;

@@ -607,6 +607,19 @@ $bebidas = BebidaData::getAll();
 $bebidas_gratis = array();
 $bebidas_cargo = array();
 foreach($bebidas as $bb){ if(intval($bb->es_gratis)==1){ $bebidas_gratis[] = $bb; } else { $bebidas_cargo[] = $bb; } }
+$all_sedes_beb = SedeData::getActives();
+$agotado_map = BebidaData::agotadoMap();
+function tt_beb_agotado_col($b, $all_sedes_beb, $agotado_map){
+  $out = "";
+  foreach($all_sedes_beb as $sd){
+    $chk = isset($agotado_map[intval($b->id)]) && in_array(intval($sd->id), $agotado_map[intval($b->id)]);
+    $out .= '<label class="form-check form-switch d-inline-block mb-0 me-2" title="Agotado en '.htmlspecialchars($sd->name).'">';
+    $out .= '<span class="me-1 small d-block">'.htmlspecialchars($sd->name).'</span>';
+    $out .= '<input class="form-check-input bebida-agotado" type="checkbox" data-bebida="'.intval($b->id).'" data-sede="'.intval($sd->id).'" '.($chk?"checked":"").'>';
+    $out .= '</label>';
+  }
+  return $out;
+}
 ?>
 <div class="page-header d-print-none">
   <div class="container-xl">
@@ -686,6 +699,7 @@ foreach($bebidas as $bb){ if(intval($bb->es_gratis)==1){ $bebidas_gratis[] = $bb
                 <th>Precio</th>
                 <th>Gratis</th>
                 <th>Activa</th>
+                <th>Agotado por sede</th>
                 <th></th>
               </tr>
             </thead>
@@ -711,6 +725,7 @@ foreach($bebidas as $bb){ if(intval($bb->es_gratis)==1){ $bebidas_gratis[] = $bb
                     <input class="form-check-input bebida-active" type="checkbox" data-id="<?php echo $b->id; ?>" <?php if(intval($b->is_active)==1){ echo "checked"; } ?>>
                   </label>
                 </td>
+                <td style="white-space:nowrap;"><?php echo tt_beb_agotado_col($b, $all_sedes_beb, $agotado_map); ?></td>
                 <td class="text-end text-nowrap">
                   <button type="button" class="btn btn-warning btn-sm btn-bebida-save" data-id="<?php echo $b->id; ?>"><i class="bi bi-check-lg"></i> Guardar</button>
                   <a href="./?action=settings&opt=delbebida&id=<?php echo $b->id; ?>" class="btn btn-danger btn-sm btn-bebida-del" title="Eliminar" onclick="return false;"><i class="bi bi-trash"></i></a>
@@ -742,6 +757,7 @@ foreach($bebidas as $bb){ if(intval($bb->es_gratis)==1){ $bebidas_gratis[] = $bb
                 <th>Precio</th>
                 <th>Gratis</th>
                 <th>Activa</th>
+                <th>Agotado por sede</th>
                 <th></th>
               </tr>
             </thead>
@@ -767,6 +783,7 @@ foreach($bebidas as $bb){ if(intval($bb->es_gratis)==1){ $bebidas_gratis[] = $bb
                     <input class="form-check-input bebida-active" type="checkbox" data-id="<?php echo $b->id; ?>" <?php if(intval($b->is_active)==1){ echo "checked"; } ?>>
                   </label>
                 </td>
+                <td style="white-space:nowrap;"><?php echo tt_beb_agotado_col($b, $all_sedes_beb, $agotado_map); ?></td>
                 <td class="text-end text-nowrap">
                   <button type="button" class="btn btn-warning btn-sm btn-bebida-save" data-id="<?php echo $b->id; ?>"><i class="bi bi-check-lg"></i> Guardar</button>
                   <a href="./?action=settings&opt=delbebida&id=<?php echo $b->id; ?>" class="btn btn-danger btn-sm btn-bebida-del" title="Eliminar" onclick="return false;"><i class="bi bi-trash"></i></a>
@@ -804,6 +821,17 @@ $(function(){
     var href = $(this).attr("href");
     Swal.fire({ title:"¿Eliminar refresco?", text:"Esta acción no se puede deshacer.", icon:"warning", showCancelButton:true, confirmButtonText:"Sí, eliminar", cancelButtonText:"Cancelar", confirmButtonColor:"#d63939" })
       .then(function(r){ if(r.isConfirmed){ $.get(href).done(function(){ location.reload(); }); } });
+  });
+  $(document).on("change", ".bebida-agotado", function(){
+    var bebida = $(this).data("bebida");
+    var sede = $(this).data("sede");
+    var agotado = $(this).is(":checked") ? 1 : 0;
+    $.post("./?action=settings&opt=togglebebidaagotado", { bebida_id: bebida, sede_id: sede, agotado: agotado })
+      .done(function(res){
+        var msg = agotado ? "Marcado como AGOTADO para la sede" : "Disponible de nuevo para la sede";
+        Swal.fire({ icon:"success", title: msg, timer:1200, showConfirmButton:false });
+      })
+      .fail(function(){ Swal.fire({ icon:"error", title:"Error", text:"No se pudo actualizar." }); });
   });
 });
 </script>

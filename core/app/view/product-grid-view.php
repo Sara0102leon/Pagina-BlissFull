@@ -82,10 +82,10 @@ if($cat_id>0 && count($products)==0 && in_array($cat_id, array(5,6))){
           <span class="pc-price-pill"><?php echo $coin_symbol.number_format($show_price,2,".",","); ?> <i class="bi bi-fire text-danger"></i></span>
           <span class="pc-price-old">antes <?php echo $coin_symbol.number_format($tt_old_price,2,".",","); ?></span>
           <?php else: ?>
-          <?php $show_price = ($p->price_llevar!="" && floatval($p->price_llevar)>0) ? floatval($p->price_llevar) : floatval($p->price); ?>
+          <?php $show_price = floatval($p->price); ?>
           <span class="pc-price-pill"><?php echo $coin_symbol.number_format($show_price,2,".",","); ?></span>
           <?php if($p->price_llevar!="" && floatval($p->price_llevar)>0): ?>
-          <span class="pc-price-dine">comer en la sede <?php echo $coin_symbol.number_format(floatval($p->price),2,".",","); ?></span>
+          <span class="pc-price-dine">para llevar <?php echo $coin_symbol.number_format(floatval($p->price_llevar),2,".",","); ?></span>
           <?php endif; ?>
           <?php endif; ?>
           <?php if($bcv_rate>0): ?>

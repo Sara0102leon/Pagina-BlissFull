@@ -348,6 +348,8 @@ insert into configuration(name,label,kind,val) value ("general_chatwoot_access_t
 insert into configuration(name,label,kind,val) value ("general_chatwoot_webhook_secret","Chatwoot Webhook Secret",1,"");
 insert into configuration(name,label,kind,val) value ("general_chatwoot_app_token","Chatwoot API Token (Dashboard App)",1,"");
 insert into configuration(name,label,kind,val) value ("general_chatwoot_front_url","Chatwoot URL (Ventana Chat)",1,"https://chat.alianzablissful.com/app");
+insert into configuration(name,label,kind,val) value ("general_chatwoot_msg_enviado","Mensaje al cliente (Enviado)",1,"Tu pedido #CODIGO ha sido enviado. ¡Gracias por tu compra!");
+insert into configuration(name,label,kind,val) value ("general_chatwoot_msg_cancelado","Mensaje al cliente (Cancelado)",1,"Tu pedido #CODIGO ha sido cancelado.");
 /* datos de pago venezolanos */
 insert into configuration(name,label,kind,val) value ("pago_movil_bank","Pago Móvil - Banco",1,"");
 insert into configuration(name,label,kind,val) value ("pago_movil_ci","Pago Móvil - Cédula",1,"");

@@ -99,6 +99,14 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="updbebida"){
 	echo "ok";
 	exit;
 }
+else if(isset($_GET["opt"]) && $_GET["opt"]=="togglebebidaagotado"){
+	$bebida_id = isset($_POST["bebida_id"]) ? intval($_POST["bebida_id"]) : 0;
+	$sede_id = isset($_POST["sede_id"]) ? intval($_POST["sede_id"]) : 0;
+	$agotado = !empty($_POST["agotado"]) ? 1 : 0;
+	if($bebida_id>0 && $sede_id>0){ BebidaData::setAgotado($bebida_id, $sede_id, $agotado); echo json_encode(array("ok"=>true, "agotado"=>$agotado)); }
+	else { echo json_encode(array("ok"=>false)); }
+	exit;
+}
 else if(isset($_GET["opt"]) && $_GET["opt"]=="updbebidabase"){
 	if(isset($_POST["bebida_base"]) && $_POST["bebida_base"]!=""){
 		ConfigurationData::updateValFromName("bebida_base", floatval($_POST["bebida_base"]));

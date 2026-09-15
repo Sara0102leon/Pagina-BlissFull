@@ -26,7 +26,9 @@ if($action === "config"){
 	echo json_encode(array(
 		"ok"=>true,
 		"msg_enviado"=>ChatwootData::getConfig("general_chatwoot_msg_enviado",
-			"Tu pedido #CODIGO ha sido enviado. ¡Gracias por tu compra!")
+			"Tu pedido #CODIGO ha sido enviado. ¡Gracias por tu compra!"),
+		"msg_cancelado"=>ChatwootData::getConfig("general_chatwoot_msg_cancelado",
+			"Tu pedido #CODIGO ha sido cancelado.")
 	));
 	exit;
 }
@@ -37,8 +39,14 @@ if($action === "save_config"){
 		echo json_encode(array("ok"=>false,"error"=>"no msg"));
 		exit;
 	}
-	ConfigurationData::updateValFromName("general_chatwoot_msg_enviado", trim($msg));
-	echo json_encode(array("ok"=>true,"msg_enviado"=>trim($msg)));
+	$which = isset($_GET["which"]) ? $_GET["which"] : "enviado";
+	if($which === "cancelado"){
+		ConfigurationData::updateValFromName("general_chatwoot_msg_cancelado", trim($msg));
+		echo json_encode(array("ok"=>true,"msg_cancelado"=>trim($msg)));
+	} else {
+		ConfigurationData::updateValFromName("general_chatwoot_msg_enviado", trim($msg));
+		echo json_encode(array("ok"=>true,"msg_enviado"=>trim($msg)));
+	}
 	exit;
 }
 

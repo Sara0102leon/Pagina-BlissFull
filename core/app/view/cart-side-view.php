@@ -40,6 +40,8 @@ if(isset($_SESSION["cart"])){
             }
           }
           $unit = ProductData::getEffectivePrice($p) + $extras_sum + $bebidas_sum;
+          $show_llevar = ($p->price_llevar!="" && floatval($p->price_llevar)>0 && !ProductData::offerActive($p));
+          $unit_llevar = $show_llevar ? (floatval($p->price_llevar) + $extras_sum + $bebidas_sum) : $unit;
           $subtotal = $unit*$s["q"];
           $total += $subtotal;
           $items_json[] = array(
@@ -62,7 +64,7 @@ if(isset($_SESSION["cart"])){
               <?php if(count($bebidas_txt)>0): ?>
               <div class="text-primary extra-small">🥤 <?php echo htmlspecialchars(implode(" | ", $bebidas_txt)); ?></div>
               <?php endif; ?>
-              <div class="text-muted extra-small"><?php echo $coin_symbol.number_format($unit,2,".",","); ?> c/u<?php if($bcv_rate>0): ?> ≈ <?php echo $bs_symbol.number_format($unit*$bcv_rate,2,".",","); ?><?php endif; ?></div>
+              <div class="text-muted extra-small"><?php if($show_llevar): ?>en la sede <?php echo $coin_symbol.number_format($unit,2,".",","); ?> · para llevar <?php echo $coin_symbol.number_format($unit_llevar,2,".",","); ?> c/u<?php else: ?><?php echo $coin_symbol.number_format($unit,2,".",","); ?> c/u<?php endif; ?><?php if($bcv_rate>0): ?> ≈ <?php echo $bs_symbol.number_format($unit*$bcv_rate,2,".",","); ?><?php endif; ?></div>
             </td>
             <td class="px-3 py-2">
               <div class="d-flex align-items-center gap-1">
