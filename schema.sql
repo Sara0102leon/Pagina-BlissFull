@@ -347,7 +347,7 @@ insert into configuration(name,label,kind,val) value ("general_chatwoot_account_
 insert into configuration(name,label,kind,val) value ("general_chatwoot_access_token","Chatwoot Access Token",1,"");
 insert into configuration(name,label,kind,val) value ("general_chatwoot_webhook_secret","Chatwoot Webhook Secret",1,"");
 insert into configuration(name,label,kind,val) value ("general_chatwoot_app_token","Chatwoot API Token (Dashboard App)",1,"");
-insert into configuration(name,label,kind,val) value ("general_chatwoot_front_url","Chatwoot URL (Ventana Chat)",1,"https://prueba.alianzablissful.com");
+insert into configuration(name,label,kind,val) value ("general_chatwoot_front_url","Chatwoot URL (Ventana Chat)",1,"https://chat.alianzablissful.com/app");
 /* datos de pago venezolanos */
 insert into configuration(name,label,kind,val) value ("pago_movil_bank","Pago Móvil - Banco",1,"");
 insert into configuration(name,label,kind,val) value ("pago_movil_ci","Pago Móvil - Cédula",1,"");

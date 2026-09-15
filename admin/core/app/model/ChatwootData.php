@@ -17,7 +17,7 @@ class ChatwootData {
 	}
 
 	public static function frontUrl(){
-		return rtrim(self::getConfig("general_chatwoot_front_url","https://prueba.alianzablissful.com"),"/");
+		return rtrim(self::getConfig("general_chatwoot_front_url","https://chat.alianzablissful.com/app"),"/");
 	}
 
 	public static function accountId(){
