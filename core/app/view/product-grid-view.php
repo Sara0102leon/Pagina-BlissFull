@@ -30,8 +30,13 @@ if($cat_id>0){
 <?php
 $aviso_sede = null;
 $aviso_cat_nombre = "";
-if($cat_id>0 && count($products)==0 && in_array($cat_id, array(5,6))){
-  $q2 = Executor::doit("select sede_id from product where category_id=$cat_id and sede_id is not null and sede_id>0 and sede_id!=".intval($sede_id)." group by sede_id");
+if($cat_id>0 && count($products)==0 && in_array($cat_id, array(5,6)) && $sede_id>0){
+  $q2 = Executor::doit("select distinct ps.sede_id as sede_id from product_sede ps"
+    ." inner join product p2 on p2.id=ps.product_id"
+    ." where p2.category_id=$cat_id and p2.is_active=1 and p2.is_public=1 and ps.sede_id!=".intval($sede_id)
+    ." union"
+    ." select sede_id from product where category_id=$cat_id and is_active=1 and is_public=1 and sede_id is not null and sede_id>0 and sede_id!=".intval($sede_id)
+    ." order by sede_id limit 1");
   $all_sedes = Model::many($q2[0], new ProductData());
   if(count($all_sedes)>0 && intval($all_sedes[0]->sede_id)>0){
     $aviso_sede = SedeData::getById($all_sedes[0]->sede_id);

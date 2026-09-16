@@ -80,34 +80,63 @@ class ProductData {
 		return Model::many($query[0],new ProductData());
 	}
 
+	// Filtro de sede para las consultas públicas:
+	//   sede_id NULL  -> todas las sedes
+	//   sede_id > 0   -> solo esa sede (legacy)
+	//   sede_id = 0   -> solo las sedes del pivote product_sede
+	// Se agrega el producto si está en el pivote o aplica a la sede consultada.
+	public static function sedeFilter($sede_id){
+		$s = intval($sede_id);
+		$t = self::$tablename;
+		if($s>0){
+			return " (".$t.".sede_id is null or ".$t.".sede_id=".$s
+				." or exists (select 1 from product_sede ps where ps.product_id=".$t.".id and ps.sede_id=".$s.")) ";
+		}
+		return " (".$t.".sede_id is null or exists (select 1 from product_sede ps where ps.product_id=".$t.".id)) ";
+	}
+
+	// Sedes específicas (pivote) de un producto
+	public function getSedes(){
+		$out = array();
+		$q = Executor::doit("select sede_id from product_sede where product_id=".intval($this->id));
+		$r = $q[0];
+		if($r){ while($row = $r->fetch_assoc()){ $out[] = intval($row["sede_id"]); } }
+		return $out;
+	}
+
+	public static function saveSedes($product_id, $sedes){
+		$pid = intval($product_id);
+		Executor::doit("delete from product_sede where product_id=$pid");
+		if(is_array($sedes) && $pid>0){
+			$seen = array();
+			foreach($sedes as $sid){
+				$sid = intval($sid);
+				if($sid>0 && !isset($seen[$sid])){ $seen[$sid]=1; Executor::doit("insert ignore into product_sede (product_id,sede_id) values ($pid,$sid)"); }
+			}
+		}
+	}
+
 	public static function getBySede($sede_id){
-		$sede = intval($sede_id);
-		$sql = "select * from ".self::$tablename." where is_active=1 and (sede_id is null or sede_id=$sede) order by created_at desc";
+		$sql = "select * from ".self::$tablename." where is_active=1 and ".self::sedeFilter($sede_id)." order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}
 
 	public static function getPublicsByCategoryId($id,$sede_id=0){
-		$sql = "select * from ".self::$tablename." where category_id=$id and is_public=1 and is_active=1";
-		if(intval($sede_id)>0){ $sql .= " and (sede_id is null or sede_id=".intval($sede_id).")"; }
-		else { $sql .= " and sede_id is null"; }
+		$sql = "select * from ".self::$tablename." where category_id=$id and is_public=1 and is_active=1 and ".self::sedeFilter($sede_id);
 		$sql .= " order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}
 
 	public static function getLike($q,$sede_id=0){
-		$sql = "select * from ".self::$tablename." where is_active=1 and (name like '%$q%' or description like '%$q%')";
-		if(intval($sede_id)>0){ $sql .= " and (sede_id is null or sede_id=".intval($sede_id).")"; }
-		else { $sql .= " and sede_id is null"; }
+		$sql = "select * from ".self::$tablename." where is_active=1 and (name like '%$q%' or description like '%$q%') and ".self::sedeFilter($sede_id);
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}
 
 	public static function getFeatureds($sede_id=0){
-		$sql = "select * from ".self::$tablename." where is_featured=1 and is_active=1";
-		if(intval($sede_id)>0){ $sql .= " and (sede_id is null or sede_id=".intval($sede_id).")"; }
-		else { $sql .= " and sede_id is null"; }
+		$sql = "select * from ".self::$tablename." where is_featured=1 and is_active=1 and ".self::sedeFilter($sede_id);
 		$sql .= " order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());

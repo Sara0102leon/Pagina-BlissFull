@@ -92,12 +92,17 @@ $tt_cat_guide_map_json = json_encode($tt_cat_guide_map);
           <tbody>
           <?php foreach($products as $cat):
           $p_sede_name = "Todas las sedes";
-          $p_sede_class = "bg-secondary";
-          foreach($sedes_list as $sd){ if($sd->id==$cat->sede_id){ $p_sede_name = $sd->name; $p_sede_class = "bg-primary"; } }
+          $p_sede_icon = "bi-globe2";
+          if(intval($cat->sede_id) === 0){
+            $p_sede_name = "Varias sedes";
+            $p_sede_icon = "bi-shop";
+          } else {
+            foreach($sedes_list as $sd){ if($sd->id==$cat->sede_id){ $p_sede_name = $sd->name; $p_sede_icon = "bi-shop"; } }
+          }
           ?>
             <tr>
               <td><?php echo $cat->name; ?></td>
-              <td><span class="badge" style="background:#1a3a5c!important;color:#fff!important;"><i class="bi <?php echo $cat->sede_id? "bi-shop" : "bi-globe2"; ?> me-1"></i><?php echo htmlspecialchars($p_sede_name); ?></span></td>
+              <td><span class="badge" style="background:#1a3a5c!important;color:#fff!important;"><i class="bi <?php echo $p_sede_icon; ?> me-1"></i><?php echo htmlspecialchars($p_sede_name); ?></span></td>
               <td>
                 <?php if($cat->is_public):?><i class="bi bi-check-lg text-success"></i><?php else: ?><i class="bi bi-x-lg text-danger"></i><?php endif; ?>
               </td>
@@ -184,6 +189,7 @@ $(function(){
 
 <?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="new"):?>
 <?php $coin = ConfigurationData::getByPreffix("general_coin")->val; ?>
+<?php $sedes_form = SedeData::getAll(); ?>
 <div class="page-header d-print-none">
   <div class="container-xl">
     <div class="row g-2 align-items-center">
@@ -260,14 +266,20 @@ $(function(){
             </div>
             <div class="col-md-4">
               <div class="mb-3">
-                <label class="form-label">Sede <span class="text-muted small">(menú por sucursal)</span></label>
-                <?php $sedes_form = SedeData::getAll(); ?>
-                <select name="sede_id" class="form-select">
-                  <option value="">-- TODAS LAS SEDES --</option>
+                <label class="form-label">Disponible en <span class="text-muted small">(menú por sucursal)</span></label>
+                <label class="form-check">
+                  <input class="form-check-input tt-sedes-all" type="checkbox" name="sedes_all" checked>
+                  <span class="form-check-label">Todas las sedes</span>
+                </label>
+                <div class="tt-sedes-list">
                   <?php foreach($sedes_form as $sd): ?>
-                  <option value="<?php echo $sd->id; ?>"><?php echo htmlspecialchars($sd->name); ?></option>
+                  <label class="form-check form-check-inline mb-1">
+                    <input class="form-check-input tt-sede-chk" type="checkbox" name="sedes[]" value="<?php echo intval($sd->id); ?>">
+                    <span class="form-check-label"><?php echo htmlspecialchars($sd->name); ?></span>
+                  </label>
                   <?php endforeach; ?>
-                </select>
+                  <div class="text-muted small mt-1">Desmarca "Todas las sedes" para elegir en cuáles aparece.</div>
+                </div>
               </div>
             </div>
           </div>
@@ -427,14 +439,33 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
             </div>
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Sede <span class="text-muted small">(menú por sucursal)</span></label>
+                <label class="form-label">Disponible en <span class="text-muted small">(menú por sucursal)</span></label>
                 <?php $sedes_form = SedeData::getAll(); ?>
-                <select name="sede_id" class="form-select">
-                  <option value="">-- TODAS LAS SEDES --</option>
+                <?php
+                $ps_sedes_all = ($product->sede_id === "" || $product->sede_id === null);
+                $ps_multi = array();
+                if(!$ps_sedes_all){
+                  if(intval($product->sede_id) === 0){
+                    $ps_multi = $product->getSedes();
+                    if(count($ps_multi) === 0){ $ps_sedes_all = true; }
+                  } else {
+                    $ps_multi = array(intval($product->sede_id));
+                  }
+                }
+                ?>
+                <label class="form-check">
+                  <input class="form-check-input tt-sedes-all" type="checkbox" name="sedes_all" <?php echo $ps_sedes_all ? "checked" : ""; ?>>
+                  <span class="form-check-label">Todas las sedes</span>
+                </label>
+                <div class="tt-sedes-list <?php echo $ps_sedes_all ? "tt-sedes-disabled" : ""; ?>">
                   <?php foreach($sedes_form as $sd): ?>
-                  <option value="<?php echo $sd->id; ?>" <?php if($product->sede_id==$sd->id){ echo "selected"; } ?>><?php echo htmlspecialchars($sd->name); ?></option>
+                  <label class="form-check form-check-inline mb-1">
+                    <input class="form-check-input tt-sede-chk" type="checkbox" name="sedes[]" value="<?php echo intval($sd->id); ?>" <?php echo in_array(intval($sd->id), $ps_multi) ? "checked" : ""; ?>>
+                    <span class="form-check-label"><?php echo htmlspecialchars($sd->name); ?></span>
+                  </label>
                   <?php endforeach; ?>
-                </select>
+                  <div class="text-muted small mt-1">Desmarca "Todas las sedes" para elegir en cuáles aparece.</div>
+                </div>
               </div>
             </div>
           </div>
@@ -538,6 +569,17 @@ $(function(){
   }
   $("#cat_select").on("change", function(){ applyCatFields($(this).val()); });
   applyCatFields($("#cat_select").val());
+
+  function ttSyncSedes(){
+    var all = $(".tt-sedes-all").is(":checked");
+    $(".tt-sedes-list").toggleClass("tt-sedes-disabled", all);
+    $(".tt-sede-chk").prop("disabled", all);
+    if(!all && $(".tt-sede-chk:checked").length === 0){
+      $(".tt-sede-chk").first().prop("checked", true);
+    }
+  }
+  $(".tt-sedes-all").on("change", ttSyncSedes);
+  ttSyncSedes();
 
   function ttCheckInactive(e){
     var vis = $("input[name='is_public']").is(":checked");

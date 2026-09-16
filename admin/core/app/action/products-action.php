@@ -23,6 +23,10 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="add"){
     		}
 		}
 
+		$sedes_all = !empty($_POST["sedes_all"]);
+		$p_sedes = array_values(array_filter(array_map("intval", isset($_POST["sedes"]) && is_array($_POST["sedes"]) ? $_POST["sedes"] : array()), function($s){ return $s>0; }));
+		$product->sede_id = $sedes_all ? "" : 0;
+
 		if(isset($_POST["is_public"])) { $product->is_public=1; }else{ $product->is_public=0; }
 		if(isset($_POST["in_existence"])) { $product->in_existence=1; }else{ $product->in_existence=0; }
 		if(isset($_POST["is_featured"])) { $product->is_featured=1; }else{ $product->is_featured=0; }
@@ -40,6 +44,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="add"){
 		$product->house_ingredients = implode(", ", array_filter($hi));
 
 		$res = $product->add();
+		if($res){ ProductData::saveSedes(intval($res[1]), $sedes_all ? array() : $p_sedes); }
 		if(isset($_POST["has_extras"]) && $res && $is_pizza_cat){
 			$new_id = intval($res[1]);
 			if($new_id>0){
@@ -82,7 +87,12 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="upd"){
 		$hi = ($is_pizza_cat && isset($_POST["house_ingredients"]) && is_array($_POST["house_ingredients"])) ? array_map("trim", $_POST["house_ingredients"]) : array();
 		$product->house_ingredients = implode(", ", array_filter($hi));
 
+		$sedes_all2 = !empty($_POST["sedes_all"]);
+		$p_sedes2 = array_values(array_filter(array_map("intval", isset($_POST["sedes"]) && is_array($_POST["sedes"]) ? $_POST["sedes"] : array()), function($s){ return $s>0; }));
+		$product->sede_id = $sedes_all2 ? "" : 0;
+
 		$product->update();
+		ProductData::saveSedes(intval($product->id), $sedes_all2 ? array() : $p_sedes2);
 		$_SESSION["product_updated"]= 1;
 		Core::redir("./?view=products&opt=all");
 	}

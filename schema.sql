@@ -102,6 +102,14 @@ create table product (
 	foreign key(category_id) references category(id)
 );
 
+/* producto disponible en varias sedes */
+create table product_sede (
+	product_id int not null,
+	sede_id int not null,
+	primary key (product_id, sede_id),
+	key idx_ps_sede (sede_id)
+) engine=InnoDB default charset=utf8mb4;
+
 
 create table coupon (
 	id int not null auto_increment primary key,
