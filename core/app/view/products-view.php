@@ -1,4 +1,5 @@
 <?php 
+require_once __DIR__."/../helpers/product-extras-helper.php";
 $coin_symbol = ConfigurationData::getByPreffix("general_coin")?ConfigurationData::getByPreffix("general_coin")->val:"$";
 $img_default = ConfigurationData::getByPreffix("general_img_default")?ConfigurationData::getByPreffix("general_img_default")->val:"assets/img/default.png";
 
@@ -52,8 +53,9 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):
         <?php if(count($products)>0):?>
         <div class="row g-3">
           <?php foreach($products as $p):
-          $img = "admin/storage/products/".$p->image;
-          if($p->image=="" || !file_exists($img)){ $img=$img_default; }
+          $img_raw = "admin/storage/products/".$p->image;
+          if($p->image=="" || !file_exists($img_raw)){ $img=$img_default; }
+          else { $img = tt_imgv($img_raw); }
           $in_cart=false;
           if(isset($_SESSION["cart"])){
             foreach ($_SESSION["cart"] as $pc) {
@@ -128,8 +130,9 @@ $p = ProductData::getById($_GET["id"]);
     <div class="row g-4 justify-content-center">
       <div class="col-md-10">
         <?php if($p):
-        $img = "admin/storage/products/".$p->image;
-        if($p->image=="" || !file_exists($img)){ $img=$img_default; }
+        $img_raw = "admin/storage/products/".$p->image;
+        if($p->image=="" || !file_exists($img_raw)){ $img=$img_default; }
+        else { $img = tt_imgv($img_raw); }
         $in_cart=false;
         if(isset($_SESSION["cart"])){
           foreach ($_SESSION["cart"] as $pc) {
@@ -208,8 +211,9 @@ $p = ProductData::getById($_GET["id"]);
            <h3 class="fw-bold mb-4 h1 text-center">Te podría gustar también</h3>
            <div class="row g-3">
               <?php foreach(ProductData::getFeatureds() as $index => $rf): if($index > 3 || $rf->id == $p->id) continue; 
-                $rimg = "admin/storage/products/".$rf->image;
-                if($rf->image=="" || !file_exists($rimg)){ $rimg=$img_default; }
+                $rimg_raw = "admin/storage/products/".$rf->image;
+                if($rf->image=="" || !file_exists($rimg_raw)){ $rimg=$img_default; }
+                else { $rimg = tt_imgv($rimg_raw); }
               ?>
               <div class="col-6 col-md-3">
                  <div class="card border-0 shadow-sm overflow-hidden h-100">

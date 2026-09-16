@@ -23,6 +23,9 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="add"){
         		$url="storage/products/";
             	$handle->Process($url);
                 $product->image = $handle->file_dst_name;
+                if(!$handle->processed){ $_SESSION["product_img_error"] = "No se pudo procesar la imagen: ".$handle->error; }
+    		} else if(isset($_FILES["image"]["error"]) && intval($_FILES["image"]["error"])!==UPLOAD_ERR_NO_FILE){
+    			$_SESSION["product_img_error"] = "No se pudo subir la imagen (código ".intval($_FILES["image"]["error"])."). Verifica el peso y formato.";
     		}
 		}
 
@@ -71,6 +74,9 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="upd"){
 				$handle->Process($url);
 			    $product->image = $handle->file_dst_name;
 			    $product->update_image();
+			    if(!$handle->processed){ $_SESSION["product_img_error"] = "No se pudo procesar la imagen: ".$handle->error; }
+			} else if(isset($_FILES["image"]["error"]) && intval($_FILES["image"]["error"])!==UPLOAD_ERR_NO_FILE){
+				$_SESSION["product_img_error"] = "No se pudo subir la imagen (código ".intval($_FILES["image"]["error"])."). Verifica el peso y formato.";
 			}
 		}
 

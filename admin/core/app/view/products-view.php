@@ -47,6 +47,9 @@ $tt_cat_guide_map_json = json_encode($tt_cat_guide_map);
         <h3 class="card-title">Productos</h3>
       </div>
       <div class="card-body">
+    <?php if(isset($_SESSION["product_img_error"]) && trim($_SESSION["product_img_error"])!=""): ?>
+    <div class="alert alert-danger"><?php echo htmlspecialchars($_SESSION["product_img_error"]); ?></div>
+    <?php unset($_SESSION["product_img_error"]); endif; ?>
     <?php
     $sede_filter = isset($_GET["sede"]) ? intval($_GET["sede"]) : 0;
     if($sede_filter>0){
@@ -360,6 +363,8 @@ $(function(){
 <?php 
 $product = ProductData::getById($_GET["id"]);
 $url = "storage/products/$product->image";
+if($product->image!="" && file_exists($url)){ $url .= "?v=".filemtime($url); }
+$url_exists = ($product->image!="" && file_exists("storage/products/$product->image"));
 $coin = ConfigurationData::getByPreffix("general_coin")->val; 
 ?>
 <div class="page-header d-print-none">
@@ -514,7 +519,7 @@ $coin = ConfigurationData::getByPreffix("general_coin")->val;
               </select>
             </div>
           </div>
-          <?php if( $product->image!="" && file_exists($url)):?>
+          <?php if( $url_exists):?>
           <div class="mb-3">
             <img src="<?php echo $url; ?>" class="img-fluid rounded border" style="max-height: 200px;">
 </div>

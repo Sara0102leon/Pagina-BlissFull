@@ -846,7 +846,9 @@ foreach($extras_groups as $g){
 $extra_products_json = array();
 foreach($products as $pr){
   $img = "storage/products/".$pr->image;
-  $extra_products_json[] = array("id"=>intval($pr->id),"name"=>$pr->name,"img"=>$pr->image!="" && file_exists($img)?$img:"");
+  $img_exists = ($pr->image!="" && file_exists($img));
+  if($img_exists){ $img .= "?v=".filemtime($img); }
+  $extra_products_json[] = array("id"=>intval($pr->id),"name"=>$pr->name,"img"=>$img_exists?$img:"");
 }
 ?>
 <div class="page-header d-print-none">

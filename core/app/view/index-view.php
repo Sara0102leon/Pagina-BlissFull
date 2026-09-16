@@ -1,4 +1,5 @@
 ﻿<?php 
+require_once __DIR__."/../helpers/product-extras-helper.php";
 $coin_symbol = ConfigurationData::getByPreffix("general_coin")?ConfigurationData::getByPreffix("general_coin")->val:"$";
 $img_default = ConfigurationData::getByPreffix("general_img_default")?ConfigurationData::getByPreffix("general_img_default")->val:"assets/img/default.png";
 $whatsapp_number = ConfigurationData::getByPreffix("general_whatsapp")?ConfigurationData::getByPreffix("general_whatsapp")->val:"+5215574506232";
@@ -106,10 +107,10 @@ $flotante_pdata = null;
 if($flotante_pid!=""){ $flotante_pdata = ProductData::getById($flotante_pid); }
 $hero_img = $img_default;
 if($flotante_pdata && $flotante_pdata->image!=""){
-  $pimg = "admin/storage/products/".$flotante_pdata->image;
-  if(file_exists($pimg)){ $hero_img = $pimg; }
+  $pimg = tt_imgv("admin/storage/products/".$flotante_pdata->image);
+  if(file_exists("admin/storage/products/".$flotante_pdata->image)){ $hero_img = $pimg; }
 }
-if($hero_img==$img_default && count($featured)>0){ $hero_img = "admin/storage/products/".$featured[0]->image; if(!file_exists($hero_img)){ $hero_img=$img_default; } }
+if($hero_img==$img_default && count($featured)>0){ $hero_img = tt_imgv("admin/storage/products/".$featured[0]->image); if(!file_exists("admin/storage/products/".$featured[0]->image)){ $hero_img=$img_default; } }
 $flotante_extras_json = "[]";
 $flotante_extras_json_js = "[]";
 if($flotante_pdata){

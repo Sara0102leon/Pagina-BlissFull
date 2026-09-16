@@ -48,8 +48,9 @@ if($cat_id>0 && count($products)==0 && in_array($cat_id, array(5,6)) && $sede_id
 <?php if(count($products)>0):?>
 <div class="row g-4">
   <?php foreach($products as $p):
-  $img = "admin/storage/products/".$p->image;
-  if($p->image=="" || !file_exists($img)){ $img=$img_default; }
+  $img_raw = "admin/storage/products/".$p->image;
+  if($p->image=="" || !file_exists($img_raw)){ $img=$img_default; }
+  else { $img = tt_imgv($img_raw); }
   $pizza_edit_json = array("desc"=>trim((string)$p->description),"free"=>intval($p->free_ingredients),"division"=>trim((string)$p->tipo_division),"sabores"=>array(),"ingredients"=>array(),"extras"=>array(),"sel"=>array(),"main"=>-1,"gigante"=>in_array(intval($p->category_id), array(2))? 1 : 0);
   $no_edit_cats = array(5,6,8); // Pastas, Focaccia y Refrescos: por ahora sin extras/ingredientes
   if(!in_array(intval($p->category_id), $no_edit_cats)){

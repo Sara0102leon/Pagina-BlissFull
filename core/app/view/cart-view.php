@@ -1,4 +1,5 @@
 ﻿<?php
+require_once __DIR__."/../helpers/product-extras-helper.php";
 $coin_symbol = ConfigurationData::getByPreffix("general_coin")?ConfigurationData::getByPreffix("general_coin")->val:"$";
 $iva = ConfigurationData::getByPreffix("general_iva")?ConfigurationData::getByPreffix("general_iva")->val:0;
 $ivatxt = ConfigurationData::getByPreffix("general_iva_txt")?ConfigurationData::getByPreffix("general_iva_txt")->val:"IVA";
@@ -34,8 +35,9 @@ $total = 0;
                 $items_text = "";
                 foreach($_SESSION["cart"] as $s):
                 $p = ProductData::getById($s["product_id"]); 
-                $img = "admin/storage/products/".$p->image;
-                if($p->image=="" || !file_exists($img)){ $img=$img_default; }
+                $img_raw = "admin/storage/products/".$p->image;
+                if($p->image=="" || !file_exists($img_raw)){ $img=$img_default; }
+                else { $img = tt_imgv($img_raw); }
                 $extras_sum = 0;
                 $extras_txt = array();
                 $extras_lines = "";

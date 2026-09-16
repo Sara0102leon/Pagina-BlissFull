@@ -10,6 +10,13 @@
  *   uno con sus ingredientes incluidos, para elegir el sabor de cada fracción.
  */
 
+// Ruta de imagen de producto con cache-buster (mtime) para que los
+// navegadores no muestren la foto vieja al editar el producto.
+function tt_imgv($rel){
+  if($rel!=="" && file_exists($rel)){ return $rel."?v=".filemtime($rel); }
+  return $rel;
+}
+
 function tt_norm($s){
   $s = mb_strtolower(trim((string)$s));
   $s = strtr($s, array("á"=>"a","é"=>"e","í"=>"i","ó"=>"o","ú"=>"u","ñ"=>"n","ü"=>"u"));
