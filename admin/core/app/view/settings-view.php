@@ -257,8 +257,9 @@ $settings = ConfigurationData::getAll();
             <div class="col-md-4">
               <input type="file" name="image" class="form-control" accept="image/*">
             </div>
-            <div class="col-md-4 d-flex align-items-center text-muted small">
-              Foto de la sede (se ve al girar la tarjeta en la página).
+            <div class="col-md-4">
+              <p class="small fw-bold mb-1"><i class="bi bi-card-image me-1"></i>Foto de la sede</p>
+              <p class="small text-muted mb-0"><i class="bi bi-info-circle me-1"></i>Medidas para la tarjeta (se ven al girar, en la página del cliente): foto <b>horizontal/apaisada de 800×600 px</b> o más (proporción 4:3). Si cambias la foto y sigue saliendo la anterior, recarga la página con <b>Ctrl+F5</b>.</p>
             </div>
           </div>
           <p class="text-muted small mb-0 mt-2">El WhatsApp de la sede se usa en el envío del pedido. Ej: +584121234567</p>
@@ -292,7 +293,10 @@ $settings = ConfigurationData::getAll();
                     <input type="text" name="address" class="form-control" value="<?php echo htmlspecialchars($sd->address); ?>" placeholder="Dirección" style="min-width:180px;">
                     <?php if($sd->image!="" && file_exists("storage/sedes/".$sd->image)): ?>
                     <img src="storage/sedes/<?php echo $sd->image; ?>" alt="foto sede" style="width:52px; height:52px; object-fit:cover; border-radius:10px;" class="border">
+                    <?php else: ?>
+                    <span class="text-muted small">sin foto</span>
                     <?php endif; ?>
+                    <span class="small text-muted" style="max-width:150px" title="Medidas recomendadas: 800x600 px (4:3). Si cambias la foto y no se actualiza, recarga con Ctrl+F5."><i class="bi bi-info-circle"></i> 800×600 px</span>
                     <input type="file" name="image" class="form-control" accept="image/*" style="max-width:220px;">
                     <input type="text" name="maps" class="form-control" value="<?php echo htmlspecialchars($sd->maps); ?>" placeholder="Google Maps (query de dirección)" style="min-width:220px;">
                 </td>

@@ -478,8 +478,8 @@ foreach($horario_keys as $hk){
           if($sd->image!=""){
             $sp_fotos = "fotosedes/".$sd->image;
             $sp_path = "admin/storage/sedes/".$sd->image;
-            if(file_exists($sp_fotos)){ $sede_img = $sp_fotos; }
-            elseif(file_exists($sp_path)){ $sede_img = $sp_path; }
+            if(file_exists($sp_fotos)){ $sede_img = tt_imgv($sp_fotos); }
+            elseif(file_exists($sp_path)){ $sede_img = tt_imgv($sp_path); }
           }
           $mapsq = $sd->maps!="" ? $sd->maps : $sd->address;
           $maps_url = preg_match('/^https?:\/\//i', $mapsq)
