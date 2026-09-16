@@ -121,7 +121,7 @@ if($cat_id>0 && count($products)==0 && in_array($cat_id, array(5,6)) && $sede_id
   <h3 class="h2 tt-display mb-2">SOLO EN <span class="text-gold"><?php echo htmlspecialchars($aviso_sede->name); ?></span></h3>
   <p class="text-muted mb-2">Las <?php echo htmlspecialchars(mb_strtolower($aviso_cat_nombre)); ?> se preparan únicamente en la sede <b><?php echo htmlspecialchars($aviso_sede->name); ?></b>. Para pedirlas, cambia tu sede:</p>
   <button type="button" class="btn btn-warning rounded-pill fw-bold px-4 py-2" onclick="switchSedeNow(<?php echo intval($aviso_sede->id); ?>)">CAMBIAR A <?php echo htmlspecialchars(mb_strtoupper($aviso_sede->name)); ?></button>
-  <p class="small text-muted mt-2 mb-0"><i class="bi bi-clock-history me-1"></i>Pronto en las demás sedes.</p>
+  <p class="small text-muted mt-2 mb-0"><i class="bi bi-clock-history me-1"></i>Por ahora solo en <?php echo htmlspecialchars($aviso_sede->name); ?>, pronto en las demás sedes.</p>
 </div>
 <?php else: ?>
 <div class="text-center py-5">
