@@ -1,11 +1,14 @@
 <?php 
 if(!isset($_SESSION["user_id"])){ Core::redir("./");}
 
+// Solo se copian a $product las propiedades declaradas en ProductData
+$PRODUCT_FIELDS = array_flip(array("id","short_name","code","name","description","image","link","price","price_llevar","offer_price","offer_finish","free_ingredients","house_ingredients","allow_halves","tipo_division","category_id","unit_id","sede_id","is_public","in_existence","is_featured","is_active","created_at","order_at","offer_txt","meta_title","meta_description","meta_keywords","is_offert"));
+
 if(isset($_GET["opt"]) && $_GET["opt"]=="add"){
 	if(count($_POST)>0){
 		$product =  new ProductData();
 		foreach ($_POST as $k => $v) {
-			$product->$k = $v;
+			if(isset($PRODUCT_FIELDS[$k])){ $product->$k = $v; }
 		}
 		$alphabeth ="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWYZ1234567890_-";
 		$code = "";
@@ -58,7 +61,7 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="upd"){
 	if(count($_POST)>0){
 		$product = ProductData::getById($_POST["id"]);
 		foreach ($_POST as $k => $v) {
-			$product->$k = $v;
+			if(isset($PRODUCT_FIELDS[$k])){ $product->$k = $v; }
 		}
 
 		if(isset($_FILES["image"])){

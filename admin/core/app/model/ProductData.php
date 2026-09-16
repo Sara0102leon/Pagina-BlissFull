@@ -41,10 +41,22 @@ class ProductData {
 
 	public function getUnit(){ return UnitData::getById($this->unit_id);}
 
+	// Normaliza un precio al formato numérico de MySQL (coma->punto) o NULL si vacío
+	private static function num($v){
+		if($v===null || $v===""){ return null; }
+		$s = trim((string)$v);
+		if($s===""){ return null; }
+		if(strpos($s, ",")!==false){ $s = str_replace(".", "", $s); $s = str_replace(",", ".", $s); }
+		return (is_numeric($s) ? floatval($s) : null);
+	}
+
 	public function add(){
 		if($this->code=="" || $this->code===null){ $this->code = self::generateCode(); }
+		$price = self::num($this->price);
+		$pl    = self::num($this->price_llevar);
+		$op    = self::num($this->offer_price);
 		$sql = "insert into ".self::$tablename." (short_name,code,name,description,image,price,price_llevar,offer_price,offer_finish,free_ingredients,house_ingredients,allow_halves,tipo_division,link,category_id,unit_id,sede_id,is_public,in_existence,is_featured,is_offert,created_at) ";
-		$sql .= "value (\"$this->short_name\",\"$this->code\",\"$this->name\",\"$this->description\",\"$this->image\",\"$this->price\"," . ($this->price_llevar!="" ? "\"$this->price_llevar\"" : "NULL") . "," . ($this->offer_price!=""  ? "\"$this->offer_price\"" : "NULL") . "," . ($this->offer_finish!="" ? "\"$this->offer_finish\"" : "NULL") . "," . intval($this->free_ingredients) . "," . ($this->house_ingredients!="" ? "\"$this->house_ingredients\"" : "NULL") . "," . intval($this->allow_halves) . ",\"" . ($this->tipo_division!="" ? $this->tipo_division : "normal") . "\",\"$this->link\",$this->category_id," . ($this->unit_id!="" ? "$this->unit_id" : "NULL") . "," . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",$this->is_public,$this->in_existence,$this->is_featured,$this->is_offert,$this->created_at)";
+		$sql .= "value (\"$this->short_name\",\"$this->code\",\"$this->name\",\"$this->description\",\"$this->image\"," . ($price!==null ? "\"$price\"" : "NULL") . "," . ($pl!==null ? "\"$pl\"" : "NULL") . "," . ($op!==null ? "\"$op\"" : "NULL") . "," . ($this->offer_finish!="" ? "\"$this->offer_finish\"" : "NULL") . "," . intval($this->free_ingredients) . "," . ($this->house_ingredients!="" ? "\"$this->house_ingredients\"" : "NULL") . "," . intval($this->allow_halves) . ",\"" . ($this->tipo_division!="" ? $this->tipo_division : "normal") . "\",\"$this->link\",$this->category_id," . ($this->unit_id!="" ? "$this->unit_id" : "NULL") . "," . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",$this->is_public,$this->in_existence,$this->is_featured,$this->is_offert,$this->created_at)";
 		return Executor::doit($sql);
 	}
 
@@ -59,7 +71,10 @@ class ProductData {
 	}
 
 	public function update(){
-		$sql = "update ".self::$tablename." set code=\"$this->code\",name=\"$this->name\",description=\"$this->description\",link=\"$this->link\",price=\"$this->price\",price_llevar=" . ($this->price_llevar!="" ? "\"$this->price_llevar\"" : "NULL") . ",offer_price=" . ($this->offer_price!="" ? "\"$this->offer_price\"" : "NULL") . ",offer_finish=" . ($this->offer_finish!="" ? "\"$this->offer_finish\"" : "NULL") . ",free_ingredients=" . intval($this->free_ingredients) . ",house_ingredients=" . ($this->house_ingredients!="" ? "\"$this->house_ingredients\"" : "NULL") . ",allow_halves=" . intval($this->allow_halves) . ",tipo_division=\"" . ($this->tipo_division!="" ? $this->tipo_division : "normal") . "\",in_existence=\"$this->in_existence\",is_public=\"$this->is_public\",is_featured=\"$this->is_featured\",unit_id=" . ($this->unit_id!="" ? "$this->unit_id" : "NULL") . ",category_id=\"$this->category_id\",sede_id=" . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",is_offert=\"$this->is_offert\" where id=$this->id";
+		$price = self::num($this->price);
+		$pl    = self::num($this->price_llevar);
+		$op    = self::num($this->offer_price);
+		$sql = "update ".self::$tablename." set code=\"$this->code\",name=\"$this->name\",description=\"$this->description\",link=\"$this->link\",price=" . ($price!==null ? "\"$price\"" : "NULL") . ",price_llevar=" . ($pl!==null ? "\"$pl\"" : "NULL") . ",offer_price=" . ($op!==null ? "\"$op\"" : "NULL") . ",offer_finish=" . ($this->offer_finish!="" ? "\"$this->offer_finish\"" : "NULL") . ",free_ingredients=" . intval($this->free_ingredients) . ",house_ingredients=" . ($this->house_ingredients!="" ? "\"$this->house_ingredients\"" : "NULL") . ",allow_halves=" . intval($this->allow_halves) . ",tipo_division=\"" . ($this->tipo_division!="" ? $this->tipo_division : "normal") . "\",in_existence=\"$this->in_existence\",is_public=\"$this->is_public\",is_featured=\"$this->is_featured\",unit_id=" . ($this->unit_id!="" ? "$this->unit_id" : "NULL") . ",category_id=\"$this->category_id\",sede_id=" . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",is_offert=\"$this->is_offert\" where id=$this->id";
 		Executor::doit($sql);
 	}
 
