@@ -50,6 +50,8 @@ foreach($sedes as $sd){
     "name"=>$sd->name,
     "address"=>$sd->address,
     "phone"=>$sd->phone,
+    "lat"=>(isset($sd->lat) && $sd->lat!="" ) ? floatval($sd->lat) : null,
+    "lng"=>(isset($sd->lng) && $sd->lng!="" ) ? floatval($sd->lng) : null,
     "horarios"=>$horarios,
     "delivery"=>$deliv_map
   ));
@@ -229,6 +231,10 @@ foreach($horario_keys as $hk){
          <div class="mb-0" id="address_container">
             <label class="form-label fw-bold">Dirección de Entrega</label>
             <textarea id="order_address" class="form-control" rows="2" placeholder="Calle, número, cruzamientos..."></textarea>
+            <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+              <button type="button" id="btn_use_location" class="btn btn-sm btn-outline-warning rounded-pill px-3"><i class="bi bi-crosshair me-1"></i> Usar mi ubicación</button>
+              <div id="order_location_info" class="small text-gold"></div>
+            </div>
          </div>
          <hr>
          <div class="mb-3">
@@ -1430,6 +1436,69 @@ $(document).ready(function() {
     });
   }
 
+  // ===== Ubicación del cliente (solo delivery) =====
+  let clientGeo = null;      // {lat, lng, maps, distance}
+  let geoRefused = false;
+
+  function getPosition() {
+    return new Promise(function(resolve, reject) {
+      if (!navigator.geolocation) { reject(new Error("unsupported")); return; }
+      navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+    });
+  }
+  function haversineKm(lat1, lng1, lat2, lng2) {
+    const R = 6371, toR = Math.PI / 180;
+    const dLat = (lat2 - lat1) * toR, dLng = (lng2 - lng1) * toR;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1*toR) * Math.cos(lat2*toR) * Math.sin(dLng/2) * Math.sin(dLng/2);
+    return 2 * R * Math.asin(Math.sqrt(a));
+  }
+  function directionLink(lat1, lng1, lat2, lng2) {
+    return "https://www.google.com/maps/dir/?api=1&origin=" + lat1 + "," + lng1 + "&destination=" + lat2 + "," + lng2 + "&travelmode=driving";
+  }
+  function renderGeoInfo(sede) {
+    const $info = $("#order_location_info");
+    if (!clientGeo) { $info.html(""); return; }
+    let html = '<i class="bi bi-geo-alt-fill me-1"></i>Ubicación capturada';
+    if (clientGeo.distance !== null && clientGeo.distance !== undefined && clientGeo.distance > 0) {
+      html += ' · a ≈ ' + clientGeo.distance.toFixed(1) + ' km de ' + (sede ? sede.name : "");
+    }
+    if (clientGeo.maps) {
+      html += ' · <a href="' + clientGeo.maps + '" target="_blank" rel="noopener">Ver ruta desde ' + (sede ? sede.name : "la sucursal") + ' <i class="bi bi-box-arrow-up-right"></i></a>';
+    }
+    $info.html(html);
+  }
+  async function applyClientGeo(lat, lng, sede) {
+    clientGeo = { lat: lat, lng: lng, maps: "", distance: 0 };
+    try {
+      const r = await fetch("https://nominatim.openstreetmap.org/reverse?format=jsonv2&accept-language=es&lat=" + lat + "&lon=" + lng, { headers: { "Accept": "application/json" } });
+      const j = await r.json();
+      if (j && j.display_name) { $("#order_address").val(j.display_name); }
+    } catch(e) {}
+    if (sede && sede.lat && sede.lng) {
+      clientGeo.distance = haversineKm(parseFloat(sede.lat), parseFloat(sede.lng), lat, lng);
+      clientGeo.maps = directionLink(sede.lat, sede.lng, lat, lng);
+    }
+    renderGeoInfo(sede);
+  }
+
+  $("#btn_use_location").on("click", async function() {
+    const sede = getSelectedSede();
+    if (!sede) {
+      Swal.fire({ icon: "warning", title: "Elige tu sede", text: "Primero selecciona la sede para calcular la distancia.", confirmButtonColor: "#b87e38" });
+      return;
+    }
+    $(this).prop("disabled", true).html('<span class="spinner-border spinner-border-sm me-1"></span> Obteniendo ubicación…');
+    try {
+      const pos = await getPosition();
+      geoRefused = false;
+      await applyClientGeo(pos.coords.latitude, pos.coords.longitude, sede);
+    } catch(e) {
+      geoRefused = true;
+      Swal.fire({ icon: "info", title: "Necesitamos tu ubicación", html: "Para poder hacer el envío y conseguir tu dirección, comparte tu ubicación desde el navegador, o escribe tu dirección manualmente.", confirmButtonColor: "#b87e38" });
+    }
+    $(this).prop("disabled", false).html('<i class="bi bi-crosshair me-1"></i> Usar mi ubicación');
+  });
+
   // Confirm Order
   $("#btn_confirm_order").click(async function() {
     if (sedeClosedGuard()) { return; }
@@ -1471,6 +1540,23 @@ $(document).ready(function() {
     if (!inStore && !zoneSel) {
       Swal.fire({ icon: "warning", title: "Zona de entrega", text: "Selecciona tu zona de entrega, o marca que comerás o recogerás en sucursal.", confirmButtonColor: "#b87e38" });
       return;
+    }
+
+    // En pedidos a domicilio pedimos la ubicación del cliente
+    if (!inStore && !clientGeo && !geoRefused) {
+      $("#btn_use_location").prop("disabled", true);
+      $("#order_location_info").html('<span class="spinner-border spinner-border-sm me-1"></span> Pidiendo tu ubicación…');
+      try {
+        const pos = await getPosition();
+        await applyClientGeo(pos.coords.latitude, pos.coords.longitude, sede);
+      } catch(e) {
+        geoRefused = true;
+        $("#order_location_info").html("");
+        Swal.fire({ icon: "info", title: "Necesitamos tu ubicación", html: "Para poder hacer el envío y conseguir tu dirección, comparte tu ubicación con el botón <b>Usar mi ubicación</b>, o escribe tu dirección manualmente y vuelve a confirmar.", confirmButtonColor: "#b87e38" });
+        return;
+      } finally {
+        $("#btn_use_location").prop("disabled", false).html('<i class="bi bi-crosshair me-1"></i> Usar mi ubicación');
+      }
     }
 
     const delivery = !inStore && !!zoneSel;
@@ -1516,7 +1602,11 @@ $(document).ready(function() {
       paymethod_id: paymethodId,
       delivery_zone_id: delivery ? zoneSel : "",
       note: note,
-      scheduled_at: scheduledAt
+      scheduled_at: scheduledAt,
+      lat: clientGeo ? clientGeo.lat : "",
+      lng: clientGeo ? clientGeo.lng : "",
+      maps: clientGeo && clientGeo.maps ? clientGeo.maps : "",
+      distance_km: clientGeo ? clientGeo.distance.toFixed(2) : ""
     }, function(res) {
       let buyCode = String(res || "").trim();
       if (!buyCode) {
@@ -1534,6 +1624,8 @@ $(document).ready(function() {
       msg += "*Teléfono:* " + phone + "\n";
       if(delivery){
         msg += "*Dirección:* " + address + "\n";
+        if(clientGeo && clientGeo.maps){ msg += "*Ruta (Google Maps):* " + clientGeo.maps + "\n"; }
+        if(clientGeo && clientGeo.distance > 0){ msg += "*Distancia:* ≈ " + clientGeo.distance.toFixed(1) + " km\n"; }
         msg += "*Zona:* " + zoneName + "\n";
         const dcount = deliveryCount(items);
         msg += "*Delivery:* " + fmt(t.delivery) + (dcount > 1 ? " (" + dcount + " entregas × " + fmt(t.delivery / dcount) + " c/u)" : "") + "\n";
@@ -1565,13 +1657,17 @@ $(document).ready(function() {
 
       clearCart();
       $("#modal-checkout").modal("hide");
-      Swal.fire({
-        icon: "success",
-        title: "¡Pedido enviado!",
-        html: "Tu pedido ha sido enviado por WhatsApp. Te confirmaremos pronto.",
-        confirmButtonText: "¡Genial!",
-        confirmButtonColor: "#e0a96d"
-      }).then(function(){ location.reload(); });
+      if (buyCode) {
+        window.location.href = "./?view=order-status&code=" + encodeURIComponent(buyCode);
+      } else {
+        Swal.fire({
+          icon: "success",
+          title: "¡Pedido enviado!",
+          html: "Tu pedido ha sido enviado por WhatsApp. Te confirmaremos pronto.",
+          confirmButtonText: "¡Genial!",
+          confirmButtonColor: "#e0a96d"
+        }).then(function(){ location.reload(); });
+      }
     }).fail(function() {
       btn.prop("disabled", false).html('CONFIRMAR Y PEDIR POR WHATSAPP <i class="bi bi-whatsapp ms-2"></i>');
       Swal.fire({ icon: "error", title: "Error", text: "Ocurrió un error al registrar tu pedido. Intenta de nuevo.", confirmButtonColor: "#ff2a2a" });

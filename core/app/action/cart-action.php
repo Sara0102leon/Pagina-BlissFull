@@ -166,6 +166,29 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="buy"){
 			$buy->capture = isset($_POST["capture"])?$_POST["capture"]:"";
 			$buy->note = isset($_POST["note"])?trim($_POST["note"]):"";
 			$buy->scheduled_at = isset($_POST["scheduled_at"])?trim($_POST["scheduled_at"]):"";
+
+			// Ubicación del cliente (solo para pedidos a domicilio)
+			$lat_rel = trim(isset($_POST["lat"])?$_POST["lat"]:"");
+			$lng_rel = trim(isset($_POST["lng"])?$_POST["lng"]:"");
+			$maps_rel = trim(isset($_POST["maps"])?$_POST["maps"]:"");
+			$dist_rel = trim(isset($_POST["distance_km"])?$_POST["distance_km"]:"");
+			$is_delivery = (isset($_POST["delivery_zone_id"]) && $_POST["delivery_zone_id"]!="");
+			if(!$is_delivery){ // sin delivery no se guardan coordenadas
+				$lat_rel = ""; $lng_rel = ""; $maps_rel = ""; $dist_rel = "";
+			}
+			if($lat_rel!=="" && (is_numeric($lat_rel) && floatval($lat_rel)>=-90 && floatval($lat_rel)<=90)){
+				$buy->lat = floatval($lat_rel);
+			}else{ $buy->lat = ""; }
+			if($lng_rel!=="" && (is_numeric($lng_rel) && floatval($lng_rel)>=-180 && floatval($lng_rel)<=180)){
+				$buy->lng = floatval($lng_rel);
+			}else{ $buy->lng = ""; }
+			if($buy->lat=="" || $buy->lng==""){ $maps_rel = ""; $dist_rel = ""; }
+			if($maps_rel!=="" && preg_match('~^https?://~i',$maps_rel) && !preg_match('/[\'";<>]/',$maps_rel)){
+				$buy->maps = substr($maps_rel,0,500);
+			}else{ $buy->maps = ""; }
+			if($dist_rel!=="" && is_numeric($dist_rel)){
+				$buy->distance_km = min(max(floatval($dist_rel),0),5000);
+			}else{ $buy->distance_km = ""; }
 			// Validación servidor: los pedidos programados exigen mínimo 3 horas de anticipación
 			if($buy->scheduled_at!=""){
 				$ts = strtotime($buy->scheduled_at);

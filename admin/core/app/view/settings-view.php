@@ -254,6 +254,14 @@ $settings = ConfigurationData::getAll();
             <div class="col-md-4">
               <input type="text" name="maps" class="form-control" placeholder="Google Maps: dirección, coordenadas o enlace completo (https://www.google.com/maps/place/...)">
             </div>
+            <div class="col-md-2">
+              <label class="form-label small text-muted mb-0">Latitud</label>
+              <input type="text" name="lat" class="form-control" placeholder="10.0244691">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small text-muted mb-0">Longitud</label>
+              <input type="text" name="lng" class="form-control" placeholder="-69.2549267">
+            </div>
             <div class="col-md-4">
               <input type="file" name="image" class="form-control" accept="image/*">
             </div>
@@ -299,6 +307,8 @@ $settings = ConfigurationData::getAll();
                     <span class="small text-muted" style="max-width:150px" title="Medidas recomendadas: 800x600 px (4:3). Si cambias la foto y no se actualiza, recarga con Ctrl+F5."><i class="bi bi-info-circle"></i> 800×600 px</span>
                     <input type="file" name="image" class="form-control" accept="image/*" style="max-width:220px;">
                     <input type="text" name="maps" class="form-control" value="<?php echo htmlspecialchars($sd->maps); ?>" placeholder="Google Maps (query de dirección)" style="min-width:220px;">
+                    <input type="text" name="lat" class="form-control" value="<?php echo htmlspecialchars($sd->lat); ?>" placeholder="Latitud" style="max-width:110px;" title="Latitud (para la ruta y la distancia)">
+                    <input type="text" name="lng" class="form-control" value="<?php echo htmlspecialchars($sd->lng); ?>" placeholder="Longitud" style="max-width:110px;" title="Longitud (para la ruta y la distancia)">
                 </td>
                 <td>
                   <input type="text" name="phone" class="form-control" value="<?php echo htmlspecialchars($sd->phone); ?>" required style="min-width:140px;">

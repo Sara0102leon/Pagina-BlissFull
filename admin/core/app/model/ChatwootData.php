@@ -99,7 +99,7 @@ class ChatwootData {
 		$paymethod = $buy->getPaymethod();
 
 		$lines = array();
-		$lines[] = "PEDIDO PAGADO - ALIANZAS BLISSFUL";
+		$lines[] = "PEDIDO ENVIADO - ALIANZAS BLISSFUL";
 		$lines[] = "------------------------------------";
 		$lines[] = "Sede: ".($sede?$sede->name:"-");
 		$lines[] = "Cliente: ".($client?trim($client->name." ".$client->lastname):"-");
@@ -109,6 +109,12 @@ class ChatwootData {
 		}
 		if(!empty($client->address)){
 			$lines[] = "Dirección: ".$client->address;
+		}
+		if(!empty($buy->maps)){
+			$lines[] = "Ubicación (Google Maps): ".$buy->maps;
+		}
+		if(!empty($buy->distance_km)){
+			$lines[] = "Distancia: ≈ ".floatval($buy->distance_km)." km";
 		}
 		if($sede && !empty($sede->maps)){
 			$lines[] = "Maps: ".$sede->maps;
@@ -215,11 +221,6 @@ class ChatwootData {
 					$buy->status_id = 2;
 					$buy->change_status();
 					$changed = true;
-					// Resumen de entrega al grupo de delivery de la sede
-					$dest = self::deliveryTarget($buy);
-					if($dest){
-						$group_sent = self::sendMessage($dest, self::buildGroupMessage($buy));
-					}
 				}
 				break;
 
@@ -370,6 +371,12 @@ class ChatwootData {
 			"address" => ($client?$client->address:""),
 			"sede" => ($sede?$sede->name:""),
 			"sede_maps" => ($sede?$sede->maps:""),
+			"sede_lat" => ($sede && $sede->lat!=""?floatval($sede->lat):""),
+			"sede_lng" => ($sede && $sede->lng!=""?floatval($sede->lng):""),
+			"lat" => ($buy->lat!=""?floatval($buy->lat):""),
+			"lng" => ($buy->lng!=""?floatval($buy->lng):""),
+			"maps" => $buy->maps,
+			"distance_km" => ($buy->distance_km!=""?floatval($buy->distance_km):""),
 			"zona" => ($buy->delivery_zone_id && $buy->getDeliveryZone()?$buy->getDeliveryZone()->name:""),
 			"scheduled_at" => ($buy->scheduled_at?date("d/m/Y h:i A", strtotime($buy->scheduled_at)):""),
 			"note" => $buy->note,

@@ -342,6 +342,7 @@
                   <li><a href="./">Inicio</a></li>
                   <li><a href="#menu-anchor">Menú Completo</a></li>
                   <li><a href="#horarios-section">Horarios y Sucursales</a></li>
+                  <li><a href="./?view=order-status">Seguir mi pedido</a></li>
                 </ul>
               </div>
               <div class="col-6 col-md-4 col-lg-3">

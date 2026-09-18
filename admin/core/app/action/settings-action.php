@@ -167,6 +167,8 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="addsede"){
 		$s->address = isset($_POST["address"]) ? $_POST["address"] : "";
 		$s->phone = $_POST["phone"];
 		$s->maps = isset($_POST["maps"]) ? $_POST["maps"] : "";
+		$s->lat = isset($_POST["lat"]) ? trim($_POST["lat"]) : "";
+		$s->lng = isset($_POST["lng"]) ? trim($_POST["lng"]) : "";
 		$s->is_active = isset($_POST["is_active"]) ? "1" : "0";
 		if(isset($_FILES["image"])){
 			$handle = new Upload($_FILES["image"]);
@@ -186,6 +188,8 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="updsede"){
 		$s->address = isset($_POST["address"]) ? $_POST["address"] : "";
 		$s->phone = $_POST["phone"];
 		$s->maps = isset($_POST["maps"]) ? $_POST["maps"] : "";
+		$s->lat = isset($_POST["lat"]) ? trim($_POST["lat"]) : "";
+		$s->lng = isset($_POST["lng"]) ? trim($_POST["lng"]) : "";
 		$s->is_active = isset($_POST["is_active"]) ? "1" : "0";
 		if(isset($_FILES["image"]) && $_FILES["image"]["name"]!=""){
 			$handle = new Upload($_FILES["image"]);

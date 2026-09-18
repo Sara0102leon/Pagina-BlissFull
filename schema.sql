@@ -189,6 +189,10 @@ create table buy (
 	notified varchar(100) not null default '',
 	chatwoot_conversation_id bigint,
 	chatwoot_contact_id bigint,
+	lat decimal(10,7) null default null,
+	lng decimal(10,7) null default null,
+	maps varchar(500) null default null,
+	distance_km decimal(8,2) null default null,
 	foreign key(paymethod_id) references paymethod(id),
 	foreign key(coupon_id) references coupon(id),
 	foreign key(client_id) references client(id),
@@ -260,10 +264,12 @@ create table sede (
 	phone varchar(20) not null,
 	horario_open time null default null,
 	horario_close time null default null,
-	image varchar(255) default '',
+image varchar(255) default '',
+	lat decimal(10,7) null default null,
+	lng decimal(10,7) null default null,
 	maps varchar(500) default '',
 	chatwoot_group_conversation_id bigint,
-	is_active boolean default 1,
+	is_active boolean default 0,
 	created_at datetime default current_timestamp
 );
 

@@ -2,7 +2,7 @@
 class BuyData {
 	public static $tablename = "buy";
 
-	public $id, $k, $code, $coupon_id, $client_id, $created_at, $paymethod_id, $delivery_zone_id, $sede_id, $capture, $note, $scheduled_at, $status_id, $name, $c, $m, $chatwoot_conversation_id, $chatwoot_contact_id, $notified, $client_name, $client_phone, $elapsed_sec;
+	public $id, $k, $code, $coupon_id, $client_id, $created_at, $paymethod_id, $delivery_zone_id, $sede_id, $capture, $note, $scheduled_at, $status_id, $name, $c, $m, $chatwoot_conversation_id, $chatwoot_contact_id, $notified, $client_name, $client_phone, $elapsed_sec, $lat, $lng, $maps, $distance_km;
 
 	public function __construct(){
 		$this->id = null;
@@ -31,7 +31,7 @@ class BuyData {
 		$zone_sql = $this->delivery_zone_id!="" ? $this->delivery_zone_id : "NULL";
 		$sede_sql = $this->sede_id!="" ? $this->sede_id : "NULL";
 		$sched_sql = ($this->scheduled_at!="" && isset($cols["scheduled_at"])) ? "\"$this->scheduled_at\"" : "NULL";
-		$fields = array("k","code","coupon_id","client_id","created_at","paymethod_id","delivery_zone_id","sede_id","capture","note","scheduled_at","status_id");
+		$fields = array("k","code","coupon_id","client_id","created_at","paymethod_id","delivery_zone_id","sede_id","capture","note","scheduled_at","status_id","lat","lng","maps","distance_km");
 		$names = array();
 		$vals = array();
 		foreach($fields as $f){
@@ -45,6 +45,10 @@ class BuyData {
 				case "capture": $vals[] = ($this->capture!="" ? "\"$this->capture\"" : "NULL"); break;
 				case "note": $vals[] = ($this->note!="" ? "\"$this->note\"" : "NULL"); break;
 				case "scheduled_at": $vals[] = $sched_sql; break;
+				case "lat": $vals[] = ($this->lat!="" && is_numeric($this->lat)) ? number_format(floatval($this->lat),7,".","") : "NULL"; break;
+				case "lng": $vals[] = ($this->lng!="" && is_numeric($this->lng)) ? number_format(floatval($this->lng),7,".","") : "NULL"; break;
+				case "maps": $vals[] = ($this->maps!="" ? "\"$this->maps\"" : "NULL"); break;
+				case "distance_km": $vals[] = ($this->distance_km!="" && is_numeric($this->distance_km)) ? number_format(floatval($this->distance_km),2,".","") : "NULL"; break;
 				default: $vals[] = "\"".$this->{$f}."\"";
 			}
 		}
