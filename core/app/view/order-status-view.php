@@ -86,17 +86,37 @@ $fmt = function($n){ return number_format(floatval($n), 2, ".", ","); };
 
           <!-- Ruta de entrega -->
           <?php if($delivery): ?>
+          <?php
+            $has_sede = ($sede && $sede->lat!="" && $sede->lng!="");
+            $has_cli  = ($buy->lat!="" && $buy->lng!="");
+            $embed_url = "";
+            $open_url  = ($buy->maps!="" ? $buy->maps : "");
+            if($has_cli){
+              if($has_sede){
+                $embed_url = "https://maps.google.com/maps?saddr=".trim($sede->lat).",".trim($sede->lng)."&daddr=".trim($buy->lat).",".trim($buy->lng)."&output=embed";
+                if($open_url==""){ $open_url = "https://www.google.com/maps/dir/?api=1&origin=".trim($sede->lat).",".trim($sede->lng)."&destination=".trim($buy->lat).",".trim($buy->lng)."&travelmode=driving"; }
+              }else{
+                $embed_url = "https://maps.google.com/maps?q=".trim($buy->lat).",".trim($buy->lng)."&z=15&output=embed";
+                if($open_url==""){ $open_url = "https://www.google.com/maps/search/?api=1&query=".trim($buy->lat).",".trim($buy->lng); }
+              }
+            }
+          ?>
           <div class="card border-0 shadow-sm mb-3">
             <div class="card-body p-4">
-              <h2 class="h5 mb-2"><i class="bi bi-truck text-gold me-1"></i> Entrega a domicilio</h2>
+              <h2 class="h5 mb-1"><i class="bi bi-truck text-gold me-1"></i> Entrega a domicilio</h2>
               <p class="small text-muted mb-3"><?php echo htmlspecialchars($client ? $client->address : ""); ?></p>
-              <?php if(!empty($buy->maps)): ?>
-                <a class="btn btn-warning rounded-pill px-4 fw-bold" href="<?php echo htmlspecialchars($buy->maps, ENT_QUOTES); ?>" target="_blank" rel="noopener"><i class="bi bi-map me-1"></i> Ver ruta desde <?php echo htmlspecialchars($sede?$sede->name:""); ?> en Google Maps</a>
-                <?php if(!empty($buy->distance_km)): ?>
-                  <div class="small text-muted mt-2"><i class="bi bi-signpost-2 me-1"></i> Aproximadamente <?php echo $fmt($buy->distance_km); ?> km de distancia</div>
-                <?php endif; ?>
+              <?php if($embed_url!=""): ?>
+                <div class="ratio ratio-4x3 rounded-4 overflow-hidden border shadow-sm mb-3">
+                  <iframe src="<?php echo htmlspecialchars($embed_url, ENT_QUOTES); ?>" width="100%" height="100%" style="border:0" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen title="Mapa de entrega"></iframe>
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                  <a class="btn btn-warning rounded-pill px-4 fw-bold" href="<?php echo htmlspecialchars($open_url, ENT_QUOTES); ?>" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right me-1"></i> Abrir en Google Maps</a>
+                  <?php if(!empty($buy->distance_km)): ?>
+                    <span class="small text-muted"><i class="bi bi-signpost-2 me-1"></i> Aproximadamente <?php echo $fmt($buy->distance_km); ?> km de distancia</span>
+                  <?php endif; ?>
+                </div>
               <?php else: ?>
-                <p class="small text-muted mb-0"><i class="bi bi-info-circle me-1"></i> La ruta se activa cuando tu pedido sea confirmado.</p>
+                <p class="small text-muted mb-0"><i class="bi bi-info-circle me-1"></i> El mapa se activa cuando tu pedido sea confirmado.</p>
               <?php endif; ?>
             </div>
           </div>

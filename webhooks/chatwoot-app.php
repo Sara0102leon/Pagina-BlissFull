@@ -106,8 +106,8 @@ function renderSale(s){
   var maps = s.sede_maps
     ? '<a href="'+s.sede_maps+'" target="_blank" rel="noopener">Ver en Google Maps ↗</a>'
     : '';
-  var clientRoute = (s.maps || (s.lat && s.lng && s.sede_lat && s.sede_lng))
-    ? '<a href="'+(s.maps || 'https://www.google.com/maps/dir/?api=1&origin='+s.sede_lat+','+s.sede_lng+'&destination='+s.lat+','+s.lng+'&travelmode=driving')+'" target="_blank" rel="noopener">Ruta (sucursal → cliente) ↗</a>'
+  var clientLoc = (s.maps || (s.lat && s.lng))
+    ? '<a href="'+(s.maps || 'https://www.google.com/maps/search/?api=1&query='+s.lat+','+s.lng)+'" target="_blank" rel="noopener">Ubicación del cliente ↗</a>'
     : '';
   var distanceTxt = (s.distance_km !== '' && s.distance_km)
     ? '≈ '+s.distance_km+' km'
@@ -122,7 +122,7 @@ function renderSale(s){
       field('Teléfono',s.phone) +
       field('Dirección',s.address) +
       field('Zona',s.zona) +
-      (clientRoute ? '<div class="row"><span class="k">Ubicación</span><span class="v">'+clientRoute+(distanceTxt?' · '+distanceTxt:'')+'</span></div>' : '') +
+      (clientLoc ? '<div class="row"><span class="k">Ubicación</span><span class="v">'+clientLoc+(distanceTxt?' · '+distanceTxt:'')+'</span></div>' : '') +
       (maps ? '<div class="row"><span class="k">Maps</span><span class="v">'+maps+'</span></div>' : '') +
       field('Programado',s.scheduled_at) +
       field('Pago',s.paymethod) +

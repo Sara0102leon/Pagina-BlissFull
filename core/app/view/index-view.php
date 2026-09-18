@@ -1452,8 +1452,8 @@ $(document).ready(function() {
     const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1*toR) * Math.cos(lat2*toR) * Math.sin(dLng/2) * Math.sin(dLng/2);
     return 2 * R * Math.asin(Math.sqrt(a));
   }
-  function directionLink(lat1, lng1, lat2, lng2) {
-    return "https://www.google.com/maps/dir/?api=1&origin=" + lat1 + "," + lng1 + "&destination=" + lat2 + "," + lng2 + "&travelmode=driving";
+  function clientLocationLink(lat, lng) {
+    return "https://www.google.com/maps/search/?api=1&query=" + lat + "," + lng;
   }
   function renderGeoInfo(sede) {
     const $info = $("#order_location_info");
@@ -1463,7 +1463,7 @@ $(document).ready(function() {
       html += ' · a ≈ ' + clientGeo.distance.toFixed(1) + ' km de ' + (sede ? sede.name : "");
     }
     if (clientGeo.maps) {
-      html += ' · <a href="' + clientGeo.maps + '" target="_blank" rel="noopener">Ver ruta desde ' + (sede ? sede.name : "la sucursal") + ' <i class="bi bi-box-arrow-up-right"></i></a>';
+      html += ' · <a href="' + clientGeo.maps + '" target="_blank" rel="noopener">Ver mi ubicación <i class="bi bi-box-arrow-up-right"></i></a>';
     }
     $info.html(html);
   }
@@ -1476,8 +1476,8 @@ $(document).ready(function() {
     } catch(e) {}
     if (sede && sede.lat && sede.lng) {
       clientGeo.distance = haversineKm(parseFloat(sede.lat), parseFloat(sede.lng), lat, lng);
-      clientGeo.maps = directionLink(sede.lat, sede.lng, lat, lng);
     }
+    clientGeo.maps = clientLocationLink(lat, lng);
     renderGeoInfo(sede);
   }
 
@@ -1624,7 +1624,7 @@ $(document).ready(function() {
       msg += "*Teléfono:* " + phone + "\n";
       if(delivery){
         msg += "*Dirección:* " + address + "\n";
-        if(clientGeo && clientGeo.maps){ msg += "*Ruta (Google Maps):* " + clientGeo.maps + "\n"; }
+        if(clientGeo && clientGeo.maps){ msg += "*Ubicación (Google Maps):* " + clientGeo.maps + "\n"; }
         if(clientGeo && clientGeo.distance > 0){ msg += "*Distancia:* ≈ " + clientGeo.distance.toFixed(1) + " km\n"; }
         msg += "*Zona:* " + zoneName + "\n";
         const dcount = deliveryCount(items);
