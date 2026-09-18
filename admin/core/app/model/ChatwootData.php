@@ -113,9 +113,6 @@ class ChatwootData {
 		if(!empty($buy->maps)){
 			$lines[] = "Ubicación (Google Maps): ".$buy->maps;
 		}
-		if(!empty($buy->distance_km)){
-			$lines[] = "Distancia: ≈ ".floatval($buy->distance_km)." km";
-		}
 		if($sede && !empty($sede->maps)){
 			$lines[] = "Maps: ".$sede->maps;
 		}
