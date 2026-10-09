@@ -1,5 +1,28 @@
 # Blissfull — Notas de proyecto
 
+## PIVOT: Plataforma SaaS de menús digitales (octubre 2026)
+
+El proyecto evolucionó de "menú de una pizzería" a una **plataforma multi-cliente
+tipo OlaClick** (`landing/` es la marketing page). Roadmap en `PLAN.md` (A0–A4).
+
+**Decisiones tomadas (usuario):**
+- Stack: **extender el PHP/MariaDB actual** (el motor de menú ya validado es la base).
+- Multi-tenant: **una sola BD** con campo `tienda_id` en las tablas de negocio; tablas
+  nuevas `tienda`, `plan`, `suscripcion`. Subdominios resueltos por **Host header**
+  (vhost comodín). Por ahora se desarrolla **en local** (subdominios simulados con
+  `Host: cliente.localhost` vía curl).
+- Roles: **un solo panel web por rol** (Dueño/Cocina/Repartidor). La pizzería actual
+  migra como primer cliente.
+- Pagos: MVP = cliente paga por **WhatsApp** y el admin activa el subdominio.
+  Después pago **automático con Binance Pay** (API oficial PHP).
+
+**Landing (A1):** `landing/` estático servido en `http://localhost/menu/landing/`.
+- Brand provisional "sazón" (placeholder, cambiar nombre/colores en
+  `landing/index.html`, `landing.css` `:root`). Pocket de capturas QA en
+  `AppData\Local\Temp\opencode\`.
+- Mockups usan fotos reales de `admin/storage/products/`.
+- Demo drag&drop funcional con persistencia en localStorage.
+
 ## Despliegue en producción (VPS alianza)
 
 **Sitio público:** https://prueba.alianzablissful.com

@@ -26,10 +26,16 @@ el cliente se registra, paga un plan y se le activa su **menú en un subdominio 
 - **Mejoras propias**: ordenar el menú **manualmente con drag&drop** (categorías y
   productos dentro de categoría), tema configurable por cliente, subida de fotos.
 
-### Arquitectura propuesta (decisiones pendientes → preguntas abajo)
+### Arquitectura decidida (confirmada por el usuario — oct 2026)
+- **Stack: extender el PHP/MariaDB actual** (el motor de menú validado es la base; no se reescribe).
 - Multi-tenant con **base única** + `tienda_id` en las tablas de negocio (tablas
   nuevas: `tienda`, `plan`, `suscripcion`; `role` en `user`).
 - Subdominios resueltos por **Host header** → tienda activa (vhost comodín en nginx).
+  Ahora se desarrolla **en local** (simular subdominios con `Host: x.localhost`).
+- Roles: **un solo panel web por rol** (el login decide la pantalla: Dueño todo,
+  Cocina = KDS, Repartidor = entregas).
+- Pagos MVP: cliente paga por **WhatsApp** → admin activa el subdominio.
+  Después: **pago automático con Binance Pay** (API merchant, PHP).
 - El primer cliente = la pizzería actual: sus datos `tacomenu` migran como una tienda.
 
 ### Hoja de ruta de producto
