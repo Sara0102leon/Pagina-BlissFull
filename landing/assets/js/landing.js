@@ -64,12 +64,18 @@
      ═══════════════════════════════════════════════════ */
   function makeSortable(list, opts) {
     opts = opts || {};
-    var handleSel = opts.handle || ".esort__grip, .egrid__grip";
+    var handleSel = opts.handle || ".md-cat, .md-card__grip";
     var active = null, placeholder = null, pointerId = null;
     var startX = 0, startY = 0, orderBefore = "";
 
     function order() {
       return Array.prototype.map.call(list.children, function (el) { return el.dataset.id; }).join(",");
+    }
+
+    function nextReal(el) {
+      var n = el.nextElementSibling;
+      while (n && (n === active || n === placeholder)) n = n.nextElementSibling;
+      return n || null;
     }
 
     function siblings() {
@@ -142,15 +148,24 @@
         ? "translate(" + dx + "px," + dy + "px)"
         : "translate(" + dx + "px," + dy + "px) rotate(1.2deg)";
 
-      var y = e.clientY;
-      var after = siblings().find(function (el) {
+      var x = e.clientX, y = e.clientY;
+      var best = null, bestDist = Infinity;
+      siblings().forEach(function (el) {
         var b = el.getBoundingClientRect();
-        return y < b.top + b.height / 2;
+        var cx = b.left + b.width / 2, cy = b.top + b.height / 2;
+        var d = (cx - x) * (cx - x) + (cy - y) * (cy - y);
+        if (d < bestDist) { bestDist = d; best = { el: el, r: b, cx: cx, cy: cy }; }
       });
-      var target = after || null;
-      if (target !== placeholder.nextElementSibling) {
+
+      var ref = null;
+      if (best) {
+        var sameRow = Math.abs(y - best.cy) < best.r.height * 0.6;
+        var before = sameRow ? (x < best.cx) : (y < best.cy);
+        ref = before ? best.el : nextReal(best.el);
+      }
+      if (ref !== placeholder.nextElementSibling) {
         flipMove(function () {
-          if (after) list.insertBefore(placeholder, after);
+          if (ref) list.insertBefore(placeholder, ref);
           else list.appendChild(placeholder);
         });
       }

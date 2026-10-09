@@ -228,113 +228,108 @@
     </div>
 
     <div class="editor__stage reveal">
-      <div class="editor__panel">
-        <div class="editor__bar">
+      <div class="menu-demo">
+        <div class="menu-demo__bar">
           <span class="editor__dots" aria-hidden="true"><i></i><i></i><i></i></span>
-          <span class="editor__url">
+          <span class="menu-demo__url">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
-            panel.sazon.app / editor
+            alianza.sazon.app
           </span>
           <span class="editor__saved" id="editorSaved">Guardado ✓</span>
         </div>
 
-        <div class="editor__cols">
-          <!-- Categorías -->
-          <div class="editor__col">
-            <div class="editor__collabel">
-              <span>Categorías</span>
-              <span class="editor__count">4</span>
-            </div>
-            <ul class="esort" id="editorCats">
-              <li class="esort__item" data-id="pizzas">
-                <span class="esort__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
-                <span class="esort__name">Pizzas</span>
-                <span class="esort__thumbs" aria-hidden="true">
-                  <img src="../admin/storage/products/PEPPERONI.jpg" alt="">
-                  <img src="../admin/storage/products/HAWAIANA.jpg" alt="">
-                  <img src="../admin/storage/products/TOCINETA.jpg" alt="">
-                </span>
-                <span class="esort__count">16</span>
-              </li>
-              <li class="esort__item" data-id="hamburguesas">
-                <span class="esort__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
-                <span class="esort__name">Hamburguesas</span>
-                <span class="esort__thumbs" aria-hidden="true">
-                  <img src="../admin/storage/products/BASICA.jpg" alt="">
-                  <img src="../admin/storage/products/BASICA_1.jpg" alt="">
-                  <img src="../admin/storage/products/BASICA_2.jpg" alt="">
-                </span>
-                <span class="esort__count">9</span>
-              </li>
-              <li class="esort__item" data-id="pastas">
-                <span class="esort__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
-                <span class="esort__name">Pastas</span>
-                <span class="esort__thumbs" aria-hidden="true">
-                  <img src="../admin/storage/products/pasta-a-los-quesos.jpg" alt="">
-                  <img src="../admin/storage/products/espaguetis-a-la-napolitana.jpg" alt="">
-                </span>
-                <span class="esort__count">8</span>
-              </li>
-              <li class="esort__item" data-id="bebidas">
-                <span class="esort__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
-                <span class="esort__name">Bebidas</span>
-                <span class="esort__thumbs" aria-hidden="true">
-                  <img src="../admin/storage/products/Aguamineral600ml.png" alt="">
-                  <img src="../admin/storage/products/refresco.jpeg" alt="">
-                </span>
-                <span class="esort__count">12</span>
-              </li>
-            </ul>
+        <div class="menu-demo__screen">
+          <div class="md-brand">
+            <span class="md-brand__name">ALIANZA BLISSFULL</span>
+            <span class="md-brand__tag">pizzas y platillos caseros</span>
           </div>
 
-          <!-- Productos -->
-          <div class="editor__col">
-            <div class="editor__collabel">
-              <span>Pizzas · productos</span>
-              <span class="editor__count">4</span>
-            </div>
-            <ul class="egrid" id="editorProds">
-              <li class="egrid__item" data-id="pepperoni">
-                <span class="egrid__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
-                <img class="egrid__img" src="../admin/storage/products/PEPPERONI.jpg" alt="Pizza de pepperoni">
-                <div class="egrid__body">
-                  <b>Pepperoni</b>
-                  <span>Queso, pepperoni y la mejor salsa.</span>
-                </div>
-                <span class="egrid__price">$12</span>
-              </li>
-              <li class="egrid__item" data-id="hawaiana">
-                <span class="egrid__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
-                <img class="egrid__img" src="../admin/storage/products/HAWAIANA.jpg" alt="Pizza hawaiana">
-                <div class="egrid__body">
-                  <b>Hawaiana</b>
-                  <span>Jamón, piña y mucho queso.</span>
-                </div>
-                <span class="egrid__price">$12</span>
-              </li>
-              <li class="egrid__item" data-id="tocinetada">
-                <span class="egrid__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
-                <img class="egrid__img" src="../admin/storage/products/TOCINETA.jpg" alt="Pizza tocinetada">
-                <div class="egrid__body">
-                  <b>Tocinetada</b>
-                  <span>Tocineta crocante y queso fundido.</span>
-                </div>
-                <span class="egrid__price">$13</span>
-              </li>
-              <li class="egrid__item" data-id="vegetariana">
-                <span class="egrid__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
-                <img class="egrid__img" src="../admin/storage/products/VEGETARIANA.jpg" alt="Pizza vegetariana">
-                <div class="egrid__body">
-                  <b>Vegetariana</b>
-                  <span>Pimentón, cebolla, champiñones.</span>
-                </div>
-                <span class="egrid__price">$11</span>
-              </li>
-            </ul>
+          <div class="md-search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg>
+            Buscar en el menú…
           </div>
+
+          <ul class="md-cats" id="editorCats" aria-label="Categorías — arrastrables para reordenar">
+            <li class="md-cat" data-id="destacados"><span class="md-cat__grip" aria-hidden="true">⠿</span>Destacados</li>
+            <li class="md-cat is-on" data-id="pizzas"><span class="md-cat__grip" aria-hidden="true">⠿</span>Pizzas</li>
+            <li class="md-cat" data-id="hamburguesas"><span class="md-cat__grip" aria-hidden="true">⠿</span>Hamburguesas</li>
+            <li class="md-cat" data-id="pastas"><span class="md-cat__grip" aria-hidden="true">⠿</span>Pastas</li>
+            <li class="md-cat" data-id="bebidas"><span class="md-cat__grip" aria-hidden="true">⠿</span>Bebidas</li>
+          </ul>
+
+          <div class="md-head"><span>Pizzas</span><span class="md-head__n">4 productos</span></div>
+
+          <ul class="md-grid" id="editorProds" aria-label="Productos — arrastrables para reordenar">
+            <li class="md-card" data-id="pepperoni">
+              <span class="md-card__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+              <div class="md-card__imgwrap">
+                <img class="md-card__img" src="../admin/storage/products/PEPPERONI.jpg" alt="Pizza de pepperoni">
+                <span class="md-card__price">$12</span>
+              </div>
+              <div class="md-card__body">
+                <b>Pepperoni</b>
+                <span>Queso, pepperoni y la mejor salsa.</span>
+              </div>
+            </li>
+            <li class="md-card" data-id="hawaiana">
+              <span class="md-card__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+              <div class="md-card__imgwrap">
+                <img class="md-card__img" src="../admin/storage/products/HAWAIANA.jpg" alt="Pizza hawaiana">
+                <span class="md-card__price">$12</span>
+              </div>
+              <div class="md-card__body">
+                <b>Hawaiana</b>
+                <span>Jamón, piña y mucho queso.</span>
+              </div>
+            </li>
+            <li class="md-card" data-id="tocinetada">
+              <span class="md-card__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+              <div class="md-card__imgwrap">
+                <img class="md-card__img" src="../admin/storage/products/TOCINETA.jpg" alt="Pizza tocinetada">
+                <span class="md-card__price">$13</span>
+              </div>
+              <div class="md-card__body">
+                <b>Tocinetada</b>
+                <span>Tocineta crocante y queso fundido.</span>
+              </div>
+            </li>
+            <li class="md-card" data-id="vegetariana">
+              <span class="md-card__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+              <div class="md-card__imgwrap">
+                <img class="md-card__img" src="../admin/storage/products/VEGETARIANA.jpg" alt="Pizza vegetariana">
+                <span class="md-card__price">$11</span>
+              </div>
+              <div class="md-card__body">
+                <b>Vegetariana</b>
+                <span>Pimentón, cebolla, champiñones.</span>
+              </div>
+            </li>
+            <li class="md-card" data-id="cuatro-estaciones">
+              <span class="md-card__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+              <div class="md-card__imgwrap">
+                <img class="md-card__img" src="../admin/storage/products/4-ESTACIONES.jpg" alt="Pizza cuatro estaciones">
+                <span class="md-card__price">$15</span>
+              </div>
+              <div class="md-card__body">
+                <b>4 Estaciones</b>
+                <span>Cuatro sabores en una sola pizza.</span>
+              </div>
+            </li>
+            <li class="md-card" data-id="anchoas">
+              <span class="md-card__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+              <div class="md-card__imgwrap">
+                <img class="md-card__img" src="../admin/storage/products/ANCHOAS.jpg" alt="Pizza de anchoas">
+                <span class="md-card__price">$13</span>
+              </div>
+              <div class="md-card__body">
+                <b>Anchoas</b>
+                <span>Anchoas, aceitunas y orégano.</span>
+              </div>
+            </li>
+          </ul>
         </div>
       </div>
-      <p class="editor__hint"><span aria-hidden="true">↕</span> Probalo: agarrá el ícono <b>⠿</b> y arrastrá. Se guarda al instante.</p>
+      <p class="editor__hint"><span aria-hidden="true">↕</span> Probalo: arrastrá una <b>categoría</b> o un <b>producto</b> (ícono ⠿) y mirá cómo se acomoda. Se guarda al instante.</p>
     </div>
   </div>
 </section>

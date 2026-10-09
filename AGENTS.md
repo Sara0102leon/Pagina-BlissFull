@@ -21,10 +21,10 @@ tipo OlaClick** (`landing/` es la marketing page). Roadmap en `PLAN.md` (A0–A4
   `landing/index.html`, `landing.css` `:root`). Pocket de capturas QA en
   `AppData\Local\Temp\opencode\`.
 - Mockups usan fotos reales de `admin/storage/products/`.
-- Sección **"Menú en vivo"** (`#editor`): demo grande de orden del menú con el look
-  del panel real (categorías + tarjetas de producto). Drag con **pointer events**,
-  lift + reordenamiento **FLIP**, persistencia en localStorage (`sazon_landing_cats_order`,
-  `sazon_landing_prods_order`).
+- Sección **"Menú en vivo"** (`#editor`): demo grande con el look del **menú real**
+  (categorías como **pills** + tarjetas de producto con **imagen grande y precio** en
+  grilla). Drag con **pointer events**, lift + reordenamiento **FLIP**, persistencia en
+  localStorage (`sazon_landing_cats_order`, `sazon_landing_prods_order`).
 - **FAQ animado**: `<details>` con transición de altura (JS en `landing.js`).
 - **Pago demo** (`#pay`): modal que simula el flujo Zenobank (resumen → conectando →
   aprobado). Todos los `.js-pay` lo abren. Es demo/copy; el checkout real es A0/A2.
