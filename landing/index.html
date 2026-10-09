@@ -27,6 +27,7 @@
     </a>
     <nav class="nav__links" aria-label="Principal">
       <a href="#funciones">Funciones</a>
+      <a href="#editor">Menú en vivo</a>
       <a href="#roles">Tu equipo</a>
       <a href="#planes">Planes</a>
       <a href="#faq">FAQ</a>
@@ -41,6 +42,7 @@
   </div>
   <div class="nav__mobile" id="navMobile">
     <a href="#funciones">Funciones</a>
+    <a href="#editor">Menú en vivo</a>
     <a href="#roles">Tu equipo</a>
     <a href="#planes">Planes</a>
     <a href="#faq">FAQ</a>
@@ -66,7 +68,7 @@
       </p>
       <div class="hero__cta reveal">
         <a href="#planes" class="btn btn--primary btn--lg">Empezar gratis</a>
-        <a href="#demo" class="btn btn--ghost btn--lg">Ver el menú en vivo <span class="ar">↗</span></a>
+        <a href="#editor" class="btn btn--ghost btn--lg">Ver el menú en vivo <span class="ar">↗</span></a>
       </div>
       <ul class="hero__points reveal">
         <li><span class="tick">✓</span> Sin comisión por pedido</li>
@@ -181,21 +183,6 @@
         </div>
       </article>
 
-      <article class="bento__card bento__card--wide">
-        <div class="bc-top">
-          <span class="bc-ic bc-ic--red">▤</span>
-          <h3>Ordena tu menú <em>arrastrando</em></h3>
-        </div>
-        <p>Sin formularios engorrosos: arrastra categorías y productos para ordenar tu carta. Se guarda al instante.</p>
-        <div class="mini-sort" id="miniSort">
-          <div class="mini-sort__item" draggable="true" data-id="1"><span class="ms-grip">⠿</span> Pizzas <span class="ms-badge">16</span></div>
-          <div class="mini-sort__item" draggable="true" data-id="2"><span class="ms-grip">⠿</span> Hamburguesas <span class="ms-badge">9</span></div>
-          <div class="mini-sort__item" draggable="true" data-id="3"><span class="ms-grip">⠿</span> Pastas <span class="ms-badge">8</span></div>
-          <div class="mini-sort__item" draggable="true" data-id="4"><span class="ms-grip">⠿</span> Bebidas <span class="ms-badge">12</span></div>
-        </div>
-        <p class="mini-sort__hint">Probalo acá — así funciona en tu panel.</p>
-      </article>
-
       <article class="bento__card bento__card--kds">
         <div class="bc-top">
           <span class="bc-ic bc-ic--lime">◔</span>
@@ -219,12 +206,135 @@
 
       <article class="bento__card bento__card--price">
         <div class="bc-top">
-          <span class="bc-ic bc-ic--gold">₿</span>
-          <h3>Paga como prefieras</h3>
+          <span class="bc-ic bc-ic--gold">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19"/><path d="M6 15h4"/></svg>
+          </span>
+          <h3>Pago automático</h3>
         </div>
-        <p>Activa tu plan pagando por <b>WhatsApp</b>. Próximamente pago automático con <b>Binance</b>.</p>
-        <div class="price-tags"><span>WhatsApp</span><span class="coming">Binance ✓ pronto</span></div>
+        <p>Activa tu plan pagando en línea con <b>Zenobank</b>. Al aprobarse el pago, <b>tu subdominio se crea solo</b>.</p>
+        <div class="price-tags"><span>Zenobank</span><span class="coming">Subdominio al instante</span></div>
       </article>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ EDITOR / MENÚ EN VIVO ══════════════════ -->
+<section class="editor" id="editor">
+  <div class="wrap">
+    <div class="sec-head sec-head--center">
+      <p class="eyebrow"><span class="eyebrow__num">02</span> Menú en vivo</p>
+      <h2 class="sec-title">Ordena tu carta <em>arrastrando</em>.</h2>
+      <p class="sec-sub">Nada de formularios. Agarrá una categoría o un producto, movelo a su lugar y mirá cómo el resto se acomoda solo. Se guarda al instante — probalo acá mismo.</p>
+    </div>
+
+    <div class="editor__stage reveal">
+      <div class="editor__panel">
+        <div class="editor__bar">
+          <span class="editor__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="editor__url">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            panel.sazon.app / editor
+          </span>
+          <span class="editor__saved" id="editorSaved">Guardado ✓</span>
+        </div>
+
+        <div class="editor__cols">
+          <!-- Categorías -->
+          <div class="editor__col">
+            <div class="editor__collabel">
+              <span>Categorías</span>
+              <span class="editor__count">4</span>
+            </div>
+            <ul class="esort" id="editorCats">
+              <li class="esort__item" data-id="pizzas">
+                <span class="esort__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+                <span class="esort__name">Pizzas</span>
+                <span class="esort__thumbs" aria-hidden="true">
+                  <img src="../admin/storage/products/PEPPERONI.jpg" alt="">
+                  <img src="../admin/storage/products/HAWAIANA.jpg" alt="">
+                  <img src="../admin/storage/products/TOCINETA.jpg" alt="">
+                </span>
+                <span class="esort__count">16</span>
+              </li>
+              <li class="esort__item" data-id="hamburguesas">
+                <span class="esort__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+                <span class="esort__name">Hamburguesas</span>
+                <span class="esort__thumbs" aria-hidden="true">
+                  <img src="../admin/storage/products/BASICA.jpg" alt="">
+                  <img src="../admin/storage/products/BASICA_1.jpg" alt="">
+                  <img src="../admin/storage/products/BASICA_2.jpg" alt="">
+                </span>
+                <span class="esort__count">9</span>
+              </li>
+              <li class="esort__item" data-id="pastas">
+                <span class="esort__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+                <span class="esort__name">Pastas</span>
+                <span class="esort__thumbs" aria-hidden="true">
+                  <img src="../admin/storage/products/pasta-a-los-quesos.jpg" alt="">
+                  <img src="../admin/storage/products/espaguetis-a-la-napolitana.jpg" alt="">
+                </span>
+                <span class="esort__count">8</span>
+              </li>
+              <li class="esort__item" data-id="bebidas">
+                <span class="esort__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+                <span class="esort__name">Bebidas</span>
+                <span class="esort__thumbs" aria-hidden="true">
+                  <img src="../admin/storage/products/Aguamineral600ml.png" alt="">
+                  <img src="../admin/storage/products/refresco.jpeg" alt="">
+                </span>
+                <span class="esort__count">12</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Productos -->
+          <div class="editor__col">
+            <div class="editor__collabel">
+              <span>Pizzas · productos</span>
+              <span class="editor__count">4</span>
+            </div>
+            <ul class="egrid" id="editorProds">
+              <li class="egrid__item" data-id="pepperoni">
+                <span class="egrid__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+                <img class="egrid__img" src="../admin/storage/products/PEPPERONI.jpg" alt="Pizza de pepperoni">
+                <div class="egrid__body">
+                  <b>Pepperoni</b>
+                  <span>Queso, pepperoni y la mejor salsa.</span>
+                </div>
+                <span class="egrid__price">$12</span>
+              </li>
+              <li class="egrid__item" data-id="hawaiana">
+                <span class="egrid__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+                <img class="egrid__img" src="../admin/storage/products/HAWAIANA.jpg" alt="Pizza hawaiana">
+                <div class="egrid__body">
+                  <b>Hawaiana</b>
+                  <span>Jamón, piña y mucho queso.</span>
+                </div>
+                <span class="egrid__price">$12</span>
+              </li>
+              <li class="egrid__item" data-id="tocinetada">
+                <span class="egrid__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+                <img class="egrid__img" src="../admin/storage/products/TOCINETA.jpg" alt="Pizza tocinetada">
+                <div class="egrid__body">
+                  <b>Tocinetada</b>
+                  <span>Tocineta crocante y queso fundido.</span>
+                </div>
+                <span class="egrid__price">$13</span>
+              </li>
+              <li class="egrid__item" data-id="vegetariana">
+                <span class="egrid__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+                <img class="egrid__img" src="../admin/storage/products/VEGETARIANA.jpg" alt="Pizza vegetariana">
+                <div class="egrid__body">
+                  <b>Vegetariana</b>
+                  <span>Pimentón, cebolla, champiñones.</span>
+                </div>
+                <span class="egrid__price">$11</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <p class="editor__hint"><span aria-hidden="true">↕</span> Probalo: agarrá el ícono <b>⠿</b> y arrastrá. Se guarda al instante.</p>
     </div>
   </div>
 </section>
@@ -233,7 +343,7 @@
 <section class="roles" id="roles">
   <div class="wrap">
     <div class="sec-head sec-head--center">
-      <p class="eyebrow"><span class="eyebrow__num">02</span> Un panel, tu equipo</p>
+      <p class="eyebrow"><span class="eyebrow__num">03</span> Un panel, tu equipo</p>
       <h2 class="sec-title">Roles para que cada quién<br>vea <em>solo lo suyo</em>.</h2>
       <p class="sec-sub">Crea cuentas de acceso para tu equipo: dueño, cocina y repartidor. Cada rol ve su pantalla, sin tocar lo que no le corresponde.</p>
     </div>
@@ -280,17 +390,17 @@
   <div class="wrap">
     <div class="how__grid">
       <div class="sec-head">
-        <p class="eyebrow"><span class="eyebrow__num">03</span> Cómo funciona</p>
+        <p class="eyebrow"><span class="eyebrow__num">04</span> Cómo funciona</p>
         <h2 class="sec-title">De cero a tu menú online<br>en <em>cinco minutos</em>.</h2>
       </div>
 
       <ol class="steps">
-        <li class="step"><span class="step__n">1</span><div><h3>Crea tu cuenta</h3><p>Registra tu local, tu logo y tu nombre. Sin tarjeta para empezar.</p></div></li>
+        <li class="step"><span class="step__n">1</span><div><h3>Crea tu cuenta</h3><p>Registra tu local, tu logo y tu nombre. El demo es libre.</p></div></li>
         <li class="step"><span class="step__n">2</span><div><h3>Arma tu menú</h3><p>Sube productos con fotos y precios, o importa los que ya tienes.</p></div></li>
-        <li class="step"><span class="step__n">3</span><div><h3>Activa tu plan</h3><p>Paga por WhatsApp y recibe tu subdominio listo para compartir.</p></div></li>
+        <li class="step"><span class="step__n">3</span><div><h3>Activa tu plan</h3><p>Paga en línea con Zenobank y <b>tu subdominio se crea al instante</b>, listo para compartir.</p></div></li>
       </ol>
 
-      <a href="#cta" class="how__cta btn btn--primary btn--lg">Quiero mi subdominio <span class="ar">↗</span></a>
+      <a href="#planes" class="how__cta btn btn--primary btn--lg js-pay" data-plan="restaurante">Quiero mi subdominio <span class="ar">↗</span></a>
     </div>
   </div>
 </section>
@@ -299,7 +409,7 @@
 <section class="plans" id="planes">
   <div class="wrap">
     <div class="sec-head sec-head--center">
-      <p class="eyebrow"><span class="eyebrow__num">04</span> Planes</p>
+      <p class="eyebrow"><span class="eyebrow__num">05</span> Planes</p>
       <h2 class="sec-title">Precios sin letra chica.</h2>
       <p class="sec-sub">Menos de lo que pagarías por una comisión al mes. Cancela cuando quieras.</p>
     </div>
@@ -318,7 +428,7 @@
           <li><span class="tick">✓</span> 1 sede</li>
           <li class="off"><span class="tick x">✕</span> Pantalla de cocina</li>
         </ul>
-        <a href="https://wa.me/584140000000?text=Hola%2C%20quiero%20el%20plan%20Emprendedor%20de%20saz%C3%B3n" class="btn btn--outline" target="_blank" rel="noopener">Pagar por WhatsApp</a>
+        <button type="button" class="btn btn--outline js-pay" data-plan="emprendedor">Paga y recibe tu subdominio</button>
       </article>
 
       <article class="plan plan--pop">
@@ -336,7 +446,7 @@
           <li><span class="tick">✓</span> Orden del menú con drag&drop</li>
           <li><span class="tick">✓</span> Tema a tu marca</li>
         </ul>
-        <a href="https://wa.me/584140000000?text=Hola%2C%20quiero%20el%20plan%20Restaurante%20de%20saz%C3%B3n" class="btn btn--primary" target="_blank" rel="noopener">Pagar por WhatsApp</a>
+        <button type="button" class="btn btn--primary js-pay" data-plan="restaurante">Paga y recibe tu subdominio</button>
       </article>
 
       <article class="plan">
@@ -352,11 +462,11 @@
           <li><span class="tick">✓</span> Reportes de ventas</li>
           <li><span class="tick">✓</span> Soporte prioritario</li>
         </ul>
-        <a href="https://wa.me/584140000000?text=Hola%2C%20quiero%20el%20plan%20Cadena%20de%20saz%C3%B3n" class="btn btn--outline" target="_blank" rel="noopener">Pagar por WhatsApp</a>
+        <button type="button" class="btn btn--outline js-pay" data-plan="cadena">Paga y recibe tu subdominio</button>
       </article>
     </div>
 
-    <p class="plans__note">¿Necesitas algo a medida o pago automático por <b>Binance</b>? <a href="https://wa.me/584140000000" target="_blank" rel="noopener">Escríbenos</a>.</p>
+    <p class="plans__note">El pago se procesa con <b>Zenobank</b> y tu subdominio se activa automáticamente. <a href="#planes" class="js-pay" data-plan="restaurante">Ver cómo funciona el pago</a>.</p>
   </div>
 </section>
 
@@ -364,30 +474,30 @@
 <section class="faq" id="faq">
   <div class="wrap wrap--narrow">
     <div class="sec-head sec-head--center">
-      <p class="eyebrow"><span class="eyebrow__num">05</span> Preguntas</p>
+      <p class="eyebrow"><span class="eyebrow__num">06</span> Preguntas</p>
       <h2 class="sec-title">Lo que siempre preguntan.</h2>
     </div>
 
     <div class="faq__list">
       <details class="faq-item" open>
         <summary>¿Necesito tener un dominio propio?</summary>
-        <p>No. Te damos un subdominio con tu marca listo al activar el plan. Si tienes tu propio dominio, lo conectamos en minutos.</p>
+        <div class="faq-item__body"><p>No. Te damos un subdominio con tu marca listo al activar el plan. Si tienes tu propio dominio, lo conectamos en minutos.</p></div>
       </details>
       <details class="faq-item">
         <summary>¿Cobran comisión por pedido?</summary>
-        <p>No. Pagas solo tu plan mensual. Cada pedido que llega por tu menú es tuyo, completo.</p>
+        <div class="faq-item__body"><p>No. Pagas solo tu plan mensual. Cada pedido que llega por tu menú es tuyo, completo.</p></div>
       </details>
       <details class="faq-item">
         <summary>¿Cómo llegan los pedidos?</summary>
-        <p>El cliente arma su pedido, y llega formateado a tu WhatsApp con todo: productos, extras, dirección y total. Tú decides cómo responder.</p>
+        <div class="faq-item__body"><p>El cliente arma su pedido, y llega formateado a tu WhatsApp con todo: productos, extras, dirección y total. Tú decides cómo responder.</p></div>
       </details>
       <details class="faq-item">
         <summary>¿Cómo se activa mi subdominio?</summary>
-        <p>Pagas el plan por WhatsApp (próximamente Binance automático) y activamos tu subdominio en minutos. Solo compartes el enlace o tu QR.</p>
+        <div class="faq-item__body"><p>Pagas tu plan en línea con <b>Zenobank</b> y el subdominio se crea solo: al aprobarse el pago volvés a tu menú, ya activo y listo para compartir.</p></div>
       </details>
       <details class="faq-item">
         <summary>¿Puedo tener más de una sucursal?</summary>
-        <p>El plan Cadena incluye hasta 5 sedes, cada una con su menú, horarios y zona de reparto.</p>
+        <div class="faq-item__body"><p>El plan Cadena incluye hasta 5 sedes, cada una con su menú, horarios y zona de reparto.</p></div>
       </details>
     </div>
   </div>
@@ -398,8 +508,8 @@
   <div class="cta__inner">
     <p class="eyebrow eyebrow--light">Empieza hoy</p>
     <h2 class="cta__title">Tu menú online en <em>5 minutos</em>.</h2>
-    <p class="cta__sub">Sin tarjeta para empezar. Tu subdominio espera.</p>
-    <a href="#planes" class="btn btn--ember btn--xl">Crear mi menú gratis <span class="ar">↗</span></a>
+    <p class="cta__sub">Armá tu menú gratis. Pagás solo cuando activás tu subdominio.</p>
+    <button type="button" class="btn btn--ember btn--xl js-pay" data-plan="restaurante">Crear mi menú <span class="ar">↗</span></button>
   </div>
 </section>
 
@@ -429,6 +539,39 @@
     </div>
   </div>
 </footer>
+
+<!-- ══════════════════ DEMO: PAGO ZENOBANK ══════════════════ -->
+<div class="pay" id="pay" role="dialog" aria-modal="true" aria-labelledby="payTitle" hidden>
+  <div class="pay__backdrop" data-pay-close></div>
+  <div class="pay__box">
+    <button class="pay__x" type="button" aria-label="Cerrar" data-pay-close>×</button>
+
+    <div class="pay__step" data-step="1">
+      <span class="pay__badge">Modo demo</span>
+      <h3 class="pay__title" id="payTitle">Activa tu subdominio</h3>
+      <div class="pay__summary">
+        <div class="pay__row"><span>Plan</span><b id="payPlan">Restaurante</b></div>
+        <div class="pay__row"><span>Subdominio</span><b id="payDomain">mi-local.sazon.app</b></div>
+        <div class="pay__row pay__row--total"><span>Total hoy</span><b id="payTotal">$19</b></div>
+      </div>
+      <button class="btn btn--primary btn--block" type="button" id="payGo">Pagar con Zenobank</button>
+      <p class="pay__foot">Pago seguro con Zenobank · cancela cuando quieras</p>
+    </div>
+
+    <div class="pay__step" data-step="2" hidden>
+      <div class="pay__spinner" aria-hidden="true"></div>
+      <h3 class="pay__title">Conectando con Zenobank…</h3>
+      <p class="pay__sub">No cierres esta ventana. Esto es una demostración.</p>
+    </div>
+
+    <div class="pay__step" data-step="3" hidden>
+      <div class="pay__check" aria-hidden="true">✓</div>
+      <h3 class="pay__title">¡Pago aprobado!</h3>
+      <p class="pay__sub">Tu subdominio <b id="payDomain2">mi-local.sazon.app</b> ya está listo y activo.</p>
+      <button class="btn btn--primary btn--block" type="button" data-pay-close>Ir a mi menú</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 

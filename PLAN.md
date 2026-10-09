@@ -34,8 +34,8 @@ el cliente se registra, paga un plan y se le activa su **menú en un subdominio 
   Ahora se desarrolla **en local** (simular subdominios con `Host: x.localhost`).
 - Roles: **un solo panel web por rol** (el login decide la pantalla: Dueño todo,
   Cocina = KDS, Repartidor = entregas).
-- Pagos MVP: cliente paga por **WhatsApp** → admin activa el subdominio.
-  Después: **pago automático con Binance Pay** (API merchant, PHP).
+- Pagos: el cliente paga en línea con **Zenobank** y es redirigido de vuelta con el
+  pago aprobado; el **subdominio se crea automáticamente**. (Landing: demo del flujo.)
 - El primer cliente = la pizzería actual: sus datos `tacomenu` migran como una tienda.
 
 ### Hoja de ruta de producto

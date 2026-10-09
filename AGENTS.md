@@ -13,15 +13,21 @@ tipo OlaClick** (`landing/` es la marketing page). Roadmap en `PLAN.md` (A0–A4
   `Host: cliente.localhost` vía curl).
 - Roles: **un solo panel web por rol** (Dueño/Cocina/Repartidor). La pizzería actual
   migra como primer cliente.
-- Pagos: MVP = cliente paga por **WhatsApp** y el admin activa el subdominio.
-  Después pago **automático con Binance Pay** (API oficial PHP).
+- Pagos: el cliente paga en línea con **Zenobank** (`dashboard.zenobank.io`) y es
+  redirigido de vuelta con el pago aprobado; el **subdominio se crea automáticamente**.
 
 **Landing (A1):** `landing/` estático servido en `http://localhost/menu/landing/`.
 - Brand provisional "sazón" (placeholder, cambiar nombre/colores en
   `landing/index.html`, `landing.css` `:root`). Pocket de capturas QA en
   `AppData\Local\Temp\opencode\`.
 - Mockups usan fotos reales de `admin/storage/products/`.
-- Demo drag&drop funcional con persistencia en localStorage.
+- Sección **"Menú en vivo"** (`#editor`): demo grande de orden del menú con el look
+  del panel real (categorías + tarjetas de producto). Drag con **pointer events**,
+  lift + reordenamiento **FLIP**, persistencia en localStorage (`sazon_landing_cats_order`,
+  `sazon_landing_prods_order`).
+- **FAQ animado**: `<details>` con transición de altura (JS en `landing.js`).
+- **Pago demo** (`#pay`): modal que simula el flujo Zenobank (resumen → conectando →
+  aprobado). Todos los `.js-pay` lo abren. Es demo/copy; el checkout real es A0/A2.
 
 ## Despliegue en producción (VPS alianza)
 

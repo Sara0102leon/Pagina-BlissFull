@@ -63,12 +63,13 @@ body::after{
 /* ---------- Buttons ---------- */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  font-weight:600;font-size:15px;
-  padding:12px 22px;border-radius:999px;
+  font-family:inherit;font-weight:600;font-size:15px;line-height:1;
+  padding:12px 22px;border-radius:999px;background:transparent;
   border:1px solid transparent;cursor:pointer;
   transition:transform .25s var(--ease), box-shadow .25s var(--ease), background .25s, color .25s;
   white-space:nowrap;
 }
+.btn--block{width:100%}
 .btn:active{transform:scale(.97)}
 .btn--primary{background:var(--gold);color:#1a130a}
 .btn--primary:hover{background:var(--gold-2);box-shadow:0 12px 34px -12px rgba(233,185,74,.55)}
@@ -299,15 +300,14 @@ a:hover .ar{transform:translate(2px,-2px)}
 .bento__card:hover{transform:translateY(-5px);border-color:var(--line-2);box-shadow:var(--shadow-1)}
 .bento__card--sub{grid-column:span 2}
 .bento__card--wa{grid-column:span 4}
-.bento__card--wide{grid-column:span 4}
 .bento__card--kds{grid-column:span 2}
-.bento__card--rep{grid-column:span 3}
-.bento__card--price{grid-column:span 3}
+.bento__card--rep{grid-column:span 2}
+.bento__card--price{grid-column:span 2}
 .bento h3{
   font-family:var(--font-display);font-size:24px;font-weight:400;letter-spacing:.03em;line-height:1.05;
 }
 .bento h3 em{font-style:normal;color:var(--gold)}
-.bento p:not(.mini-sort__hint){color:var(--muted);font-size:14.5px}
+.bento p{color:var(--muted);font-size:14.5px}
 .bc-top{display:flex;flex-direction:column;gap:14px}
 .bc-ic{
   width:44px;height:44px;border-radius:12px;
@@ -337,27 +337,89 @@ a:hover .ar{transform:translate(2px,-2px)}
 }
 .wa-mini__bubble--in{background:var(--bg-3);border-color:var(--line);color:var(--muted);align-self:flex-end}
 
-/* mini drag&drop demo */
-.mini-sort{
-  display:flex;flex-direction:column;gap:8px;margin-top:6px;
+/* ---------- Editor (drag & drop demo) ---------- */
+.editor{padding:110px 0;background:radial-gradient(60% 50% at 50% 0%, rgba(233,185,74,.09), transparent 62%)}
+.editor__stage{max-width:1000px;margin-inline:auto}
+.editor__panel{
+  background:var(--bg-2);border:1px solid var(--line);
+  border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-2);
 }
-.mini-sort__item{
-  display:flex;align-items:center;gap:12px;
-  background:var(--bg-3);border:1px solid var(--line);
-  border-radius:11px;padding:12px 14px;
-  font-weight:600;font-size:14px;cursor:grab;
-  transition:border-color .2s, background .2s, transform .15s, opacity .15s;
+.editor__bar{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 20px;border-bottom:1px solid var(--line);background:var(--bg-3);
 }
-.mini-sort__item:active{cursor:grabbing}
-.mini-sort__item.dragging{opacity:.4;border-color:var(--gold)}
-.mini-sort__item.drag-over{border-color:var(--ember);border-style:dashed;background:rgba(255,91,43,.08)}
-.ms-grip{color:var(--muted);cursor:grab;font-size:13px;letter-spacing:-2px}
-.ms-badge{
-  margin-left:auto;background:rgba(233,185,74,.13);color:var(--gold);
-  border-radius:999px;font-size:11px;font-weight:700;padding:2px 9px;
+.editor__dots{display:flex;gap:6px}
+.editor__dots i{width:9px;height:9px;border-radius:50%;background:var(--line-2)}
+.editor__dots i:first-child{background:rgba(255,91,43,.6)}
+.editor__dots i:nth-child(2){background:rgba(233,185,74,.6)}
+.editor__dots i:nth-child(3){background:rgba(122,201,106,.6)}
+.editor__url{
+  flex:1;min-width:0;display:flex;align-items:center;gap:8px;
+  font-family:ui-monospace,"Cascadia Mono",monospace;font-size:12.5px;color:var(--muted);
+  background:var(--bg);border:1px solid var(--line);border-radius:8px;
+  padding:7px 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.mini-sort__hint{margin-top:10px;font-size:12px;color:var(--muted)}
-.mini-sort__hint::before{content:"↕ ";color:var(--gold)}
+.editor__url svg{flex:0 0 auto;color:var(--ok)}
+.editor__saved{
+  flex:0 0 auto;font-size:11.5px;font-weight:700;color:var(--ok);
+  background:rgba(122,201,106,.12);border-radius:999px;padding:5px 11px;
+  transition:color .25s, background .25s;
+}
+.editor__saved.is-saving{color:var(--gold);background:rgba(233,185,74,.12)}
+.editor__cols{display:grid;grid-template-columns:1fr 1.35fr;gap:26px;padding:26px}
+.editor__col{min-width:0}
+.editor__collabel{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:12px;
+}
+.editor__count{color:var(--gold);letter-spacing:.04em}
+
+.esort,.egrid{display:flex;flex-direction:column;gap:10px;min-height:20px}
+.esort__item,.egrid__item{
+  position:relative;display:flex;align-items:center;gap:12px;
+  background:var(--bg);border:1px solid var(--line);
+  border-radius:14px;padding:12px 14px;
+  transition:border-color .2s, background .2s, box-shadow .25s;
+  will-change:transform;
+}
+.esort__grip,.egrid__grip{
+  cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;
+  color:var(--muted);font-size:16px;line-height:1;
+  padding:4px 2px;border-radius:6px;transition:color .2s;
+}
+.esort__item:hover .esort__grip,.egrid__item:hover .egrid__grip{color:var(--gold)}
+.esort__item.is-lifting,.egrid__item.is-lifting{
+  z-index:60;cursor:grabbing;border-color:var(--gold);background:var(--bg-3);
+  box-shadow:0 26px 50px -18px rgba(0,0,0,.8), 0 0 0 1px rgba(233,185,74,.5);
+}
+.sort-placeholder{
+  border:1px dashed rgba(233,185,74,.45);background:rgba(233,185,74,.05);
+  border-radius:14px;
+}
+.is-sorting{user-select:none;-webkit-user-select:none}
+.esort__name{font-weight:600;font-size:14.5px}
+.esort__thumbs{display:flex;margin-left:auto}
+.esort__thumbs img{
+  width:30px;height:30px;border-radius:8px;object-fit:cover;
+  border:2px solid var(--bg);margin-left:-10px;
+}
+.esort__thumbs img:first-child{margin-left:0}
+.esort__count{
+  font-size:11px;font-weight:700;color:var(--gold);
+  background:rgba(233,185,74,.13);border-radius:999px;padding:3px 10px;
+}
+.egrid__img{width:52px;height:52px;border-radius:11px;object-fit:cover;flex:0 0 auto}
+.egrid__body{flex:1;min-width:0}
+.egrid__body b{font-size:14.5px;display:block}
+.egrid__body span{font-size:12px;color:var(--muted);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.egrid__price{
+  font-family:var(--font-display);font-size:19px;color:var(--gold);
+  background:rgba(233,185,74,.12);border-radius:9px;padding:4px 10px;
+}
+.editor__hint{margin-top:18px;text-align:center;font-size:13px;color:var(--muted)}
+.editor__hint span{color:var(--gold)}
+.editor__hint b{color:var(--text);font-size:15px}
 
 /* KDS mini */
 .kds-mini{display:flex;flex-direction:column;gap:8px;margin-top:auto}
@@ -463,6 +525,7 @@ a:hover .ar{transform:translate(2px,-2px)}
 }
 .faq-item[open] summary::after{transform:rotate(45deg)}
 .faq-item p{padding:0 24px 22px;color:var(--muted);font-size:14.5px;max-width:70ch}
+.faq-item__body{overflow:hidden;transition:height .32s var(--ease)}
 
 /* ---------- Final CTA ---------- */
 .cta{padding:0 0 110px}
@@ -511,6 +574,53 @@ a:hover .ar{transform:translate(2px,-2px)}
 }
 .toast.show{transform:translate(-50%,0);opacity:1}
 
+/* ---------- Pay modal (demo Zenobank) ---------- */
+.pay{position:fixed;inset:0;z-index:300;display:grid;place-items:center;padding:20px}
+.pay[hidden]{display:none}
+.pay__backdrop{position:absolute;inset:0;background:rgba(8,6,4,.72);backdrop-filter:blur(6px)}
+.pay__box{
+  position:relative;z-index:2;width:min(420px,100%);
+  background:var(--bg-2);border:1px solid var(--line-2);
+  border-radius:var(--r-xl);padding:34px 30px 30px;box-shadow:var(--shadow-2);
+  animation:payIn .4s var(--ease);
+}
+@keyframes payIn{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+.pay__x{
+  position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;
+  border:1px solid var(--line);background:transparent;color:var(--muted);
+  font-size:20px;line-height:1;cursor:pointer;transition:color .2s,border-color .2s;
+}
+.pay__x:hover{color:var(--text);border-color:var(--line-2)}
+.pay__badge{
+  display:inline-block;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gold);background:rgba(233,185,74,.12);border-radius:999px;padding:5px 11px;margin-bottom:16px;
+}
+.pay__title{font-family:var(--font-display);font-size:30px;font-weight:400;letter-spacing:.03em;line-height:1.05}
+.pay__sub{margin-top:12px;color:var(--muted);font-size:14.5px}
+.pay__sub b{color:var(--gold)}
+.pay__summary{margin:22px 0;border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+.pay__row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 16px;font-size:14px;border-bottom:1px solid var(--line)}
+.pay__row:last-child{border-bottom:0}
+.pay__row span{color:var(--muted)}
+.pay__row b{font-weight:600}
+.pay__row--total{background:var(--bg-3)}
+.pay__row--total b{font-family:var(--font-display);font-size:24px;color:var(--gold)}
+.pay__foot{margin-top:14px;text-align:center;font-size:12px;color:var(--muted)}
+.pay__step[hidden]{display:none}
+.pay__step[data-step="2"],.pay__step[data-step="3"]{text-align:center}
+.pay__spinner{
+  width:52px;height:52px;margin:6px auto 22px;border-radius:50%;
+  border:3px solid var(--line-2);border-top-color:var(--gold);animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pay__check{
+  width:64px;height:64px;margin:6px auto 20px;border-radius:50%;
+  background:rgba(122,201,106,.15);color:var(--ok);
+  display:grid;place-items:center;font-size:30px;font-weight:800;
+  animation:popCheck .5s var(--ease);
+}
+@keyframes popCheck{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 1024px){
   .hero__inner{grid-template-columns:1fr;gap:70px}
@@ -518,8 +628,9 @@ a:hover .ar{transform:translate(2px,-2px)}
   .float-chip--qr{left:4%}
   .float-chip--order{right:4%}
   .bento__card--sub,.bento__card--wa{grid-column:span 3}
-  .bento__card--wide,.bento__card--price{grid-column:span 6}
+  .bento__card--price{grid-column:span 6}
   .bento__card--kds,.bento__card--rep{grid-column:span 3}
+  .editor__cols{grid-template-columns:1fr;gap:22px}
   .how__grid{grid-template-columns:1fr;gap:40px}
   .roles__grid{grid-template-columns:1fr}
   .plans__grid{grid-template-columns:1fr;max-width:440px;margin-inline:auto}
@@ -533,9 +644,13 @@ a:hover .ar{transform:translate(2px,-2px)}
   .hero__points{flex-direction:column;gap:10px}
   .hero__cta .btn{width:100%}
   .bento__card,.bento__card--sub,.bento__card--kds,.bento__card--rep{grid-column:span 6;padding:24px}
-  .bento__card--wa,.bento__card--wide,.bento__card--price{grid-column:span 6;padding:24px}
+  .bento__card--wa,.bento__card--price{grid-column:span 6;padding:24px}
   .sec-title{font-size:40px}
-  .roles,.feat,.how,.plans,.faq{padding:80px 0}
+  .roles,.feat,.editor,.how,.plans,.faq{padding:80px 0}
+  .editor__cols{padding:16px;gap:16px}
+  .editor__url{font-size:11px}
+  .esort__thumbs{display:none}
+  .pay__box{padding:26px 20px}
   .cta__inner{padding:60px 20px}
   .step__n{width:38px;height:38px;flex-basis:38px;font-size:19px}
   .float-chip{position:absolute}
