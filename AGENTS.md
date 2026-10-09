@@ -28,6 +28,19 @@ tipo OlaClick** (`landing/` es la marketing page). Roadmap en `PLAN.md` (A0–A4
 - **FAQ animado**: `<details>` con transición de altura (JS en `landing.js`).
 - **Pago demo** (`#pay`): modal que simula el flujo Zenobank (resumen → conectando →
   aprobado). Todos los `.js-pay` lo abren. Es demo/copy; el checkout real es A0/A2.
+- **Imágenes optimizadas** en `landing/assets/img/menu/` (≈45–57 KB c/u, generadas con
+  `System.Drawing` desde `admin/storage/products/`). El héroe usa 2 (eager +
+  `fetchpriority=high`) y el demo 6 con `loading="lazy"` + `decoding="async"`. Peso
+  total de la landing ≈ **400 KB** (antes ~5 MB).
+- **SEO/OG real**: `canonical`, Open Graph + Twitter (`assets/img/og.jpg` 1200×630,
+  generado con Playwright desde un HTML en temp), `favicon.svg` + `apple-touch-icon.png`,
+  `robots.txt`, `sitemap.xml` y **JSON-LD** (`Organization`, `WebSite`,
+  `SoftwareApplication` con los 3 `Offer` y `FAQPage`).
+- **A11y**: `<main id="main">` + skip link, demo reordenable por **teclado** (flechas)
+  con anuncio en `#sortLive`, y modal de pago con **focus trap** + `inert` del fondo y
+  anuncio de pasos en `#payLive`.
+- **Dominio provisional** en metas/JSON-LD (`https://prueba.alianzablissful.com/landing/`):
+  cambiar cuando exista el dominio definitivo de sazón.
 
 ## Despliegue en producción (VPS alianza)
 

@@ -58,6 +58,14 @@
     toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2400);
   }
 
+  /* Screen-reader announcements (reordering) */
+  function announce(msg) {
+    var el = document.getElementById("sortLive");
+    if (!el) return;
+    el.textContent = "";
+    setTimeout(function () { el.textContent = msg; }, 70);
+  }
+
   /* ═══════════════════════════════════════════════════
      Sortable lists — pointer events + FLIP
      Works for the category list and the product list.
@@ -205,6 +213,32 @@
     }
 
     list.addEventListener("pointerdown", onDown);
+
+    /* Keyboard reorder: enfocar un grip/pill y usar las flechas */
+    function onKey(e) {
+      var handle = e.target.closest(handleSel);
+      if (!handle || !list.contains(handle)) return;
+      var item = handle.closest("li");
+      if (!item || item.parentElement !== list) return;
+
+      var dir = null;
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") dir = "prev";
+      else if (e.key === "ArrowRight" || e.key === "ArrowDown") dir = "next";
+      else return;
+
+      var target = dir === "prev" ? item.previousElementSibling : item.nextElementSibling;
+      if (!target) return;
+      e.preventDefault();
+
+      var before = order();
+      if (dir === "prev") list.insertBefore(item, target);
+      else list.insertBefore(item, target.nextElementSibling);
+
+      if (before === order()) return;
+      if (typeof opts.onDrop === "function") opts.onDrop();
+      if (typeof opts.announce === "function") opts.announce(item);
+    }
+    list.addEventListener("keydown", onKey);
   }
 
   /* Order persistence + "Guardado" indicator */
@@ -245,6 +279,13 @@
         persistOrder(list, key);
         markSaved();
         toast(msg);
+      },
+      announce: function (item) {
+        var idx = Array.prototype.indexOf.call(list.children, item) + 1;
+        var total = list.children.length;
+        var label = (item.getAttribute("aria-label") || item.dataset.id || "Elemento").split(".")[0];
+        label = label.replace(/^Reordenar\s+|^Categoría\s+/i, "");
+        announce(label + ", posición " + idx + " de " + total);
       }
     });
   }
@@ -312,11 +353,24 @@
     var payTimer = null;
     var lastFocus = null;
     var domain = "mi-local.sazon.app";
+    var payLive = document.getElementById("payLive");
+    var bgEls = [document.querySelector(".nav"), document.getElementById("main"), document.querySelector(".footer")];
+
+    function announcePay(msg) {
+      if (!payLive) return;
+      payLive.textContent = "";
+      setTimeout(function () { payLive.textContent = msg; }, 70);
+    }
 
     function setStep(n) {
       pay.querySelectorAll(".pay__step").forEach(function (s) {
         s.hidden = s.dataset.step !== String(n);
       });
+      announcePay(
+        n === 1 ? "Paso 1 de 3: resumen de pago." :
+        n === 2 ? "Paso 2 de 3: conectando con Zenobank." :
+                  "Paso 3 de 3: pago aprobado. Tu subdominio está listo."
+      );
     }
 
     function openPay(plan) {
@@ -328,6 +382,7 @@
       lastFocus = document.activeElement;
       pay.hidden = false;
       document.body.style.overflow = "hidden";
+      bgEls.forEach(function (el) { if (el) el.setAttribute("inert", ""); });
       setStep(1);
       document.getElementById("payGo").focus();
     }
@@ -336,6 +391,7 @@
       clearTimeout(payTimer);
       pay.hidden = true;
       document.body.style.overflow = "";
+      bgEls.forEach(function (el) { if (el) el.removeAttribute("inert"); });
       if (lastFocus && lastFocus.focus) lastFocus.focus();
     }
 
@@ -343,7 +399,16 @@
       if (e.target.closest("[data-pay-close]")) closePay();
     });
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && !pay.hidden) closePay();
+      if (!pay.hidden && e.key === "Escape") { closePay(); return; }
+      if (e.key !== "Tab" || pay.hidden) return;
+      var f = Array.prototype.filter.call(
+        pay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'),
+        function (el) { return !el.hidden && el.offsetParent !== null; }
+      );
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     });
     document.getElementById("payGo").addEventListener("click", function () {
       setStep(2);

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://prueba.alianzablissful.com/landing/sitemap.xml

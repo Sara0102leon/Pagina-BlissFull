@@ -6,17 +6,90 @@
 <title>sazón — Tu menú digital en un subdominio propio</title>
 <meta name="description" content="Menú digital con dominio propio, pedidos por WhatsApp, pantalla de cocina y app de repartidores. Todo en un solo panel. Sin comisiones por pedido.">
 <meta name="theme-color" content="#0f0c09">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' rx='16' fill='%23e9b94a' transform='rotate(-8 32 32)'/%3E%3Ctext x='32' y='46' font-family='Arial' font-size='38' font-weight='bold' text-anchor='middle' fill='%231a130a'%3Es%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="author" content="sazón">
+
+<!-- NOTE: dominio provisional. Actualizar cuando exista el dominio definitivo de sazón. -->
+<link rel="canonical" href="https://prueba.alianzablissful.com/landing/">
+
+<!-- Open Graph -->
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="sazón">
+<meta property="og:locale" content="es_VE">
+<meta property="og:url" content="https://prueba.alianzablissful.com/landing/">
 <meta property="og:title" content="sazón — Tu menú digital en un subdominio propio">
 <meta property="og:description" content="Menú digital con dominio propio, pedidos por WhatsApp, pantalla de cocina y repartidores. Sin comisiones por pedido.">
-<meta property="og:image" content="http://localhost/menu/admin/storage/products/PEPPERONI.jpg">
+<meta property="og:image" content="https://prueba.alianzablissful.com/landing/assets/img/og.jpg">
+<meta property="og:image:secure_url" content="https://prueba.alianzablissful.com/landing/assets/img/og.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="sazón — tu menú digital en tu propio subdominio">
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="sazón — Tu menú digital en un subdominio propio">
+<meta name="twitter:description" content="Menú digital con dominio propio, pedidos por WhatsApp, pantalla de cocina y repartidores. Sin comisiones por pedido.">
+<meta name="twitter:image" content="https://prueba.alianzablissful.com/landing/assets/img/og.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/landing.css">
+
+<!-- Datos estructurados (SEO) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://prueba.alianzablissful.com/landing/#org",
+      "name": "sazón",
+      "url": "https://prueba.alianzablissful.com/landing/",
+      "logo": "https://prueba.alianzablissful.com/landing/assets/img/og.jpg",
+      "description": "Menú digital con subdominio propio, pedidos por WhatsApp, pantalla de cocina y repartidores."
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://prueba.alianzablissful.com/landing/#website",
+      "url": "https://prueba.alianzablissful.com/landing/",
+      "name": "sazón",
+      "inLanguage": "es-VE",
+      "publisher": { "@id": "https://prueba.alianzablissful.com/landing/#org" }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "sazón",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "inLanguage": "es-VE",
+      "url": "https://prueba.alianzablissful.com/landing/",
+      "description": "Plataforma de menú digital para restaurantes: subdominio propio, pedidos por WhatsApp, pantalla de cocina y repartidores, sin comisiones por pedido.",
+      "offers": [
+        { "@type": "Offer", "name": "Emprendedor", "price": "9", "priceCurrency": "USD", "url": "https://prueba.alianzablissful.com/landing/#planes" },
+        { "@type": "Offer", "name": "Restaurante", "price": "19", "priceCurrency": "USD", "url": "https://prueba.alianzablissful.com/landing/#planes" },
+        { "@type": "Offer", "name": "Cadena", "price": "39", "priceCurrency": "USD", "url": "https://prueba.alianzablissful.com/landing/#planes" }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "¿Necesito tener un dominio propio?", "acceptedAnswer": { "@type": "Answer", "text": "No. Te damos un subdominio con tu marca listo al activar el plan. Si tienes tu propio dominio, lo conectamos en minutos." } },
+        { "@type": "Question", "name": "¿Cobran comisión por pedido?", "acceptedAnswer": { "@type": "Answer", "text": "No. Pagas solo tu plan mensual. Cada pedido que llega por tu menú es tuyo, completo." } },
+        { "@type": "Question", "name": "¿Cómo llegan los pedidos?", "acceptedAnswer": { "@type": "Answer", "text": "El cliente arma su pedido, y llega formateado a tu WhatsApp con todo: productos, extras, dirección y total. Tú decides cómo responder." } },
+        { "@type": "Question", "name": "¿Cómo se activa mi subdominio?", "acceptedAnswer": { "@type": "Answer", "text": "Pagas tu plan en línea con Zenobank y el subdominio se crea solo: al aprobarse el pago vuelves a tu menú, ya activo y listo para compartir." } },
+        { "@type": "Question", "name": "¿Puedo tener más de una sucursal?", "acceptedAnswer": { "@type": "Answer", "text": "El plan Cadena incluye hasta 5 sedes, cada una con su menú, horarios y zona de reparto." } }
+      ]
+    }
+  ]
+}
+</script>
 </head>
 <body>
+
+<a class="skip-link" href="#main">Saltar al contenido</a>
 
 <!-- ══════════════════ NAV ══════════════════ -->
 <header class="nav" id="nav">
@@ -49,6 +122,8 @@
     <a href="#cta" class="btn btn--primary">Crear mi menú</a>
   </div>
 </header>
+
+<main id="main">
 
 <!-- ══════════════════ HERO ══════════════════ -->
 <section class="hero" id="top">
@@ -98,7 +173,7 @@
             <span>Pizzas</span><span class="ph-head__n">4</span>
           </div>
           <div class="ph-card">
-            <img src="../admin/storage/products/PEPPERONI.jpg" alt="Pizza de pepperoni">
+            <img src="assets/img/menu/pepperoni.jpg" alt="Pizza de pepperoni" decoding="async" fetchpriority="high">
             <div class="ph-card__body">
               <b>Pepperoni</b>
               <span>Queso, pepperoni y la mejor salsa.</span>
@@ -106,7 +181,7 @@
             <div class="ph-price">$12</div>
           </div>
           <div class="ph-card">
-            <img src="../admin/storage/products/BASICA.jpg" alt="Hamburguesa básica">
+            <img src="assets/img/menu/basica.jpg" alt="Hamburguesa básica" decoding="async">
             <div class="ph-card__body">
               <b>Burguer Clásica</b>
               <span>Doble carne, queso cheddar.</span>
@@ -249,21 +324,21 @@
             Buscar en el menú…
           </div>
 
-          <ul class="md-cats" id="editorCats" aria-label="Categorías — arrastrables para reordenar">
-            <li class="md-cat" data-id="destacados"><span class="md-cat__grip" aria-hidden="true">⠿</span>Destacados</li>
-            <li class="md-cat is-on" data-id="pizzas"><span class="md-cat__grip" aria-hidden="true">⠿</span>Pizzas</li>
-            <li class="md-cat" data-id="hamburguesas"><span class="md-cat__grip" aria-hidden="true">⠿</span>Hamburguesas</li>
-            <li class="md-cat" data-id="pastas"><span class="md-cat__grip" aria-hidden="true">⠿</span>Pastas</li>
-            <li class="md-cat" data-id="bebidas"><span class="md-cat__grip" aria-hidden="true">⠿</span>Bebidas</li>
+          <ul class="md-cats" id="editorCats" aria-label="Categorías — reordenables">
+            <li class="md-cat" data-id="destacados" tabindex="0" role="button" aria-label="Categoría Destacados. Usá las flechas para reordenar."><span class="md-cat__grip" aria-hidden="true">⠿</span>Destacados</li>
+            <li class="md-cat is-on" data-id="pizzas" tabindex="0" role="button" aria-label="Categoría Pizzas. Usá las flechas para reordenar."><span class="md-cat__grip" aria-hidden="true">⠿</span>Pizzas</li>
+            <li class="md-cat" data-id="hamburguesas" tabindex="0" role="button" aria-label="Categoría Hamburguesas. Usá las flechas para reordenar."><span class="md-cat__grip" aria-hidden="true">⠿</span>Hamburguesas</li>
+            <li class="md-cat" data-id="pastas" tabindex="0" role="button" aria-label="Categoría Pastas. Usá las flechas para reordenar."><span class="md-cat__grip" aria-hidden="true">⠿</span>Pastas</li>
+            <li class="md-cat" data-id="bebidas" tabindex="0" role="button" aria-label="Categoría Bebidas. Usá las flechas para reordenar."><span class="md-cat__grip" aria-hidden="true">⠿</span>Bebidas</li>
           </ul>
 
           <div class="md-head"><span>Pizzas</span><span class="md-head__n">4 productos</span></div>
 
-          <ul class="md-grid" id="editorProds" aria-label="Productos — arrastrables para reordenar">
+          <ul class="md-grid" id="editorProds" aria-label="Productos — reordenables">
             <li class="md-card" data-id="pepperoni">
-              <span class="md-card__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+              <span class="md-card__grip" title="Arrastrar para ordenar" role="button" tabindex="0" aria-label="Reordenar Pepperoni. Usá las flechas para mover.">⠿</span>
               <div class="md-card__imgwrap">
-                <img class="md-card__img" src="../admin/storage/products/PEPPERONI.jpg" alt="Pizza de pepperoni">
+                <img class="md-card__img" src="assets/img/menu/pepperoni.jpg" alt="Pizza de pepperoni" loading="lazy" decoding="async">
                 <span class="md-card__price">$12</span>
               </div>
               <div class="md-card__body">
@@ -272,9 +347,9 @@
               </div>
             </li>
             <li class="md-card" data-id="hawaiana">
-              <span class="md-card__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+              <span class="md-card__grip" title="Arrastrar para ordenar" role="button" tabindex="0" aria-label="Reordenar Hawaiana. Usá las flechas para mover.">⠿</span>
               <div class="md-card__imgwrap">
-                <img class="md-card__img" src="../admin/storage/products/HAWAIANA.jpg" alt="Pizza hawaiana">
+                <img class="md-card__img" src="assets/img/menu/hawaiana.jpg" alt="Pizza hawaiana" loading="lazy" decoding="async">
                 <span class="md-card__price">$12</span>
               </div>
               <div class="md-card__body">
@@ -283,9 +358,9 @@
               </div>
             </li>
             <li class="md-card" data-id="tocinetada">
-              <span class="md-card__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+              <span class="md-card__grip" title="Arrastrar para ordenar" role="button" tabindex="0" aria-label="Reordenar Tocinetada. Usá las flechas para mover.">⠿</span>
               <div class="md-card__imgwrap">
-                <img class="md-card__img" src="../admin/storage/products/TOCINETA.jpg" alt="Pizza tocinetada">
+                <img class="md-card__img" src="assets/img/menu/tocinetada.jpg" alt="Pizza tocinetada" loading="lazy" decoding="async">
                 <span class="md-card__price">$13</span>
               </div>
               <div class="md-card__body">
@@ -294,9 +369,9 @@
               </div>
             </li>
             <li class="md-card" data-id="vegetariana">
-              <span class="md-card__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+              <span class="md-card__grip" title="Arrastrar para ordenar" role="button" tabindex="0" aria-label="Reordenar Vegetariana. Usá las flechas para mover.">⠿</span>
               <div class="md-card__imgwrap">
-                <img class="md-card__img" src="../admin/storage/products/VEGETARIANA.jpg" alt="Pizza vegetariana">
+                <img class="md-card__img" src="assets/img/menu/vegetariana.jpg" alt="Pizza vegetariana" loading="lazy" decoding="async">
                 <span class="md-card__price">$11</span>
               </div>
               <div class="md-card__body">
@@ -305,9 +380,9 @@
               </div>
             </li>
             <li class="md-card" data-id="cuatro-estaciones">
-              <span class="md-card__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+              <span class="md-card__grip" title="Arrastrar para ordenar" role="button" tabindex="0" aria-label="Reordenar 4 Estaciones. Usá las flechas para mover.">⠿</span>
               <div class="md-card__imgwrap">
-                <img class="md-card__img" src="../admin/storage/products/4-ESTACIONES.jpg" alt="Pizza cuatro estaciones">
+                <img class="md-card__img" src="assets/img/menu/4-estaciones.jpg" alt="Pizza cuatro estaciones" loading="lazy" decoding="async">
                 <span class="md-card__price">$15</span>
               </div>
               <div class="md-card__body">
@@ -316,9 +391,9 @@
               </div>
             </li>
             <li class="md-card" data-id="anchoas">
-              <span class="md-card__grip" title="Arrastrar para ordenar" aria-hidden="true">⠿</span>
+              <span class="md-card__grip" title="Arrastrar para ordenar" role="button" tabindex="0" aria-label="Reordenar Anchoas. Usá las flechas para mover.">⠿</span>
               <div class="md-card__imgwrap">
-                <img class="md-card__img" src="../admin/storage/products/ANCHOAS.jpg" alt="Pizza de anchoas">
+                <img class="md-card__img" src="assets/img/menu/anchoas.jpg" alt="Pizza de anchoas" loading="lazy" decoding="async">
                 <span class="md-card__price">$13</span>
               </div>
               <div class="md-card__body">
@@ -508,6 +583,8 @@
   </div>
 </section>
 
+</main>
+
 <!-- ══════════════════ FOOTER ══════════════════ -->
 <footer class="footer">
   <div class="wrap">
@@ -569,7 +646,9 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div id="sortLive" class="sr-only" role="status" aria-live="polite"></div>
+<div id="payLive" class="sr-only" role="status" aria-live="polite"></div>
 
-<script src="assets/js/landing.js"></script>
+<script src="assets/js/landing.js" defer></script>
 </body>
 </html>
