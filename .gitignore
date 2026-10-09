@@ -8,6 +8,13 @@ storage/logs/*
 storage/framework/*
 storage/uploads/*
 
+# Logs, temporales y respaldos
+*.log
+*.tmp
+*.bak
+*.old
+*.orig
+
 # Librerías y dependencias
 vendor/
 node_modules/
@@ -16,3 +23,4 @@ node_modules/
 .DS_Store
 Thumbs.db
 .vscode/
+.idea/
