@@ -12,6 +12,36 @@ por AJAX/JS (`#btn_confirm_order`, `#product_search`, `#grid-title`,
 
 ---
 
+## Visión: Plataforma de menús digitales multi-cliente (referencia: OlaClick)
+
+El proyecto pasa de "reiniciar el menú de Blissfull" a una **plataforma SaaS**:
+el cliente se registra, paga un plan y se le activa su **menú en un subdominio propio**.
+
+### Modelo (lo que OlaClick hace → lo que adaptamos y mejoramos)
+- **Landing** (marketing) → planes → registro → pago → **se crea el subdominio del cliente**.
+- **Menú digital por cliente** en subdominio (`cliente.dominio.com`): carta, carrito,
+  pedidos por WhatsApp, pagos, sedes, horarios — el motor ya construido (Fases 1-5).
+- **Panel por cliente con roles**: dueño/admin (todo), **cocina** (KDS: pedidos
+  listos/pendientes), **repartidor** (delivery: estados/rutas), caja/mesas (opcional).
+- **Mejoras propias**: ordenar el menú **manualmente con drag&drop** (categorías y
+  productos dentro de categoría), tema configurable por cliente, subida de fotos.
+
+### Arquitectura propuesta (decisiones pendientes → preguntas abajo)
+- Multi-tenant con **base única** + `tienda_id` en las tablas de negocio (tablas
+  nuevas: `tienda`, `plan`, `suscripcion`; `role` en `user`).
+- Subdominios resueltos por **Host header** → tienda activa (vhost comodín en nginx).
+- El primer cliente = la pizzería actual: sus datos `tacomenu` migran como una tienda.
+
+### Hoja de ruta de producto
+- **A0** Arquitectura multi-tenant (tienda/plan/roles) + subdominios en el VPS.
+- **A1** Landing + registro + planes ← "primero mi landing".
+- **A2** Migrar el menú actual como primer cliente en su subdominio.
+- **A3** Panel con roles: cocina (pedidos) y repartidor (delivery).
+- **A4** Drag & drop del orden de menú (categorías y productos).
+- Las **Fases 1-5** (abajo) siguen siendo el motor del menú por cliente.
+
+---
+
 ## Fase 1 — Motor de tema + orden del menú  ✅ (completada)
 - Concepto: el menú público se pinta 100% con variables CSS (`--tt-*`). Esas variables
   pasan a **configurarse desde admin** (tabla `configuration`, prefijo `tema_*`).

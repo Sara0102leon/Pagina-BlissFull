@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sazón — Tu menú digital en un subdominio propio</title>
+<meta name="description" content="Menú digital con dominio propio, pedidos por WhatsApp, pantalla de cocina y app de repartidores. Todo en un solo panel. Sin comisiones por pedido.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/landing.css">
+</head>
+<body>
+
+<!-- ══════════════════ NAV ══════════════════ -->
+<header class="nav" id="nav">
+  <div class="nav__inner">
+    <a href="#top" class="brand" aria-label="sazón inicio">
+      <span class="brand__mark">s</span>
+      <span class="brand__name">sazón</span>
+    </a>
+    <nav class="nav__links" aria-label="Principal">
+      <a href="#funciones">Funciones</a>
+      <a href="#roles">Tu equipo</a>
+      <a href="#planes">Planes</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav__cta">
+      <a href="#planes" class="btn btn--ghost">Ingresar</a>
+      <a href="#cta" class="btn btn--primary">Crear mi menú</a>
+    </div>
+    <button class="nav__burger" id="burger" aria-label="Abrir menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="nav__mobile" id="navMobile">
+    <a href="#funciones">Funciones</a>
+    <a href="#roles">Tu equipo</a>
+    <a href="#planes">Planes</a>
+    <a href="#faq">FAQ</a>
+    <a href="#cta" class="btn btn--primary">Crear mi menú</a>
+  </div>
+</header>
+
+<!-- ══════════════════ HERO ══════════════════ -->
+<section class="hero" id="top">
+  <div class="hero__glow" aria-hidden="true"></div>
+  <div class="hero__inner">
+    <div class="hero__copy">
+      <p class="eyebrow reveal"><span class="eyebrow__num">⌁</span> Menú digital + pedidos por WhatsApp + cocina + repartidores</p>
+      <h1 class="hero__title reveal">
+        Tu menú,<br>
+        en <em>tu propio</em><br>
+        subdominio.<span class="hero__dot">.</span>
+      </h1>
+      <p class="hero__sub reveal">
+        Deja de depender de terceros. Crea tu carta digital, recibe pedidos
+        directo a tu WhatsApp y conecta a tu equipo — cocina y repartidores —
+        todo desde un solo panel.
+      </p>
+      <div class="hero__cta reveal">
+        <a href="#planes" class="btn btn--primary btn--lg">Empezar gratis</a>
+        <a href="#demo" class="btn btn--ghost btn--lg">Ver el menú en vivo <span class="ar">↗</span></a>
+      </div>
+      <ul class="hero__points reveal">
+        <li><span class="tick">✓</span> Sin comisión por pedido</li>
+        <li><span class="tick">✓</span> Tu dominio, siempre</li>
+        <li><span class="tick">✓</span> Activo en 5 minutos</li>
+      </ul>
+    </div>
+
+    <!-- Phone mockup built from the REAL product -->
+    <div class="hero__visual reveal" aria-hidden="true">
+      <div class="phone">
+        <div class="phone__notch"></div>
+        <div class="phone__screen">
+          <div class="ph-brand">
+            <span class="ph-brand__name">ALIANZA BLISSFULL</span>
+            <span class="ph-brand__tag">pizzas y platillos caseros</span>
+          </div>
+          <div class="ph-search">Buscar en el menú…</div>
+          <div class="ph-cats">
+            <span class="chip chip--on">Destacados</span>
+            <span class="chip">Pizzas</span>
+            <span class="chip">Pastas</span>
+            <span class="chip">Bebidas</span>
+          </div>
+          <div class="ph-head">
+            <span>Pizzas</span><span class="ph-head__n">4</span>
+          </div>
+          <div class="ph-card">
+            <img src="../admin/storage/products/PEPPERONI.jpg" alt="Pizza de pepperoni" loading="lazy">
+            <div class="ph-card__body">
+              <b>Pepperoni</b>
+              <span>Queso, pepperoni y la mejor salsa.</span>
+            </div>
+            <div class="ph-price">$12</div>
+          </div>
+          <div class="ph-card">
+            <img src="../admin/storage/products/BASICA.jpg" alt="Hamburguesa básica" loading="lazy">
+            <div class="ph-card__body">
+              <b>Burguer Clásica</b>
+              <span>Doble carne, queso cheddar.</span>
+            </div>
+            <div class="ph-price">$8</div>
+          </div>
+          <div class="ph-wa">
+            <span class="ph-wa__icon">◆</span>
+            <div><b>Pedido #104</b><span>enviado por WhatsApp</span></div>
+            <span class="ph-wa__ok">✓</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="float-chip float-chip--qr">
+        <span class="float-chip__ic">▦</span>
+        <div><b>Escanea el QR</b><span>de tu mesa</span></div>
+      </div>
+      <div class="float-chip float-chip--order">
+        <span class="float-chip__ic">🍕</span>
+        <div><b>+3 pedidos hoy</b><span>sin comisión</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="hero__marquee" aria-hidden="true">
+    <div class="marquee__track">
+      <span>MENÚ DIGITAL</span><i>✦</i>
+      <span>SUBDOMINIO PROPIO</span><i>✦</i>
+      <span>PEDIDOS POR WHATSAPP</span><i>✦</i>
+      <span>PANTALLA DE COCINA</span><i>✦</i>
+      <span>REPARTIDORES</span><i>✦</i>
+      <span>ROLES PARA TU EQUIPO</span><i>✦</i>
+      <span>MENÚ DIGITAL</span><i>✦</i>
+      <span>SUBDOMINIO PROPIO</span><i>✦</i>
+      <span>PEDIDOS POR WHATSAPP</span><i>✦</i>
+      <span>PANTALLA DE COCINA</span><i>✦</i>
+      <span>REPARTIDORES</span><i>✦</i>
+      <span>ROLES PARA TU EQUIPO</span><i>✦</i>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ FUNCIONES ══════════════════ -->
+<section class="feat" id="funciones">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow"><span class="eyebrow__num">01</span> Funciones</p>
+      <h2 class="sec-title">Todo lo que tu local necesita.<br><em>Nada que le sobre.</em></h2>
+      <p class="sec-sub">Un menú digital con tu identidad, pedidos que llegan a tu WhatsApp y un panel donde tu equipo trabaja en orden.</p>
+    </div>
+
+    <div class="bento">
+      <article class="bento__card bento__card--sub">
+        <div class="bc-top">
+          <span class="bc-ic bc-ic--gold">⌁</span>
+          <h3>Tu subdominio,<br>tu marca</h3>
+        </div>
+        <p>Tu menú vive en <code>tu-restaurante.tudominio.com</code>. Siempre tuyo, sin comisiones y sin depender de una app de terceros.</p>
+        <div class="fakeurl">
+          <span class="fakeurl__lock">🔒</span>
+          <span>mi-restaurante.<b>tudominio.com</b></span>
+        </div>
+      </article>
+
+      <article class="bento__card">
+        <div class="bc-top">
+          <span class="bc-ic bc-ic--wa">◆</span>
+          <h3>Pedidos por WhatsApp</h3>
+        </div>
+        <p>El cliente arma el carrito y el pedido llega listo a tu WhatsApp, con nombre, dirección y método de pago.</p>
+        <div class="wa-mini">
+          <div class="wa-mini__bubble"><b>Pedido #104</b> · 2× Pepperoni, 1× Espaguetis</div>
+          <div class="wa-mini__bubble wa-mini__bubble--in">✓ Recibido, ¡manos a la masa!</div>
+        </div>
+      </article>
+
+      <article class="bento__card bento__card--wide">
+        <div class="bc-top">
+          <span class="bc-ic bc-ic--red">▤</span>
+          <h3>Ordena tu menú <em>arrastrando</em></h3>
+        </div>
+        <p>Sin formularios engorrosos: arrastra categorías y productos para ordenar tu carta. Se guarda al instante.</p>
+        <div class="mini-sort" id="miniSort">
+          <div class="mini-sort__item" draggable="true" data-id="1"><span class="ms-grip">⠿</span> Pizzas <span class="ms-badge">16</span></div>
+          <div class="mini-sort__item" draggable="true" data-id="2"><span class="ms-grip">⠿</span> Hamburguesas <span class="ms-badge">9</span></div>
+          <div class="mini-sort__item" draggable="true" data-id="3"><span class="ms-grip">⠿</span> Pastas <span class="ms-badge">8</span></div>
+          <div class="mini-sort__item" draggable="true" data-id="4"><span class="ms-grip">⠿</span> Bebidas <span class="ms-badge">12</span></div>
+        </div>
+        <p class="mini-sort__hint">Probalo acá — así funciona en tu panel.</p>
+      </article>
+
+      <article class="bento__card bento__card--kds">
+        <div class="bc-top">
+          <span class="bc-ic bc-ic--lime">◔</span>
+          <h3>Pantalla de cocina</h3>
+        </div>
+        <p>Los pedidos aparecen en vivo en la cocina, ordenados y con prioridad. Menos gritos, más precisión.</p>
+        <div class="kds-mini">
+          <div class="kds-mini__row kds-mini__row--hot"><b>#104</b><span>2× Pepperoni · sin cebolla</span><i>EN PREP</i></div>
+          <div class="kds-mini__row"><b>#105</b><span>1× Burguer Clásica</span><i>EN PREP</i></div>
+          <div class="kds-mini__row"><b>#106</b><span>1× Espaguetis 👀</span><i>LISTO</i></div>
+        </div>
+      </article>
+
+      <article class="bento__card">
+        <div class="bc-top">
+          <span class="bc-ic bc-ic--sky">➤</span>
+          <h3>Repartidores</h3>
+        </div>
+        <p>Crea cuentas para tus repartidores: cada uno ve sus entregas y sus pedidos por cobrar.</p>
+      </article>
+
+      <article class="bento__card bento__card--price">
+        <div class="bc-top">
+          <span class="bc-ic bc-ic--gold">₿</span>
+          <h3>Paga como prefieras</h3>
+        </div>
+        <p>Activa tu plan pagando por <b>WhatsApp</b>. Próximamente pago automático con <b>Binance</b>.</p>
+        <div class="price-tags"><span>WhatsApp</span><span class="coming">Binance ✓ pronto</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ ROLES ══════════════════ -->
+<section class="roles" id="roles">
+  <div class="wrap">
+    <div class="sec-head sec-head--center">
+      <p class="eyebrow"><span class="eyebrow__num">02</span> Un panel, tu equipo</p>
+      <h2 class="sec-title">Roles para que cada quién<br>vea <em>solo lo suyo</em>.</h2>
+      <p class="sec-sub">Crea cuentas de acceso para tu equipo: dueño, cocina y repartidor. Cada rol ve su pantalla, sin tocar lo que no le corresponde.</p>
+    </div>
+
+    <div class="roles__grid">
+      <article class="role-card">
+        <div class="role-card__top">
+          <span class="role-card__icon">👑</span>
+          <span class="role-card__tag">Acceso total</span>
+        </div>
+        <h3 class="role-card__name">Dueño</h3>
+        <p class="role-card__desc">Menú, precios, sedes, horarios, reportes y administración de cuentas. Todo, desde un solo lugar.</p>
+      </article>
+
+      <article class="role-card role-card--pop">
+        <div class="role-card__top">
+          <span class="role-card__icon">🍳</span>
+          <span class="role-card__tag">Solo pantalla cocina</span>
+        </div>
+        <h3 class="role-card__name">Cocina</h3>
+        <p class="role-card__desc">Ve los pedidos en orden y marca el punto de preparación. Sin precios, sin configuración.</p>
+      </article>
+
+      <article class="role-card">
+        <div class="role-card__top">
+          <span class="role-card__icon">🛵</span>
+          <span class="role-card__tag">Solo entregas</span>
+        </div>
+        <h3 class="role-card__name">Repartidor</h3>
+        <p class="role-card__desc">Su lista de entregas y pedidos por cobrar. Rápido y sencillo para usarlo desde el celular.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ DEMO / CÓMO FUNCIONA ══════════════════ -->
+<section class="how" id="demo">
+  <div class="wrap">
+    <div class="how__grid">
+      <div class="sec-head">
+        <p class="eyebrow"><span class="eyebrow__num">03</span> Cómo funciona</p>
+        <h2 class="sec-title">De cero a tu menú online<br>en <em>cinco minutos</em>.</h2>
+      </div>
+
+      <ol class="steps">
+        <li class="step"><span class="step__n">1</span><div><h3>Crea tu cuenta</h3><p>Registra tu local, tu logo y tu nombre. Sin tarjeta para empezar.</p></div></li>
+        <li class="step"><span class="step__n">2</span><div><h3>Arma tu menú</h3><p>Sube productos con fotos y precios, o importa los que ya tienes.</p></div></li>
+        <li class="step"><span class="step__n">3</span><div><h3>Activa tu plan</h3><p>Paga por WhatsApp y recibe tu subdominio listo para compartir.</p></div></li>
+      </ol>
+
+      <a href="#cta" class="how__cta btn btn--primary btn--lg">Quiero mi subdominio <span class="ar">↗</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ PLANES ══════════════════ -->
+<section class="plans" id="planes">
+  <div class="wrap">
+    <div class="sec-head sec-head--center">
+      <p class="eyebrow"><span class="eyebrow__num">04</span> Planes</p>
+      <h2 class="sec-title">Precios sin letra chica.</h2>
+      <p class="sec-sub">Menos de lo que pagarías por una comisión al mes. Cancela cuando quieras.</p>
+    </div>
+
+    <div class="plans__grid">
+      <article class="plan">
+        <div class="plan__head">
+          <h3 class="plan__name">Emprendedor</h3>
+          <p class="plan__price"><span class="plan__cur">$</span>9<span class="plan__per">/mes</span></p>
+          <p class="plan__desc">Para empezar a vender por WhatsApp.</p>
+        </div>
+        <ul class="plan__list">
+          <li><span class="tick">✓</span> Menú digital en subdominio</li>
+          <li><span class="tick">✓</span> Pedidos por WhatsApp</li>
+          <li><span class="tick">✓</span> Hasta 30 productos</li>
+          <li><span class="tick">✓</span> 1 sede</li>
+          <li class="off"><span class="tick x">✕</span> Pantalla de cocina</li>
+        </ul>
+        <a href="https://wa.me/584140000000?text=Hola%2C%20quiero%20el%20plan%20Emprendedor%20de%20saz%C3%B3n" class="btn btn--outline" target="_blank" rel="noopener">Pagar por WhatsApp</a>
+      </article>
+
+      <article class="plan plan--pop">
+        <span class="plan__flag">Más elegido</span>
+        <div class="plan__head">
+          <h3 class="plan__name">Restaurante</h3>
+          <p class="plan__price"><span class="plan__cur">$</span>19<span class="plan__per">/mes</span></p>
+          <p class="plan__desc">El panel completo para tu negocio.</p>
+        </div>
+        <ul class="plan__list">
+          <li><span class="tick">✓</span> Todo lo del plan anterior</li>
+          <li><span class="tick">✓</span> Pantalla de cocina</li>
+          <li><span class="tick">✓</span> Cuentas para cocina y repartidores</li>
+          <li><span class="tick">✓</span> Productos ilimitados</li>
+          <li><span class="tick">✓</span> Orden del menú con drag&drop</li>
+          <li><span class="tick">✓</span> Tema a tu marca</li>
+        </ul>
+        <a href="https://wa.me/584140000000?text=Hola%2C%20quiero%20el%20plan%20Restaurante%20de%20saz%C3%B3n" class="btn btn--primary" target="_blank" rel="noopener">Pagar por WhatsApp</a>
+      </article>
+
+      <article class="plan">
+        <div class="plan__head">
+          <h3 class="plan__name">Cadena</h3>
+          <p class="plan__price"><span class="plan__cur">$</span>39<span class="plan__per">/mes</span></p>
+          <p class="plan__desc">Varias sedes, una sola marca.</p>
+        </div>
+        <ul class="plan__list">
+          <li><span class="tick">✓</span> Todo lo del plan Restaurante</li>
+          <li><span class="tick">✓</span> Hasta 5 sedes</li>
+          <li><span class="tick">✓</span> Menús por sede</li>
+          <li><span class="tick">✓</span> Reportes de ventas</li>
+          <li><span class="tick">✓</span> Soporte prioritario</li>
+        </ul>
+        <a href="https://wa.me/584140000000?text=Hola%2C%20quiero%20el%20plan%20Cadena%20de%20saz%C3%B3n" class="btn btn--outline" target="_blank" rel="noopener">Pagar por WhatsApp</a>
+      </article>
+    </div>
+
+    <p class="plans__note">¿Necesitas algo a medida o pago automático por <b>Binance</b>? <a href="https://wa.me/584140000000" target="_blank" rel="noopener">Escríbenos</a>.</p>
+  </div>
+</section>
+
+<!-- ══════════════════ FAQ ══════════════════ -->
+<section class="faq" id="faq">
+  <div class="wrap wrap--narrow">
+    <div class="sec-head sec-head--center">
+      <p class="eyebrow"><span class="eyebrow__num">05</span> Preguntas</p>
+      <h2 class="sec-title">Lo que siempre preguntan.</h2>
+    </div>
+
+    <div class="faq__list">
+      <details class="faq-item" open>
+        <summary>¿Necesito tener un dominio propio?</summary>
+        <p>No. Te damos un subdominio con tu marca listo al activar el plan. Si tienes tu propio dominio, lo conectamos en minutos.</p>
+      </details>
+      <details class="faq-item">
+        <summary>¿Cobran comisión por pedido?</summary>
+        <p>No. Pagas solo tu plan mensual. Cada pedido que llega por tu menú es tuyo, completo.</p>
+      </details>
+      <details class="faq-item">
+        <summary>¿Cómo llegan los pedidos?</summary>
+        <p>El cliente arma su pedido, y llega formateado a tu WhatsApp con todo: productos, extras, dirección y total. Tú decides cómo responder.</p>
+      </details>
+      <details class="faq-item">
+        <summary>¿Cómo se activa mi subdominio?</summary>
+        <p>Pagas el plan por WhatsApp (próximamente Binance automático) y activamos tu subdominio en minutos. Solo compartes el enlace o tu QR.</p>
+      </details>
+      <details class="faq-item">
+        <summary>¿Puedo tener más de una sucursal?</summary>
+        <p>El plan Cadena incluye hasta 5 sedes, cada una con su menú, horarios y zona de reparto.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ FINAL CTA ══════════════════ -->
+<section class="cta" id="cta">
+  <div class="cta__inner">
+    <p class="eyebrow eyebrow--light">Empieza hoy</p>
+    <h2 class="cta__title">Tu menú online en <em>5 minutos</em>.</h2>
+    <p class="cta__sub">Sin tarjeta para empezar. Tu subdominio espera.</p>
+    <a href="#planes" class="btn btn--ember btn--xl">Crear mi menú gratis <span class="ar">↗</span></a>
+  </div>
+</section>
+
+<!-- ══════════════════ FOOTER ══════════════════ -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a href="#top" class="brand brand--foot"><span class="brand__mark">s</span><span class="brand__name">sazón</span></a>
+        <p>El piloto automático de tu delivery. Hecho para restaurantes, con la misma pasión con la que cocinas.</p>
+      </div>
+      <div class="footer__col">
+        <h4>Producto</h4>
+        <a href="#funciones">Funciones</a>
+        <a href="#roles">Tu equipo</a>
+        <a href="#planes">Planes</a>
+      </div>
+      <div class="footer__col">
+        <h4>Ayuda</h4>
+        <a href="#faq">Preguntas</a>
+        <a href="https://wa.me/584140000000" target="_blank" rel="noopener">Soporte</a>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© <span id="year"></span> sazón · Todos los derechos reservados</span>
+      <span>Hecho con <span class="foot-heart">♥</span> para tu negocio</span>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/js/landing.js"></script>
+</body>
+</html>
