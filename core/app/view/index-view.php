@@ -6,6 +6,18 @@ $whatsapp_number = ConfigurationData::getByPreffix("general_whatsapp")?Configura
 $slides = SlideData::getPublics();
 $categories = CategoryData::getPublics();
 $paymethods = PaymethodData::getActives();
+$menu_show_hero_cfg = ConfigurationData::getByPreffix("menu_show_hero");
+$menu_show_hero = ($menu_show_hero_cfg && $menu_show_hero_cfg->val!=="0");
+$menu_show_slides_cfg = ConfigurationData::getByPreffix("menu_show_slides");
+$menu_show_slides = ($menu_show_slides_cfg && $menu_show_slides_cfg->val!=="0");
+$menu_show_featured_cfg = ConfigurationData::getByPreffix("menu_show_featured");
+$menu_show_featured = ($menu_show_featured_cfg && $menu_show_featured_cfg->val!=="0");
+$menu_show_bebidas_cfg = ConfigurationData::getByPreffix("menu_show_bebidas");
+$menu_show_bebidas = ($menu_show_bebidas_cfg && $menu_show_bebidas_cfg->val!=="0");
+$menu_show_sedes_cfg = ConfigurationData::getByPreffix("menu_show_sedes");
+$menu_show_sedes = ($menu_show_sedes_cfg && $menu_show_sedes_cfg->val!=="0");
+$menu_cat_icons_cfg = ConfigurationData::getByPreffix("menu_cat_icons");
+$menu_cat_icons = ($menu_cat_icons_cfg && $menu_cat_icons_cfg->val!=="0");
 $bcv_rate = 0;
 $bcv_rate_row = ConfigurationData::getByPreffix("bcv_rate");
 if($bcv_rate_row && $bcv_rate_row->val){ $bcv_rate = floatval($bcv_rate_row->val); }
@@ -72,6 +84,7 @@ if(count($bebidas_activas)>0){
     return array("id"=>intval($b->id),"sabor"=>$b->sabor,"medida"=>$b->medida,"sabor_options"=>$b->sabor_options,"es_gratis"=>intval($b->es_gratis),"precio"=>floatval($b->precio),"extra"=>max(0,floatval($b->precio)-$bebida_base),"agotado_sedes"=>$agot);
   }, $bebidas_activas);
   $bebidas_json = json_encode($bebidas_arr, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
+  if(!$menu_show_bebidas){ $bebidas_json = "[]"; }
 }
 function tt_cat_ic($cat_name){
   $cn = mb_strtolower(trim($cat_name));
@@ -342,8 +355,10 @@ foreach($horario_keys as $hk){
 <div class="page-body">
 
   <!-- ============ HERO PRINCIPAL (TITO STYLE) ============ -->
+  <?php if($menu_show_hero): ?>
   <section class="tt-hero">
     <!-- Hero Slider (banners dinámicos del Admin) como fondo -->
+    <?php if($menu_show_slides): ?>
     <div id="heroSlider" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="3500">
 
       <div class="carousel-inner">
@@ -370,6 +385,7 @@ foreach($horario_keys as $hk){
       <?php endif; ?>
 
     </div>
+    <?php endif; ?>
 
     <!-- Overlay de contenido: título, badges, imagen flotante y CTA -->
     <div class="tt-hero-content">
@@ -407,6 +423,7 @@ foreach($horario_keys as $hk){
       </div>
     </div>
   </section>
+  <?php endif; ?>
 
   <!-- ============ MENÚ SEMANAL (Carrusel Scroll/Swipe) ============ -->
 
@@ -425,10 +442,12 @@ foreach($horario_keys as $hk){
         <!-- Category Dynamic Navigation -->
         <div class="mb-4 overflow-auto scroll-hide pb-2" id="menu-anchor">
           <div class="d-flex align-items-center gap-2 justify-content-center flex-wrap">
+            <?php if($menu_show_featured): ?>
             <button type="button" class="btn-category-ajax active" data-cat=""><i class="bi bi-star-fill me-1"></i> Destacados</button>
+            <?php endif; ?>
             <?php foreach($categories as $cat): ?>
             <button type="button" class="btn-category-ajax text-nowrap" data-cat="<?php echo $cat->id; ?>" data-ic="<?php echo tt_cat_ic($cat->name); ?>">
-              <i class="bi bi-<?php echo tt_cat_ic($cat->name); ?> cat-ic"></i> <?php echo htmlspecialchars($cat->name); ?>
+              <?php if($menu_cat_icons): ?><i class="bi bi-<?php echo tt_cat_ic($cat->name); ?> cat-ic"></i><?php endif; ?> <?php echo htmlspecialchars($cat->name); ?>
             </button>
             <?php endforeach; ?>
           </div>
@@ -451,7 +470,7 @@ foreach($horario_keys as $hk){
         <div id="product-grid-container">
            <?php 
             $_POST["q"] = "";
-            $_POST["cat_id"] = "";
+            $_POST["cat_id"] = (!$menu_show_featured && count($categories)>0) ? $categories[0]->id : "";
             View::load("product-grid"); 
            ?>
         </div>
@@ -462,6 +481,7 @@ foreach($horario_keys as $hk){
   </div>
 
   <!-- ============ HORARIOS Y SUCURSALES ============ -->
+  <?php if($menu_show_sedes): ?>
   <section class="container-xl mt-5" id="horarios-section">
     <div class="tt-section-head text-center">
       <div class="tt-hand tt-hand-big">te esperamos</div>
@@ -531,6 +551,7 @@ foreach($horario_keys as $hk){
       </div>
     </div>
   </section>
+  <?php endif; ?>
 
 </div>
 

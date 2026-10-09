@@ -19,6 +19,7 @@ if($user==null){ Core::redir("./");}
           <a href="./?view=settings&opt=units" class="btn btn-default">Unidades</a>
           <a href="./?view=settings&opt=ingredients" class="btn btn-default">Ingredientes</a>
           <a href="./?view=settings&opt=bebidas" class="btn btn-default">Bebidas</a>
+          <a href="./?view=settings&opt=apariencia" class="btn btn-default">Apariencia</a>
           <a href="./?view=settings&opt=password" class="btn btn-default">Cambiar Contraseña</a>
         </div>
       </div>
@@ -1128,4 +1129,113 @@ $(function(){
   });
 });
 </script>
+<?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="apariencia"):?>
+<?php
+function tt_cfgv_now($name,$def){ $r = ConfigurationData::getByPreffix($name); return ($r && $r->val!="") ? $r->val : $def; }
+$ttc_colors = array(
+ "tema_primary"=>"Color principal",
+ "tema_primary_2"=>"Color principal oscuro",
+ "tema_accent"=>"Acento / botones",
+ "tema_red"=>"Alerta / oferta",
+ "tema_red_2"=>"Alerta intenso",
+ "tema_bg"=>"Fondo principal",
+ "tema_bg_2"=>"Fondo secundario",
+ "tema_card"=>"Fondo tarjetas",
+ "tema_card_2"=>"Fondo tarjeta destacada",
+ "tema_text"=>"Texto",
+);
+$ttc_defaults = array(
+ "tema_primary"=>"#e0a96d","tema_primary_2"=>"#b87e38","tema_accent"=>"#ffb703","tema_red"=>"#e63946","tema_red_2"=>"#ff2a2a",
+ "tema_bg"=>"#000000","tema_bg_2"=>"#050505","tema_card"=>"#050505","tema_card_2"=>"#1a0004","tema_text"=>"#ffffff",
+ "tema_muted"=>"rgba(255,255,255,0.62)","tema_border"=>"rgba(184,126,56,0.35)",
+ "tema_font_display"=>"Bebas Neue","tema_font_hand"=>"Caveat","tema_font_body"=>"Inter",
+);
+$ttc_fonts = array("tema_font_display"=>"Títulos (display)","tema_font_hand"=>"Cursiva","tema_font_body"=>"Texto");
+$ttc_toggles = array("menu_show_hero"=>"Hero (portada)","menu_show_slides"=>"Carrusel de ofertas","menu_show_featured"=>"Destacados","menu_show_bebidas"=>"Sección de bebidas","menu_show_sedes"=>"Sedes / ubicación","menu_cat_icons"=>"Iconos en categorías");
+?>
+<div class="page-header d-print-none">
+  <div class="container-xl">
+    <div class="row g-2 align-items-center">
+      <div class="col">
+        <h2 class="page-title">Apariencia del Menú</h2>
+        <p class="text-muted mb-0">Los cambios se aplican al instante en el menú público.</p>
+      </div>
+      <div class="col-auto ms-auto d-print-none">
+        <div class="btn-list">
+          <a href="./?view=settings" class="btn btn-default">Ajustes Generales</a>
+          <a href="./?view=categories&opt=all" class="btn btn-default">Orden del menú (categorías)</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="page-body">
+  <div class="container-xl">
+    <form method="post" action="./?action=settings&opt=savetema">
+      <div class="card">
+        <div class="card-status-top bg-primary"></div>
+        <div class="card-header"><h3 class="card-title">Colores</h3></div>
+        <div class="card-body">
+          <div class="row g-3">
+          <?php foreach($ttc_colors as $name=>$label): $v = tt_cfgv_now($name,$ttc_defaults[$name]); ?>
+            <div class="col-md-4">
+              <label class="form-label"><?php echo $label; ?></label>
+              <div class="input-group">
+                <span class="input-group-text p-0">
+                  <input type="color" class="form-control form-control-color" value="<?php echo htmlspecialchars($v); ?>" oninput="var t=this.parentNode.parentNode.querySelector('.tt-theme-hex'); if(t){t.value=this.value;}">
+                </span>
+                <input type="text" name="<?php echo $name; ?>" value="<?php echo htmlspecialchars($v); ?>" class="form-control tt-theme-hex">
+              </div>
+            </div>
+          <?php endforeach; ?>
+            <div class="col-md-4">
+              <label class="form-label">Texto secundario (rgba)</label>
+              <input type="text" name="tema_muted" value="<?php echo htmlspecialchars(tt_cfgv_now("tema_muted","rgba(255,255,255,0.62)")); ?>" class="form-control" placeholder="rgba(255,255,255,0.62)">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Color de bordes (rgba)</label>
+              <input type="text" name="tema_border" value="<?php echo htmlspecialchars(tt_cfgv_now("tema_border","rgba(184,126,56,0.35)")); ?>" class="form-control" placeholder="rgba(184,126,56,0.35)">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card mt-3">
+        <div class="card-status-top bg-primary"></div>
+        <div class="card-header"><h3 class="card-title">Tipografías</h3></div>
+        <div class="card-body">
+          <div class="row g-3">
+          <?php foreach($ttc_fonts as $name=>$label): $v = tt_cfgv_now($name,$ttc_defaults[$name]); ?>
+            <div class="col-md-4">
+              <label class="form-label"><?php echo $label; ?></label>
+              <input type="text" name="<?php echo $name; ?>" value="<?php echo htmlspecialchars($v); ?>" class="form-control" placeholder="Nombre de la fuente (Google Font)">
+            </div>
+          <?php endforeach; ?>
+          </div>
+          <p class="text-muted small mb-0 mt-2">La fuente debe estar cargada en el sitio (Bebas Neue, Caveat, Inter, Outfit…).</p>
+        </div>
+      </div>
+      <div class="card mt-3">
+        <div class="card-status-top bg-primary"></div>
+        <div class="card-header"><h3 class="card-title">Secciones visibles del menú</h3></div>
+        <div class="card-body">
+          <div class="row g-3">
+          <?php foreach($ttc_toggles as $name=>$label): $on = tt_cfgv_now($name,"1")==="1"; ?>
+            <div class="col-md-4">
+              <label class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" name="<?php echo $name; ?>" value="1" <?php echo $on?"checked":""; ?>>
+                <span class="form-check-label"><?php echo $label; ?></span>
+              </label>
+            </div>
+          <?php endforeach; ?>
+          </div>
+          <p class="text-muted small mb-0 mt-2">Recuerda guardar antes de cambiar de página.</p>
+        </div>
+      </div>
+      <div class="card-footer d-flex justify-content-between align-items-center">
+        <a href="./?action=settings&opt=restoretema" class="btn btn-outline-danger" onclick="return confirm('Restaurar la apariencia por defecto?');"><i class="bi-arrow-counterclockwise me-1"></i> Restaurar por defecto</a>
+        <button type="submit" class="btn btn-primary"><i class="bi-check-lg me-1"></i> Guardar apariencia</button>
+      </div>
+    </form>
+  </div>
+</div>
 <?php endif; ?>

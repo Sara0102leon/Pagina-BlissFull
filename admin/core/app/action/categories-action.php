@@ -5,6 +5,7 @@ if(count($_POST)>0){
 	$cat->name = $_POST["name"];
 	$cat->short_name = $_POST["short_name"];
 	$cat->is_active = isset($_POST["is_active"])?1:0;
+	$cat->position = CategoryData::nextPosition();
 	$cat->add();
 	//Core::alert("Categoria agregada!");
 	Core::redir("./?view=categories&opt=all");
@@ -16,10 +17,35 @@ if(count($_POST)>0){
 	$cat->name = $_POST["name"];
 	$cat->short_name = $_POST["short_name"];
 	$cat->is_active = isset($_POST["is_active"])?1:0;
+	$cat->position = isset($_POST["position"])?intval($_POST["position"]):$cat->position;
 	$cat->update();
 	//Core::alert("Categoria actualizada!");
 	Core::redir("./?view=categories&opt=all");
 }
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="up"){
+	$cat = CategoryData::getById($_GET["id"]);
+	$prev = CategoryData::getPrev($cat->position);
+	if($cat && $prev){
+		$tmp = $cat->position;
+		$cat->position = $prev->position;
+		$prev->position = $tmp;
+		$cat->update();
+		$prev->update();
+	}
+	Core::redir("./?view=categories&opt=all");
+}
+else if(isset($_GET["opt"]) && $_GET["opt"]=="down"){
+	$cat = CategoryData::getById($_GET["id"]);
+	$next = CategoryData::getNext($cat->position);
+	if($cat && $next){
+		$tmp = $cat->position;
+		$cat->position = $next->position;
+		$next->position = $tmp;
+		$cat->update();
+		$next->update();
+	}
+	Core::redir("./?view=categories&opt=all");
 }
 else if(isset($_GET["opt"]) && $_GET["opt"]=="del"){
 	$cat = CategoryData::getById($_GET["id"]);

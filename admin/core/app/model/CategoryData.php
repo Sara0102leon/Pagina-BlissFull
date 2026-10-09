@@ -2,17 +2,19 @@
 class CategoryData {
 	public static $tablename = "category";
 
-	public $id, $name, $short_name, $is_active, $in_home, $in_menu;
+	public $id, $name, $short_name, $is_active, $in_home, $in_menu, $position;
 
 	public function __construct(){
 		$this->name = "";
 		$this->short_name = "";
 		$this->is_active = "1";
+		$this->position = 0;
 	}
 
 	public function add(){
-		$sql = "insert into ".self::$tablename." (name,short_name,is_active) ";
-		$sql .= "value (\"$this->name\",\"$this->short_name\",$this->is_active)";
+		$pos = ($this->position===""||$this->position===null) ? 0 : intval($this->position);
+		$sql = "insert into ".self::$tablename." (name,short_name,is_active,position) ";
+		$sql .= "value (\"$this->name\",\"$this->short_name\",$this->is_active,$pos)";
 		Executor::doit($sql);
 	}
 
@@ -26,8 +28,26 @@ class CategoryData {
 	}
 
 	public function update(){
-		$sql = "update ".self::$tablename." set name=\"$this->name\",short_name=\"$this->short_name\",is_active=\"$this->is_active\" where id=$this->id";
+		$sql = "update ".self::$tablename." set name=\"$this->name\",short_name=\"$this->short_name\",is_active=\"$this->is_active\",position=".intval($this->position)." where id=$this->id";
 		Executor::doit($sql);
+	}
+
+	// --- Orden del menú ---
+	public static function nextPosition(){
+		$sql = "select coalesce(max(position),0)+1 as np from ".self::$tablename;
+		$query = Executor::doit($sql);
+		$one = Model::one($query[0],new CategoryData());
+		return intval($one->np);
+	}
+	public static function getPrev($pos){
+		$sql = "select * from ".self::$tablename." where is_active=1 and position<$pos order by position desc, id desc limit 1";
+		$query = Executor::doit($sql);
+		return Model::one($query[0],new CategoryData());
+	}
+	public static function getNext($pos){
+		$sql = "select * from ".self::$tablename." where is_active=1 and position>$pos order by position asc, id asc limit 1";
+		$query = Executor::doit($sql);
+		return Model::one($query[0],new CategoryData());
 	}
 
 	public static function getById($id){
@@ -37,7 +57,7 @@ class CategoryData {
 	}
 
 	public static function getActives(){
-		$sql = "select * from ".self::$tablename." where is_active=1 order by id asc";
+		$sql = "select * from ".self::$tablename." where is_active=1 order by position asc, id asc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new CategoryData());
 	}
@@ -54,7 +74,7 @@ class CategoryData {
 		return Model::many($query[0],new CategoryData());
 	}
 	public static function getPublics(){
-		$sql = "select * from ".self::$tablename." where is_active=1";
+		$sql = "select * from ".self::$tablename." where is_active=1 order by position asc, id asc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new CategoryData());
 	}

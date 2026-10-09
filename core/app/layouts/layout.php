@@ -20,20 +20,53 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <!-- Dark Theme Tito Burger (cargado al final para sobreescribir Tabler/Bootstrap) -->
     <link rel="stylesheet" href="assets/css/custom-dark.css?v=8">
+    <?php
+    /* ===== Motor de tema configurable desde admin (Fase 1) ===== */
+    if(!function_exists("tt_theme_get")){
+      function tt_theme_get($name,$def){
+        static $cache = null;
+        if($cache===null){
+          $cache = array();
+          foreach(ConfigurationData::getAll() as $c){ $cache[$c->name] = $c->val; }
+        }
+        return (isset($cache[$name]) && $cache[$name]!="") ? $cache[$name] : $def;
+      }
+      function tt_theme_var($name,$def){
+        $v = tt_theme_get($name,"");
+        return $v==="" ? $def : $v;
+      }
+    }
+    $tt_env_colors = array(
+      "--tt-gold"=>"tema_primary","--tt-gold-2"=>"tema_primary_2","--tt-accent"=>"tema_accent",
+      "--tt-red"=>"tema_red","--tt-red-2"=>"tema_red_2","--tt-bg"=>"tema_bg","--tt-bg-2"=>"tema_bg_2",
+      "--tt-card"=>"tema_card","--tt-card-2"=>"tema_card_2","--tt-text"=>"tema_text",
+      "--tt-muted"=>"tema_muted","--tt-border"=>"tema_border"
+    );
+    ?>
+    <style id="tt-theme-vars">
+      :root {
+      <?php foreach($tt_env_colors as $var=>$key): ?>
+        <?php echo $var; ?>: <?php echo tt_theme_var($key,""); ?>;
+      <?php endforeach; ?>
+        --tt-hand: '<?php echo addslashes(tt_theme_var("tema_font_hand","Caveat")); ?>', cursive;
+        --tt-display: '<?php echo addslashes(tt_theme_var("tema_font_display","Bebas Neue")); ?>', 'Outfit', sans-serif;
+        --tt-font-body: '<?php echo addslashes(tt_theme_var("tema_font_body","Inter")); ?>', -apple-system, sans-serif;
+      }
+    </style>
     
     <script src="assets/jquery/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
       :root {
         --tblr-font-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
-        --secondary-color: #b87e38; /* Dorado Tito */
-        --primary-color: #e0a96d;   /* Dorado Brillante */
+        --secondary-color: var(--tt-gold-2);
+        --primary-color: var(--tt-gold);
       }
       body {
-        font-family: 'Inter', sans-serif;
+        font-family: var(--tt-font-body, 'Inter', -apple-system, sans-serif);
         overflow-x: hidden;
       }
-      h1,h2,h3, .navbar-brand { font-family: 'Outfit', sans-serif; }
+      h1,h2,h3, .navbar-brand { font-family: var(--tt-display, 'Outfit'), sans-serif; }
       .brand-logo {
         height: 44px;
         width: auto;
@@ -60,8 +93,8 @@
         height: 62px;
         margin: 0 auto 16px;
         border: 5px solid rgba(255, 183, 3, 0.18);
-        border-top-color: #ffb703;
-        border-right-color: #e0a96d;
+        border-top-color: var(--tt-accent, #ffb703);
+        border-right-color: var(--tt-gold, #e0a96d);
         border-radius: 50%;
         animation: ttLoaderSpin 0.85s linear infinite;
       }
@@ -74,11 +107,11 @@
         color: #ffffff;
         line-height: 1;
       }
-      .tt-loader-brand span { color: #ffb703; }
+      .tt-loader-brand span { color: var(--tt-accent, #ffb703); }
       .tt-loader-sub {
-        font-family: 'Caveat', cursive;
+        font-family: var(--tt-hand, 'Caveat'), cursive;
         font-size: 1.25rem;
-        color: #e0a96d;
+        color: var(--tt-gold, #e0a96d);
         margin-top: 4px;
       }
       .tt-grid-loading {
@@ -90,14 +123,14 @@
         height: 46px;
         margin: 0 auto 12px;
         border: 4px solid rgba(255, 183, 3, 0.18);
-        border-top-color: #ffb703;
+        border-top-color: var(--tt-accent, #ffb703);
         border-radius: 50%;
         animation: ttLoaderSpin 0.85s linear infinite;
       }
       .tt-grid-loading p {
-        font-family: 'Caveat', cursive;
+        font-family: var(--tt-hand, 'Caveat'), cursive;
         font-size: 1.35rem;
-        color: #e0a96d;
+        color: var(--tt-gold, #e0a96d);
         margin: 0;
       }
     </style>
@@ -251,7 +284,7 @@
 
       <!-- Offcanvas Cart (Mobile/Desktop Swipe) -->
       <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
-        <div class="offcanvas-header" style="background: linear-gradient(135deg,#e0a96d,#b87e38); color: #000000;">
+        <div class="offcanvas-header" style="background: linear-gradient(135deg,var(--tt-gold),var(--tt-gold-2)); color: #000000;">
           <h5 class="offcanvas-title fw-bold" id="offcanvasCartLabel"><i class="bi bi-bag-heart me-2"></i> Mi Orden</h5>
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
@@ -442,11 +475,11 @@
         icon: "success",
         title: title || "¡AGREGADO AL CARRITO!",
         html: '<span class="tt-swal-msg">' + msg + '</span>',
-        background: "#000000",
-        color: "#e0a96d",
-        iconColor: "#e0a96d",
+        background: "<?php echo tt_theme_var("tema_bg","#000000"); ?>",
+        color: "<?php echo tt_theme_var("tema_primary","#e0a96d"); ?>",
+        iconColor: "<?php echo tt_theme_var("tema_primary","#e0a96d"); ?>",
         confirmButtonText: "OK",
-        confirmButtonColor: "#e0a96d",
+        confirmButtonColor: "<?php echo tt_theme_var("tema_primary","#e0a96d"); ?>",
         customClass: {
           popup: "tt-swal-popup",
           htmlContainer: "tt-swal-html",

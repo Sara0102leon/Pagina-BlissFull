@@ -28,7 +28,7 @@ class Model {
 			$cnt2=1;
 			foreach ($r as $key => $v) {
 				if($cnt2>0 && $cnt2%2==0){ 
-					$array[$cnt]->$key = $v;
+					@$array[$cnt]->$key = $v;
 				}
 				$cnt2++;
 			}
@@ -45,7 +45,7 @@ class Model {
 			$cnt=1;
 			foreach ($r as $key => $v) {
 				if($cnt>0 && $cnt%2==0){ 
-					$data->$key = $v;
+					@$data->$key = $v;
 				}
 				$cnt++;
 			}

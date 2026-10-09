@@ -35,6 +35,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
         <table class="table card-table table-vcenter text-nowrap datatable">
           <thead>
             <tr>
+              <th class="w-1">Orden</th>
               <th>Nombre</th>
               <th>Activo</th>
               <th class="w-1"></th>
@@ -43,6 +44,13 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
           <tbody>
           <?php foreach($categories as $cat):?>
             <tr>
+              <td>
+                <div class="d-flex align-items-center gap-1">
+                  <span class="text-muted me-1"><?php echo (int)$cat->position; ?></span>
+                  <a href="./?action=categories&opt=up&id=<?php echo $cat->id;?>" class="btn btn-outline-secondary btn-sm" title="Subir"><i class="bi-chevron-up"></i></a>
+                  <a href="./?action=categories&opt=down&id=<?php echo $cat->id;?>" class="btn btn-outline-secondary btn-sm" title="Bajar"><i class="bi-chevron-down"></i></a>
+                </div>
+              </td>
               <td><?php echo htmlspecialchars($cat->name); ?></td>
               <td>
                 <?php if($cat->is_active):?><i class="bi bi-check-lg text-success"></i><?php else: ?><i class="bi bi-x-lg text-danger"></i><?php endif; ?>
