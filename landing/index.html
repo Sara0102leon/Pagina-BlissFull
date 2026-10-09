@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>sazón — Tu menú digital en un subdominio propio</title>
 <meta name="description" content="Menú digital con dominio propio, pedidos por WhatsApp, pantalla de cocina y app de repartidores. Todo en un solo panel. Sin comisiones por pedido.">
+<meta name="theme-color" content="#0f0c09">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' rx='16' fill='%23e9b94a' transform='rotate(-8 32 32)'/%3E%3Ctext x='32' y='46' font-family='Arial' font-size='38' font-weight='bold' text-anchor='middle' fill='%231a130a'%3Es%3C/text%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:title" content="sazón — Tu menú digital en un subdominio propio">
+<meta property="og:description" content="Menú digital con dominio propio, pedidos por WhatsApp, pantalla de cocina y repartidores. Sin comisiones por pedido.">
+<meta property="og:image" content="http://localhost/menu/admin/storage/products/PEPPERONI.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -47,7 +53,7 @@
   <div class="hero__glow" aria-hidden="true"></div>
   <div class="hero__inner">
     <div class="hero__copy">
-      <p class="eyebrow reveal"><span class="eyebrow__num">⌁</span> Menú digital + pedidos por WhatsApp + cocina + repartidores</p>
+      <p class="eyebrow reveal"><span class="eyebrow__num">⌁</span> Menú digital + pedidos WhatsApp + cocina + repartidores</p>
       <h1 class="hero__title reveal">
         Tu menú,<br>
         en <em>tu propio</em><br>
@@ -72,8 +78,9 @@
     <!-- Phone mockup built from the REAL product -->
     <div class="hero__visual reveal" aria-hidden="true">
       <div class="phone">
-        <div class="phone__notch"></div>
+        <div class="phone__notch"><span class="phone__camera"></span></div>
         <div class="phone__screen">
+          <div class="ph-status"><span>9:41</span><span>▂ ▄ ▆&nbsp; 100%</span></div>
           <div class="ph-brand">
             <span class="ph-brand__name">ALIANZA BLISSFULL</span>
             <span class="ph-brand__tag">pizzas y platillos caseros</span>
@@ -89,7 +96,7 @@
             <span>Pizzas</span><span class="ph-head__n">4</span>
           </div>
           <div class="ph-card">
-            <img src="../admin/storage/products/PEPPERONI.jpg" alt="Pizza de pepperoni" loading="lazy">
+            <img src="../admin/storage/products/PEPPERONI.jpg" alt="Pizza de pepperoni">
             <div class="ph-card__body">
               <b>Pepperoni</b>
               <span>Queso, pepperoni y la mejor salsa.</span>
@@ -97,7 +104,7 @@
             <div class="ph-price">$12</div>
           </div>
           <div class="ph-card">
-            <img src="../admin/storage/products/BASICA.jpg" alt="Hamburguesa básica" loading="lazy">
+            <img src="../admin/storage/products/BASICA.jpg" alt="Hamburguesa básica">
             <div class="ph-card__body">
               <b>Burguer Clásica</b>
               <span>Doble carne, queso cheddar.</span>
@@ -117,7 +124,7 @@
         <div><b>Escanea el QR</b><span>de tu mesa</span></div>
       </div>
       <div class="float-chip float-chip--order">
-        <span class="float-chip__ic">🍕</span>
+        <svg class="float-chip__ic float-chip__ic--svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1.5 13h-15L6 7z"/><path d="M9 10V5a3 3 0 0 1 6 0v5"/></svg>
         <div><b>+3 pedidos hoy</b><span>sin comisión</span></div>
       </div>
     </div>
@@ -157,12 +164,12 @@
         </div>
         <p>Tu menú vive en <code>tu-restaurante.tudominio.com</code>. Siempre tuyo, sin comisiones y sin depender de una app de terceros.</p>
         <div class="fakeurl">
-          <span class="fakeurl__lock">🔒</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
           <span>mi-restaurante.<b>tudominio.com</b></span>
         </div>
       </article>
 
-      <article class="bento__card">
+      <article class="bento__card bento__card--wa">
         <div class="bc-top">
           <span class="bc-ic bc-ic--wa">◆</span>
           <h3>Pedidos por WhatsApp</h3>
@@ -198,11 +205,11 @@
         <div class="kds-mini">
           <div class="kds-mini__row kds-mini__row--hot"><b>#104</b><span>2× Pepperoni · sin cebolla</span><i>EN PREP</i></div>
           <div class="kds-mini__row"><b>#105</b><span>1× Burguer Clásica</span><i>EN PREP</i></div>
-          <div class="kds-mini__row"><b>#106</b><span>1× Espaguetis 👀</span><i>LISTO</i></div>
+          <div class="kds-mini__row"><b>#106</b><span>1× Espaguetis — sin cebolla</span><i>LISTO</i></div>
         </div>
       </article>
 
-      <article class="bento__card">
+      <article class="bento__card bento__card--rep">
         <div class="bc-top">
           <span class="bc-ic bc-ic--sky">➤</span>
           <h3>Repartidores</h3>
@@ -234,7 +241,9 @@
     <div class="roles__grid">
       <article class="role-card">
         <div class="role-card__top">
-          <span class="role-card__icon">👑</span>
+          <span class="role-card__icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8l4.5 3.5L12 5l4.5 6.5L21 8l-1.8 10H4.8L3 8z"/><path d="M8 18h8"/></svg>
+          </span>
           <span class="role-card__tag">Acceso total</span>
         </div>
         <h3 class="role-card__name">Dueño</h3>
@@ -243,7 +252,9 @@
 
       <article class="role-card role-card--pop">
         <div class="role-card__top">
-          <span class="role-card__icon">🍳</span>
+          <span class="role-card__icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M7 14l3.5-1.2 1.6-3.4 1 3.2L15 13"/></svg>
+          </span>
           <span class="role-card__tag">Solo pantalla cocina</span>
         </div>
         <h3 class="role-card__name">Cocina</h3>
@@ -252,7 +263,9 @@
 
       <article class="role-card">
         <div class="role-card__top">
-          <span class="role-card__icon">🛵</span>
+          <span class="role-card__icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17c-1.5 0-2-1.5-1.5-2.5L6 10"/><path d="M19 17c1.5 0 2-1.5 1.5-2.5L18 11"/><path d="M3 17h18"/><circle cx="6" cy="17" r="2.2"/><circle cx="18" cy="17" r="2.2"/><path d="M5 14.5L8 7h8l3 7.5"/></svg>
+          </span>
           <span class="role-card__tag">Solo entregas</span>
         </div>
         <h3 class="role-card__name">Repartidor</h3>
@@ -412,7 +425,7 @@
     </div>
     <div class="footer__bottom">
       <span>© <span id="year"></span> sazón · Todos los derechos reservados</span>
-      <span>Hecho con <span class="foot-heart">♥</span> para tu negocio</span>
+      <span>Hecho con <svg class="foot-heart" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-8-5.4-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.6-8 11-8 11z"/></svg> para tu negocio</span>
     </div>
   </div>
 </footer>
