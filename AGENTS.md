@@ -236,6 +236,10 @@ PHP puro, sin Composer/npm/build tools. Framework MVC custom ("Lb/Legobox").
 **Dos entry points, dos codebases separados:**
 - `index.php` → sitio público (carpeta raíz)
 - `admin/index.php` → panel admin (carpeta `admin/`)
+- `login.php` → **página de acceso standalone** de la plataforma (brand "sazón", fuera de la
+  landing y del menú público). Valida contra `user` (`sha1(md5(pass))`, `is_active=1`) y
+  entra a `admin/`. El admin redirige aquí cuando no hay sesión (`../login.php`, también
+  tras logout y login fallido). La landing NO tiene opción de login.
 - Apache sirve desde el junction `C:\xampp\htdocs\menu` apuntando al repo (sin copias duplicadas)
 
 **Routing por query string (sin .htaccess):**

@@ -32,7 +32,7 @@ if($found==true) {
 	Core::redir("./?view=home");
 }else {
 	// Si la contrase~a es incorrecta
-	Core::redir("./?view=login");
+	Core::redir("../login.php");
 }
 }else{
 	// si ya esta logeado
@@ -50,7 +50,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="logout"){
 	setcookie(session_name(), "", time()-42000, $cookieParams["path"], $cookieParams["domain"], $cookieParams["secure"], $cookieParams["httponly"]);
 	header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 	header("Pragma: no-cache");
-	header("Location: ./?view=login");
+	header("Location: ../login.php");
 	exit;
 }
 

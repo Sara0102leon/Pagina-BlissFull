@@ -10,7 +10,7 @@ $admin_titles = array(
 $page_title = isset($admin_titles[$current_view]) ? $admin_titles[$current_view] : "Panel Administrativo";
 $is_auth = isset($_SESSION["user_id"]);
 if($is_auth && $current_view=="login"){ header("Location: ./"); exit; }
-if(!$is_auth && $current_view!="login"){ header("Location: ./?view=login"); exit; }
+if(!$is_auth){ header("Location: ../login.php"); exit; }
 $sys_active = ($current_view=="users" || $current_view=="settings") ? "active" : "";
 $sys_open = $sys_active!="" ? " show" : "";
 ?>
