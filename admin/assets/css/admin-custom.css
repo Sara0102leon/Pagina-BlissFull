@@ -914,3 +914,32 @@ input[type="time"].form-control {
 }
 #cocinaQueue.flash,
 #repoQueue.flash { border-radius: 12px; animation: sazonFlash 1.2s ease-out 1; }
+
+/* =============================================================
+   A4 — Orden del menú (drag & drop)
+   ============================================================= */
+.order-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.order-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: var(--j-bg-3, #241d17);
+  border: 1px solid var(--j-border, #241d17);
+  border-radius: 10px;
+  color: var(--j-text, #f5eee2);
+  user-select: none;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+.order-item:hover { border-color: rgba(233,185,74,.45); }
+.order-item:focus-visible { outline: 2px solid var(--j-gold, #e9b94a); outline-offset: 2px; }
+.order-item.is-lifting { opacity: .96; box-shadow: 0 18px 40px rgba(0,0,0,.5); }
+.order-grip { cursor: grab; color: #b3a795; display: inline-flex; touch-action: none; }
+.order-grip:active { cursor: grabbing; }
+.order-name { flex: 1 1 auto; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.order-link { color: #b3a795; }
+.order-link:hover { color: var(--j-gold, #e9b94a); }
+.order-badge { font-size: .7rem; padding: 2px 8px; border-radius: 999px; background: rgba(179,167,149,.15); color: #b3a795; }
+.sort-placeholder { border: 2px dashed rgba(233,185,74,.55); border-radius: 10px; background: transparent; }
+.order-saved { font-weight: 600; color: #7fd39a; }
+.order-saved.is-saving { color: #e0a96d; }
+.order-saved.is-error { color: #ff8a8a; }
+.is-sorting { cursor: grabbing; }

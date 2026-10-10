@@ -164,6 +164,36 @@ Cada tienda tiene su propio menú imprimible ("carta") y su propia configuració
 
 **Probar en local:** `curl -H "Host: principal.localhost" "http://localhost/menu/?action=carta"`
 
+## Orden del menú por drag & drop (A4 — oct 2026)
+
+Categorías y productos se reordenan arrastrando en una página nueva.
+
+- **Migración** `migracion_a4.sql` (aplicada): columna **`product.position`**
+  (`int NOT NULL DEFAULT 0`) + índice `idx_product_order (tienda_id, category_id,
+  position)`. Idempotente, **no backfillea** (todo en 0 = orden previo).
+- **Página** `?view=order` → `admin/core/app/view/order-view.php`: lista de categorías
+  (col. izq.) + una lista de productos por categoría (col. der.). **No** lleva la clase
+  `datatable` (se salta el DataTables global del layout, línea ~267).
+- **JS** `admin/assets/js/admin-order.js`: pointer events + FLIP (portado del demo de
+  `landing/assets/js/landing.js`), arrastre **solo desde el grip** (`.order-grip`) y
+  reordenado por **teclado** (flechas; el foco va en el `<li tabindex=0>`). Al soltar,
+  `fetch` JSON y muestra "Guardado ✓" en `#orderSaved`.
+- **Action JSON** `admin/core/app/action/order-action.php`:
+  `?action=order&opt=cats` (`{ids:[…]}`) y `?action=order&opt=prods`
+  (`{category_id, ids:[…]}`). Guard: sesión + `role='dueno'` (401/403) y verifica que
+  ids/categoría pertenezcan a la tienda (`Tenant::filter()`).
+- **Modelos**: `CategoryData::reorder($ids)` (posición 0..n-1) y
+  `ProductData::reorderInCategory($cat,$ids)`; `ProductData::nextPosition($cat)` pone
+  los productos nuevos al final.
+- **Menú público**: `ProductData::getPublicsByCategoryId` ahora
+  `order by position asc, created_at desc`; `getActivesByCategory` igual;
+  `getPublicsByCategoryIdAll` → `position asc, name asc`. Con positions en 0 se
+  mantiene el comportamiento anterior.
+- **Sidebar**: ítem "Orden del menú" tras Categorías (solo dueño; el guard de rol del
+  layout rebota a cocina/repartidor). Título en `$admin_titles["order"]`.
+
+**Probar en local:** entra a `http://localhost/menu/admin/?view=order` con `admin/admin`.
+
 ## Despliegue en producción (VPS alianza)
 
 **Sitio público:** https://prueba.alianzablissful.com

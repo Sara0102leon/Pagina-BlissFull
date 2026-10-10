@@ -44,8 +44,8 @@ el cliente se registra, paga un plan y se le activa su **menú en un subdominio 
 - **A2** Migrar el menú actual como primer cliente (tienda 1) → ✅ (oct 2026)
 - **C1** Carta por tienda: menú imprimible (`?action=carta`) + configuración por tienda (`configuration.cfg_id`) → ✅ (oct 2026)
 - **A3** Panel con roles: cocina (pedidos) y repartidor (delivery) → ✅ (oct 2026)
-- **A4** Drag & drop del orden de menú (categorías y productos) → pendiente
-  (por ahora hay flechas ↑/↓ en Categorías).
+- **A4** Drag & drop del orden de menú (categorías y productos) → ✅ (oct 2026)
+  (se conservan también las flechas ↑/↓ en Categorías).
 - Las **Fases 1-5** (abajo) siguen siendo el motor del menú por cliente.
 
 ### A0/A2 — Multi-tenant implementado (oct 2026)
@@ -117,6 +117,31 @@ el cliente se registra, paga un plan y se le activa su **menú en un subdominio 
 - **Fix de columnas**: `UserData::add()/register()` insertaban la columna `kind`
   inexistente en la BD real (el alta web de usuarios estaba roto); ahora persisten
   `role` + `tienda_id`. Se quitó el select "Tipo" de la vista de usuarios.
+
+### A4 — Orden del menú por drag & drop (oct 2026)
+- Migración `migracion_a4.sql` (aplicada): columna **`product.position`**
+  (`int NOT NULL DEFAULT 0`) + índice `idx_product_order (tienda_id, category_id,
+  position)`. Idempotente; **no backfillea** (todas en 0 = orden actual).
+- **Página "Orden del menú"** (`?view=order`): nueva vista independiente
+  (`order-view.php`) — lista de categorías + una lista de productos por categoría.
+  No usa `datatable` (evita el DataTables global del layout).
+- **Arrastre** (`admin/assets/js/admin-order.js`): pointer events + FLIP, portado del
+  demo de la landing; incluye reordenado por **teclado** (flechas ↑/↓ sobre el
+  elemento enfocado). Al soltar guarda por `fetch` (JSON) y muestra "Guardado ✓".
+- **Persistencia** (`order-action.php`, JSON): `?action=order&opt=cats`
+  (`{ids:[...]}`) y `?action=order&opt=prods` (`{category_id, ids:[...]}`).
+  Guard: sesión + `role='dueno'` (403 si no) y verificación de que categoría/ids
+  pertenezcan a la tienda (`Tenant::filter()`).
+- **Modelos**: `CategoryData::reorder($ids)` reasigna `position` 0..n-1;
+  `ProductData::reorderInCategory($cat,$ids)` hace lo propio dentro de una categoría.
+  `ProductData::nextPosition($cat)` coloca los productos nuevos al final.
+- **Menú público**: las consultas de producto pasan a
+  `order by position asc, created_at desc` (`getPublicsByCategoryId`,
+  `getPublicsByCategoryIdAll` → `position asc, name asc`, `getActivesByCategory`).
+  Con todas las posiciones en 0 el orden es el de antes.
+- **Verificado en local**: reordenar categorías y productos persiste en BD y se
+  refleja en el grid AJAX público; guards 401 (sin sesión) / 403 (no-dueño, categoría
+  ajena); sin errores de consola (Playwright + Chrome).
 
 ---
 

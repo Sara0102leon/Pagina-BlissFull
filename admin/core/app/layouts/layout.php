@@ -5,7 +5,8 @@ $admin_titles = array(
   "products"=>"Productos","categories"=>"Categorías","clients"=>"Clientes",
   "slider"=>"Slider","users"=>"Usuarios","settings"=>"Configuración",
   "spends"=>"Gastos","persons"=>"Personas","forms"=>"Formularios",
-  "table"=>"Tablas","cocina"=>"Cocina","repartidor"=>"Repartidor","login"=>"Iniciar Sesión"
+  "table"=>"Tablas","cocina"=>"Cocina","repartidor"=>"Repartidor","login"=>"Iniciar Sesión",
+  "order"=>"Orden del menú"
 );
 $page_title = isset($admin_titles[$current_view]) ? $admin_titles[$current_view] : "Panel Administrativo";
 $is_auth = isset($_SESSION["user_id"]);
@@ -107,6 +108,9 @@ $sys_open = $sys_active!="" ? " show" : "";
           </a>
           <a class="sidebar-item<?php echo $current_view=="categories" ? " active" : ""; ?>" href="./?view=categories&opt=all">
             <i class="bi bi-tags"></i><span>Categorías</span>
+          </a>
+          <a class="sidebar-item<?php echo $current_view=="order" ? " active" : ""; ?>" href="./?view=order">
+            <i class="bi bi-arrows-move"></i><span>Orden del menú</span>
           </a>
           <a class="sidebar-item<?php echo $current_view=="clients" ? " active" : ""; ?>" href="./?view=clients&opt=all">
             <i class="bi bi-people"></i><span>Clientes</span>

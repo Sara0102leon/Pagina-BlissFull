@@ -2,7 +2,7 @@
 class ProductData {
 	public static $tablename = "product";
 
-	public $id, $short_name, $code, $name, $description, $image, $price, $price_llevar, $offer_price, $offer_finish, $free_ingredients, $house_ingredients, $allow_halves, $tipo_division, $link, $category_id, $unit_id, $sede_id, $is_public, $in_existence, $is_featured, $is_active, $created_at, $tienda_id;
+	public $id, $short_name, $code, $name, $description, $image, $price, $price_llevar, $offer_price, $offer_finish, $free_ingredients, $house_ingredients, $allow_halves, $tipo_division, $link, $category_id, $unit_id, $sede_id, $is_public, $in_existence, $is_featured, $is_active, $created_at, $tienda_id, $position;
 	public $offer_txt, $order_at, $meta_title, $meta_description, $meta_keywords, $is_offert;
 
 	public static function generateCode(){
@@ -37,6 +37,7 @@ class ProductData {
 		$this->is_featured = "0";
 		$this->is_active = "1";
 		$this->created_at = "NOW()";
+		$this->position = 0;
 	}
 
 	public function getUnit(){ return UnitData::getById($this->unit_id);}
@@ -55,9 +56,36 @@ class ProductData {
 		$price = self::num($this->price);
 		$pl    = self::num($this->price_llevar);
 		$op    = self::num($this->offer_price);
-		$sql = "insert into ".self::$tablename." (short_name,code,name,description,image,price,price_llevar,offer_price,offer_finish,free_ingredients,house_ingredients,allow_halves,tipo_division,link,category_id,unit_id,sede_id,is_public,in_existence,is_featured,is_offert,tienda_id,created_at) ";
-		$sql .= "value (\"$this->short_name\",\"$this->code\",\"$this->name\",\"$this->description\",\"$this->image\"," . ($price!==null ? "\"$price\"" : "NULL") . "," . ($pl!==null ? "\"$pl\"" : "NULL") . "," . ($op!==null ? "\"$op\"" : "NULL") . "," . ($this->offer_finish!="" ? "\"$this->offer_finish\"" : "NULL") . "," . intval($this->free_ingredients) . "," . ($this->house_ingredients!="" ? "\"$this->house_ingredients\"" : "NULL") . "," . intval($this->allow_halves) . ",\"" . ($this->tipo_division!="" ? $this->tipo_division : "normal") . "\",\"$this->link\",$this->category_id," . ($this->unit_id!="" ? "$this->unit_id" : "NULL") . "," . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",$this->is_public,$this->in_existence,$this->is_featured,$this->is_offert,".Tenant::idSql().",$this->created_at)";
+		$pos   = self::nextPosition($this->category_id); // los productos nuevos van al final de su categoría
+		$sql = "insert into ".self::$tablename." (short_name,code,name,description,image,price,price_llevar,offer_price,offer_finish,free_ingredients,house_ingredients,allow_halves,tipo_division,link,category_id,unit_id,sede_id,is_public,in_existence,is_featured,is_offert,tienda_id,position,created_at) ";
+		$sql .= "value (\"$this->short_name\",\"$this->code\",\"$this->name\",\"$this->description\",\"$this->image\"," . ($price!==null ? "\"$price\"" : "NULL") . "," . ($pl!==null ? "\"$pl\"" : "NULL") . "," . ($op!==null ? "\"$op\"" : "NULL") . "," . ($this->offer_finish!="" ? "\"$this->offer_finish\"" : "NULL") . "," . intval($this->free_ingredients) . "," . ($this->house_ingredients!="" ? "\"$this->house_ingredients\"" : "NULL") . "," . intval($this->allow_halves) . ",\"" . ($this->tipo_division!="" ? $this->tipo_division : "normal") . "\",\"$this->link\",$this->category_id," . ($this->unit_id!="" ? "$this->unit_id" : "NULL") . "," . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",$this->is_public,$this->in_existence,$this->is_featured,$this->is_offert,".Tenant::idSql().",".intval($pos).",$this->created_at)";
 		return Executor::doit($sql);
+	}
+
+	// Siguiente posición libre dentro de una categoría (para que los nuevos vayan al final)
+	public static function nextPosition($category_id){
+		$cat = intval($category_id);
+		$sql = "select coalesce(max(position),0)+1 as np from ".self::$tablename." where category_id=$cat and ".Tenant::filter();
+		$query = Executor::doit($sql);
+		$one = Model::one($query[0],new ProductData());
+		return intval($one->np);
+	}
+
+	// Reasigna posiciones (0..n-1) a los productos indicados, validando categoría y tienda.
+	public static function reorderInCategory($category_id, $ids){
+		$cat = intval($category_id);
+		if($cat<=0 || !is_array($ids)){ return 0; }
+		$pos = 0; $n = 0;
+		foreach($ids as $id){
+			$id = intval($id);
+			if($id<=0){ continue; }
+			$chk = Executor::doit("select id from ".self::$tablename." where id=$id and category_id=$cat and ".Tenant::filter()." limit 1");
+			if($chk[0] && $chk[0]->fetch_assoc()){
+				Executor::doit("update ".self::$tablename." set position=".$pos." where id=$id");
+				$pos++; $n++;
+			}
+		}
+		return $n;
 	}
 
 	public static function delById($id){
@@ -139,7 +167,15 @@ class ProductData {
 
 	public static function getPublicsByCategoryId($id,$sede_id=0){
 		$sql = "select * from ".self::$tablename." where category_id=$id and is_public=1 and is_active=1 and ".Tenant::filter()." and ".self::sedeFilter($sede_id);
-		$sql .= " order by created_at desc";
+		$sql .= " order by position asc, created_at desc";
+		$query = Executor::doit($sql);
+		return Model::many($query[0],new ProductData());
+	}
+
+	// Todos los productos activos de una categoría (para el orden manual del admin)
+	public static function getActivesByCategory($category_id){
+		$cat = intval($category_id);
+		$sql = "select * from ".self::$tablename." where category_id=$cat and is_active=1 and ".Tenant::filter()." order by position asc, created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}
@@ -147,7 +183,7 @@ class ProductData {
 	// Carta "todas las sedes": sin filtro de sede (incluye productos fijados a una sede)
 	public static function getPublicsByCategoryIdAll($id){
 		$sql = "select * from ".self::$tablename." where category_id=$id and is_public=1 and is_active=1 and ".Tenant::filter();
-		$sql .= " order by name asc";
+		$sql .= " order by position asc, name asc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}

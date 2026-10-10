@@ -50,6 +50,22 @@ class CategoryData {
 		return Model::one($query[0],new CategoryData());
 	}
 
+	// Reasigna posiciones (0..n-1) a las categorías indicadas, validando tienda.
+	public static function reorder($ids){
+		if(!is_array($ids)){ return 0; }
+		$pos = 0; $n = 0;
+		foreach($ids as $id){
+			$id = intval($id);
+			if($id<=0){ continue; }
+			$chk = Executor::doit("select id from ".self::$tablename." where id=$id and ".Tenant::filter()." limit 1");
+			if($chk[0] && $chk[0]->fetch_assoc()){
+				Executor::doit("update ".self::$tablename." set position=".$pos." where id=$id");
+				$pos++; $n++;
+			}
+		}
+		return $n;
+	}
+
 	public static function getById($id){
 		$sql = "select * from ".self::$tablename." where id=$id";
 		$query = Executor::doit($sql);
