@@ -5,7 +5,7 @@ $admin_titles = array(
   "products"=>"Productos","categories"=>"Categorías","clients"=>"Clientes",
   "slider"=>"Slider","users"=>"Usuarios","settings"=>"Configuración",
   "spends"=>"Gastos","persons"=>"Personas","forms"=>"Formularios",
-  "table"=>"Tablas","login"=>"Iniciar Sesión"
+  "table"=>"Tablas","cocina"=>"Cocina","repartidor"=>"Repartidor","login"=>"Iniciar Sesión"
 );
 $page_title = isset($admin_titles[$current_view]) ? $admin_titles[$current_view] : "Panel Administrativo";
 $is_auth = isset($_SESSION["user_id"]);
@@ -17,6 +17,13 @@ if($is_auth){
 	$_u = UserData::getById($_SESSION["user_id"]);
 	$user_role = ($_u && $_u->role !== "") ? $_u->role : "dueno";
 	$user_role_label = $user_role=="cocina" ? "Cocina" : ($user_role=="repartidor" ? "Repartidor" : "Dueño");
+}
+// Scoping por rol: cocina y repartidor solo ven su panel
+$is_dueno = ($user_role === "dueno");
+$role_view = ($user_role==="cocina") ? "cocina" : (($user_role==="repartidor") ? "repartidor" : "home");
+if(!$is_dueno && $current_view !== $role_view){
+	header("Location: ./?view=".$role_view);
+	exit;
 }
 $sys_active = ($current_view=="users" || $current_view=="settings") ? "active" : "";
 $sys_open = $sys_active!="" ? " show" : "";
@@ -70,6 +77,19 @@ $sys_open = $sys_active!="" ? " show" : "";
           <span class="brand-name">sazón<small>Panel admin</small></span>
         </a>
 
+        <?php if($user_role==="cocina"): ?>
+        <nav class="sidebar-nav">
+          <div class="sidebar-section-title">Comedor</div>
+          <a class="sidebar-item active" href="./?view=cocina"><i class="bi bi-fire"></i><span>Cocina</span></a>
+          <a class="sidebar-item sidebar-logout" href="./?action=access&opt=logout"><i class="bi bi-box-arrow-right"></i><span>Salir</span></a>
+        </nav>
+        <?php elseif($user_role==="repartidor"): ?>
+        <nav class="sidebar-nav">
+          <div class="sidebar-section-title">Reparto</div>
+          <a class="sidebar-item active" href="./?view=repartidor"><i class="bi bi-bicycle"></i><span>Repartidor</span></a>
+          <a class="sidebar-item sidebar-logout" href="./?action=access&opt=logout"><i class="bi bi-box-arrow-right"></i><span>Salir</span></a>
+        </nav>
+        <?php else: ?>
         <nav class="sidebar-nav">
           <div class="sidebar-section-title">Menú Principal</div>
 
@@ -119,6 +139,7 @@ $sys_open = $sys_active!="" ? " show" : "";
             <i class="bi bi-box-arrow-right"></i><span>Salir</span>
           </a>
         </nav>
+        <?php endif; ?>
       </aside>
       <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
       <?php endif; ?>
@@ -146,6 +167,7 @@ $sys_open = $sys_active!="" ? " show" : "";
 
           <?php if($is_auth): ?>
           <div class="app-header-right">
+            <?php if($is_dueno): ?>
             <!-- Botón Guía del panel -->
             <button type="button" class="icon-btn me-2" id="btn-tour-guide" title="Guía del panel: aprende a usar cada módulo" aria-label="Guía del panel">
               <i class="bi bi-question-lg"></i>
@@ -173,6 +195,7 @@ $sys_open = $sys_active!="" ? " show" : "";
                 </div>
               </div>
             </div>
+            <?php endif; ?>
 
             <?php $u = UserData::getById($_SESSION["user_id"]); ?>
             <div class="nav-item dropdown">
@@ -184,8 +207,10 @@ $sys_open = $sys_active!="" ? " show" : "";
                 </span>
               </a>
               <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                <?php if($is_dueno): ?>
                 <a href="./?view=settings&opt=all" class="dropdown-item">Configuración</a>
                 <div class="dropdown-divider"></div>
+                <?php endif; ?>
                 <a href="./?action=access&opt=logout" class="dropdown-item text-danger">Salir</a>
               </div>
             </div>
@@ -502,8 +527,10 @@ a.volume = 0.25;
         document.addEventListener("click", unlockAudio);
         document.addEventListener("keydown", unlockAudio);
 
+        <?php if($is_dueno): ?>
         loadNotifications();
         setInterval(loadNotifications, 20000);
+        <?php endif; ?>
       }
     </script>
     <!-- Guía interactiva del panel (tour con spotlight) -->

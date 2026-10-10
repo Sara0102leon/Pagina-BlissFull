@@ -15,9 +15,17 @@ $email     = isset($_POST["email"]) ? trim((string)$_POST["email"]) : "";
 $password  = isset($_POST["password"]) ? (string)$_POST["password"] : "";
 $isPost    = ($_SERVER["REQUEST_METHOD"] === "POST");
 
-// Ya hay sesión → directo al panel
+// Ya hay sesión → directo al panel del rol correspondiente
 if(isset($_SESSION["user_id"])){
-	header("Location: admin/");
+	$role_dest = "admin/";
+	$base = new Database();
+	$con  = $base->connect();
+	$rr = $con->query("select role from user where id=".intval($_SESSION["user_id"])." limit 1");
+	if($rr && $r = $rr->fetch_assoc()){
+		if($r["role"]==="cocina"){ $role_dest = "admin/?view=cocina"; }
+		elseif($r["role"]==="repartidor"){ $role_dest = "admin/?view=repartidor"; }
+	}
+	header("Location: ".$role_dest);
 	exit;
 }
 
@@ -34,7 +42,13 @@ if($isPost){
 		if($res && $row = $res->fetch_assoc()){
 			session_regenerate_id(true);
 			$_SESSION["user_id"] = intval($row["id"]);
-			header("Location: admin/");
+			$role_dest = "admin/";
+			$rr = $con->query("select role from user where id=".intval($row["id"])." limit 1");
+			if($rr && $r = $rr->fetch_assoc()){
+				if($r["role"]==="cocina"){ $role_dest = "admin/?view=cocina"; }
+				elseif($r["role"]==="repartidor"){ $role_dest = "admin/?view=repartidor"; }
+			}
+			header("Location: ".$role_dest);
 			exit;
 		}else{
 			$error = "Correo o contraseña incorrectos.";

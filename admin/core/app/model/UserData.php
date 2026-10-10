@@ -27,8 +27,10 @@ class UserData extends Extra{
 
 
 	public function add(){
-		$sql = "insert into user (name,lastname,email,password,kind,created_at) ";
-		$sql .= "value (\"$this->name\",\"$this->lastname\",\"$this->email\",\"$this->password\",$this->kind,$this->created_at)";
+		$role  = ($this->role !== "") ? $this->role : "dueno";
+		$tienda = (intval($this->tienda_id) > 0) ? intval($this->tienda_id) : 0;
+		$sql = "insert into user (name,lastname,email,password,role,tienda_id,created_at) ";
+		$sql .= "value (\"$this->name\",\"$this->lastname\",\"$this->email\",\"$this->password\",\"$role\",$tienda,$this->created_at)";
 		Executor::doit($sql);
 	}
 
@@ -43,7 +45,8 @@ class UserData extends Extra{
 	}
 
 	public function update(){
-		$sql = "update ".self::$tablename." set name=\"$this->name\",lastname=\"$this->lastname\",email=\"$this->email\",username=\"$this->username\",email=\"$this->email\",is_active=\"$this->is_active\",is_admin=\"$this->is_admin\" where id=$this->id";
+		$role  = ($this->role !== "") ? $this->role : "dueno";
+		$sql = "update ".self::$tablename." set name=\"$this->name\",lastname=\"$this->lastname\",email=\"$this->email\",username=\"$this->username\",is_active=\"$this->is_active\",is_admin=\"$this->is_admin\",role=\"$role\" where id=$this->id";
 		Executor::doit($sql);
 	}
 

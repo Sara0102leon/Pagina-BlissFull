@@ -902,3 +902,15 @@ input[type="time"].form-control {
 .app-content .bg-primary.text-white,
 .app-content .bg-primary.text-white *,
 .card-stamp-icon.bg-primary { color: #1a130a !important; }
+
+/* =============================================================
+   A3 — Paneles Cocina / Repartidor
+   ============================================================= */
+.cocina-card { border-left: 3px solid rgba(233,185,74,.35) !important; }
+@keyframes sazonFlash {
+  0%   { background-color: transparent; }
+  30%  { background-color: rgba(233,185,74,.16); }
+  100% { background-color: transparent; }
+}
+#cocinaQueue.flash,
+#repoQueue.flash { border-radius: 12px; animation: sazonFlash 1.2s ease-out 1; }

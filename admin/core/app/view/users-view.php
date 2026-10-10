@@ -39,7 +39,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
             <tr>
               <th>Nombre completo</th>
               <th>Email</th>
-              <th>Tipo</th>
+              <th>Rol</th>
               <th class="w-1"></th>
             </tr>
           </thead>
@@ -50,11 +50,13 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
             <tr>
               <td><?php echo $user->name." ".$user->lastname; ?></td>
               <td class="text-muted"><?php echo $user->email; ?></td>
-              <td class="text-muted">
-                <?php 
-                if($user->kind==1){ echo "Administrador"; }
-                else if($user->kind==2){ echo "Usuario normal"; }
+              <td>
+                <?php
+                $role_map = array("dueno"=>"Dueño","cocina"=>"Cocina","repartidor"=>"Repartidor");
+                $rl = isset($role_map[$user->role]) ? $role_map[$user->role] : "Dueño";
+                $rb = $user->role==="cocina" ? "warning" : ($user->role==="repartidor" ? "info" : "primary");
                 ?>
+                <span class="badge bg-<?php echo $rb; ?>-lt text-<?php echo $rb; ?>"><?php echo $rl; ?></span>
               </td>
               <td>
                 <div class="btn-list flex-nowrap">
@@ -116,11 +118,13 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
             <input type="password" name="password" class="form-control" placeholder="Contraseña">
           </div>
           <div class="mb-3">
-            <label class="form-label">Tipo</label>
-            <select name="kind" class="form-control" required>
-              <option value="2">Usuario normal</option>
-              <option value="1">Administrador</option>
+            <label class="form-label">Rol en la tienda</label>
+            <select name="role" class="form-control" required>
+              <option value="dueno">Dueño</option>
+              <option value="cocina">Cocina</option>
+              <option value="repartidor">Repartidor</option>
             </select>
+            <small class="form-hint">Dueño: panel completo. Cocina: cola de pedidos por preparar. Repartidor: pedidos listos para entregar.</small>
           </div>
           <div class="form-footer mt-4">
             <button type="submit" class="btn btn-primary w-100">Agregar Usuario</button>
@@ -173,10 +177,11 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
             <small class="form-hint">La contraseña solo se modificara si escribes algo, en caso contrario no se modifica.</small>
           </div>
           <div class="mb-3">
-            <label class="form-label">Tipo</label>
-            <select name="kind" class="form-control" required>
-              <option value="2" <?php if($user->kind==2){ echo "selected"; } ?>>Usuario normal</option>
-              <option value="1" <?php if($user->kind==1){ echo "selected"; } ?>>Administrador</option>
+            <label class="form-label">Rol en la tienda</label>
+            <select name="role" class="form-control" required>
+              <option value="dueno" <?php if($user->role==="dueno" || $user->role===""){ echo "selected"; } ?>>Dueño</option>
+              <option value="cocina" <?php if($user->role==="cocina"){ echo "selected"; } ?>>Cocina</option>
+              <option value="repartidor" <?php if($user->role==="repartidor"){ echo "selected"; } ?>>Repartidor</option>
             </select>
           </div>
           <div class="form-footer mt-4">
