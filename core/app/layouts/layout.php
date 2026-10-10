@@ -374,6 +374,7 @@
                 <ul class="list-unstyled small d-grid gap-2">
                   <li><a href="./">Inicio</a></li>
                   <li><a href="#menu-anchor">Menú Completo</a></li>
+                  <li><a href="./?action=carta" target="_blank" rel="noopener">Carta / Menú imprimible</a></li>
                   <li><a href="#horarios-section">Horarios y Sucursales</a></li>
                   <li><a href="./?view=order-status">Seguir mi pedido</a></li>
                 </ul>

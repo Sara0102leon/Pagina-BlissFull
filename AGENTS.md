@@ -117,8 +117,42 @@ Probe de resolución CLI en `%TEMP%\opencode\test-tenant.php` (incluye `core/aut
 `*.sazon.app` + cert wildcard de Let's Encrypt). Mientras no se despliegue, los
 subdominios siguen sin actividad real.
 
-**Pendiente:** carrito por tienda (`$_SESSION["cart"]` hoy es único), tema/ajustes por
-tienda (`configuration.cfg_id`), y ocultar subdominios inexistentes (hoy muestran la tienda 1).
+**Pendiente:** carrito por tienda (`$_SESSION["cart"]` hoy es único) y ocultar
+subdominios inexistentes (hoy muestran la tienda 1). El **tema/ajustes por tienda**
+ya está resuelto con C1 (sección siguiente).
+
+## Carta por tienda + configuración por tienda (C1 — oct 2026)
+
+Cada tienda tiene su propio menú imprimible ("carta") y su propia configuración.
+
+**Config por tienda** (`migracion_config_tienda.sql`, aplicada):
+- `configuration.name` dejó de ser UNIQUE global → índice **`UNIQUE(name, cfg_id)`**.
+  `cfg_id=1` es la configuración base/plantilla; el resto son overrides por tienda.
+- `ConfigurationData::cfgId()` = `Tenant::id()` (fallback a 1); `getByPreffix` lee la
+  tienda y **hereda de la base** si la tienda no define la clave; `getAll()` devuelve
+  la config **efectiva** (base + overrides, la tienda gana); `updateValFromName` hace
+  **upsert** en la tienda activa clonando `label`/`kind` de la base (los valores se
+  escapan con `real_escape_string`). No hay que sembrar filas al crear una tienda:
+  con herencia + upsert basta (hay helper `seedFromBase()` disponible si se prefiere).
+- Claves nuevas de la carta (base, editables por tienda): `carta_titulo`,
+  `carta_subtitulo`, `carta_mostrar_logo|precios|descripcion|imagenes`,
+  `carta_columnas`, `carta_nota`.
+
+**Carta imprimible** — `core/app/action/carta-action.php` → **`?action=carta`**:
+- Página completa **sin layout** (para imprimir/PDF), `@media print` A4, botón
+  "Imprimir / PDF", filtro por sede (`&sede=N`), "Todas las sedes" muestra todo
+  (getter nuevo `ProductData::getPublicsByCategoryIdAll()`).
+- **NUNCA usar `?view=carta`**: `View::load()` incluye la vista **dos veces** cuando
+  `?view` está definido (líneas 292/313 de `core/app/layouts/layout.php`) — duplica
+  el HTML y rompe si la vista declara funciones. Las páginas standalone van por
+  **action**.
+- Admin: ítem lateral "Carta" (abre `../?action=carta` en pestaña nueva), sección
+  `?view=settings&opt=carta` con las opciones (guardar: `?action=settings&opt=savecarta`,
+  switches no marcados = "0"). Footer público: enlace "Carta / Menú imprimible".
+- El título por defecto usa `tienda.nombre` (hoy "Menú principal"); cambiar con
+  `carta_titulo` o editando el nombre de la tienda.
+
+**Probar en local:** `curl -H "Host: principal.localhost" "http://localhost/menu/?action=carta"`
 
 ## Despliegue en producción (VPS alianza)
 

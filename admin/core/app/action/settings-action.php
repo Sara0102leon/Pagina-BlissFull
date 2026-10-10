@@ -293,4 +293,18 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="restoretema"){
 	foreach($tt_defaults as $k=>$v){ ConfigurationData::updateValFromName($k,$v); }
 	Core::redir("./?view=settings&opt=apariencia");
 }
+else if(isset($_GET["opt"]) && $_GET["opt"]=="savecarta"){
+	if(count($_POST)>0){
+		foreach($_POST as $k=>$v){
+			if(strpos($k,"carta_")===0){ ConfigurationData::updateValFromName($k, trim($v)); }
+		}
+		// Los switches que no llegan en el POST se guardan como "0"
+		$ct_toggles = array("carta_mostrar_logo","carta_mostrar_precios","carta_mostrar_descripcion","carta_mostrar_imagenes");
+		foreach($ct_toggles as $t){
+			$on = (isset($_POST[$t]) && $_POST[$t]!=="0") ? "1" : "0";
+			ConfigurationData::updateValFromName($t, $on);
+		}
+	}
+	Core::redir("./?view=settings&opt=carta");
+}
 ?>

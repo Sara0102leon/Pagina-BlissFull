@@ -42,6 +42,7 @@ el cliente se registra, paga un plan y se le activa su **menú en un subdominio 
 - **A0** Arquitectura multi-tenant (tienda/plan/roles) + subdominios → ✅ (oct 2026)
 - **A1** Landing + registro + planes → ✅ (oct 2026)
 - **A2** Migrar el menú actual como primer cliente (tienda 1) → ✅ (oct 2026)
+- **C1** Carta por tienda: menú imprimible (`?action=carta`) + configuración por tienda (`configuration.cfg_id`) → ✅ (oct 2026)
 - **A3** Panel con roles: cocina (pedidos) y repartidor (delivery) → pendiente.
 - **A4** Drag & drop del orden de menú (categorías y productos) → pendiente
   (por ahora hay flechas ↑/↓ en Categorías).
@@ -64,8 +65,30 @@ el cliente se registra, paga un plan y se le activa su **menú en un subdominio 
   quedó aislada (no aparecía en el menú principal ni viceversa).
 - VPS: snippet `deploy/nginx-subdominios.conf.example` (vhost comodín `*.sazon.app`
   + cert wildcard); el hosting real se activa al desplegar.
-- **Pendiente de A0:** tema/configuración por tienda (`configuration.cfg_id` =
-  `tienda_id`, Fase 2) y carrito por tienda (hoy `$_SESSION["cart"]` es único).
+- **Pendiente de A0:** carrito por tienda (hoy `$_SESSION["cart"]` es único) y ocultar
+  subdominios inexistentes (hoy muestran la tienda 1).
+
+### C1 — Config por tienda + carta imprimible (oct 2026)
+- **Config por tienda:** `configuration` pasa de `UNIQUE(name)` global a
+  `UNIQUE(name, cfg_id)` (migración `migracion_config_tienda.sql`). `cfg_id=1` es la
+  base/plantilla; cada tienda hereda de la base y sobreescribe solo lo suyo.
+  - `ConfigurationData::cfgId()` = `Tenant::id()` (fallback a 1).
+  - Lectura `getByPreffix` con herencia; `getAll()` devuelve la config efectiva
+    (base + overrides); `updateValFromName` hace upsert en la tienda activa
+    clonando `label`/`kind` de la base. Valores escapados (`real_escape_string`).
+- **Carta imprimible:** `core/app/action/carta-action.php` → `?action=carta`
+  (página completa, sin layout, con `@media print` tamaño A4 y botón Imprimir/PDF).
+  Filtro por sede `&sede=N`; "Todas las sedes" usa el getter nuevo
+  `ProductData::getPublicsByCategoryIdAll()`. Incluye precios (con ofertas
+  tachadas), descripciones, imágenes opcionales y columnas 1-3.
+  - Se usa **action** y no `?view=carta` porque `View::load()` (quirk del framework:
+  línea 292 y 313 del layout) incluye la vista **dos veces** cuando `?view` está
+  definido (rompe si la vista declara funciones).
+- **Admin:** ítem lateral "Carta" (abre la carta en pestaña nueva) + sección
+  `?view=settings&opt=carta` (título, subtítulo, logo/precios/descripción/imágenes,
+  columnas, nota al pie) guardada con `?action=settings&opt=savecarta`
+  (switches no marcados = "0"). Footer público: enlace "Carta / Menú imprimible".
+- **Probar en local:** `curl -H "Host: principal.localhost" "http://localhost/menu/?action=carta"`.
 
 ---
 

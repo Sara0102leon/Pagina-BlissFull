@@ -144,6 +144,14 @@ class ProductData {
 		return Model::many($query[0],new ProductData());
 	}
 
+	// Carta "todas las sedes": sin filtro de sede (incluye productos fijados a una sede)
+	public static function getPublicsByCategoryIdAll($id){
+		$sql = "select * from ".self::$tablename." where category_id=$id and is_public=1 and is_active=1 and ".Tenant::filter();
+		$sql .= " order by name asc";
+		$query = Executor::doit($sql);
+		return Model::many($query[0],new ProductData());
+	}
+
 	public static function getLike($q,$sede_id=0){
 		$sql = "select * from ".self::$tablename." where is_active=1 and (name like '%$q%' or description like '%$q%') and ".Tenant::filter()." and ".self::sedeFilter($sede_id);
 		$query = Executor::doit($sql);

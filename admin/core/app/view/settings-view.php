@@ -20,6 +20,7 @@ if($user==null){ Core::redir("./");}
           <a href="./?view=settings&opt=ingredients" class="btn btn-default">Ingredientes</a>
           <a href="./?view=settings&opt=bebidas" class="btn btn-default">Bebidas</a>
           <a href="./?view=settings&opt=apariencia" class="btn btn-default">Apariencia</a>
+          <a href="./?view=settings&opt=carta" class="btn btn-default">Carta</a>
           <a href="./?view=settings&opt=password" class="btn btn-default">Cambiar Contraseña</a>
         </div>
       </div>
@@ -1234,6 +1235,101 @@ $ttc_toggles = array("menu_show_hero"=>"Hero (portada)","menu_show_slides"=>"Car
       <div class="card-footer d-flex justify-content-between align-items-center">
         <a href="./?action=settings&opt=restoretema" class="btn btn-outline-danger" onclick="return confirm('Restaurar la apariencia por defecto?');"><i class="bi-arrow-counterclockwise me-1"></i> Restaurar por defecto</a>
         <button type="submit" class="btn btn-primary"><i class="bi-check-lg me-1"></i> Guardar apariencia</button>
+      </div>
+    </form>
+  </div>
+</div>
+<?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="carta"):?>
+<?php
+$carta_get = function($name,$def){ $r = ConfigurationData::getByPreffix($name); return ($r && $r->val!=="") ? $r->val : $def; };
+$carta_public = rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/');
+$carta_url = $carta_public."/?action=carta";
+?>
+<div class="page-header d-print-none">
+  <div class="container-xl">
+    <div class="row g-2 align-items-center">
+      <div class="col">
+        <h2 class="page-title">Carta imprimible</h2>
+        <p class="text-muted mb-0">El menú en formato carta, para verlo en físico o imprimirlo (PDF). Los cambios se aplican al instante.</p>
+      </div>
+      <div class="col-auto ms-auto d-print-none">
+        <div class="btn-list">
+          <a href="<?php echo htmlspecialchars($carta_url); ?>" target="_blank" rel="noopener" class="btn btn-primary"><i class="bi bi-printer me-1"></i> Ver / Imprimir carta</a>
+          <a href="./?view=settings&opt=all" class="btn btn-default">Ajustes Generales</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="page-body">
+  <div class="container-xl">
+    <form method="post" action="./?action=settings&opt=savecarta">
+      <div class="card">
+        <div class="card-status-top bg-primary"></div>
+        <div class="card-header"><h3 class="card-title">Encabezado</h3></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Título</label>
+              <input type="text" name="carta_titulo" class="form-control" value="<?php echo htmlspecialchars($carta_get("carta_titulo","")); ?>" placeholder="(vacío = nombre de la tienda)">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Subtítulo</label>
+              <input type="text" name="carta_subtitulo" class="form-control" value="<?php echo htmlspecialchars($carta_get("carta_subtitulo","")); ?>" placeholder="Ej: Pizzas artesanales, pastas y más">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card mt-3">
+        <div class="card-status-top bg-primary"></div>
+        <div class="card-header"><h3 class="card-title">Qué mostrar</h3></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" name="carta_mostrar_logo" value="1" <?php echo $carta_get("carta_mostrar_logo","1")==="1" ? "checked" : ""; ?>>
+                <span class="form-check-label">Logo</span>
+              </label>
+            </div>
+            <div class="col-md-3">
+              <label class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" name="carta_mostrar_precios" value="1" <?php echo $carta_get("carta_mostrar_precios","1")==="1" ? "checked" : ""; ?>>
+                <span class="form-check-label">Precios</span>
+              </label>
+            </div>
+            <div class="col-md-3">
+              <label class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" name="carta_mostrar_descripcion" value="1" <?php echo $carta_get("carta_mostrar_descripcion","1")==="1" ? "checked" : ""; ?>>
+                <span class="form-check-label">Descripción</span>
+              </label>
+            </div>
+            <div class="col-md-3">
+              <label class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" name="carta_mostrar_imagenes" value="1" <?php echo $carta_get("carta_mostrar_imagenes","0")==="1" ? "checked" : ""; ?>>
+                <span class="form-check-label">Imágenes</span>
+              </label>
+            </div>
+          </div>
+          <div class="row g-3 mt-1">
+            <div class="col-md-3">
+              <label class="form-label">Columnas</label>
+              <select name="carta_columnas" class="form-select">
+                <?php foreach(array("1"=>"1 columna","2"=>"2 columnas","3"=>"3 columnas") as $cv=>$cl): ?>
+                <option value="<?php echo $cv; ?>" <?php echo $carta_get("carta_columnas","2")===$cv ? "selected" : ""; ?>><?php echo $cl; ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <div class="col-md-9">
+              <label class="form-label">Nota al pie</label>
+              <input type="text" name="carta_nota" class="form-control" value="<?php echo htmlspecialchars($carta_get("carta_nota","")); ?>" placeholder="Ej: Precios sujetos a cambio. IVA incluido.">
+            </div>
+          </div>
+          <p class="text-muted small mb-0 mt-2">Un switch apagado se guarda como "0". La carta incluye todas las categorías y productos activos del menú.</p>
+        </div>
+      </div>
+      <div class="card-footer d-flex justify-content-between align-items-center">
+        <span class="text-muted small">Consejo: en la carta, el botón “Imprimir / PDF” usa el diálogo del navegador.</span>
+        <button type="submit" class="btn btn-primary"><i class="bi-check-lg me-1"></i> Guardar carta</button>
       </div>
     </form>
   </div>

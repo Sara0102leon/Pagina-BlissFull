@@ -87,6 +87,9 @@ $sys_open = $sys_active!="" ? " show" : "";
           <a class="sidebar-item<?php echo $current_view=="slider" ? " active" : ""; ?>" href="./?view=slider&opt=all">
             <i class="bi bi-images"></i><span>Slider</span>
           </a>
+          <a class="sidebar-item" href="../?action=carta" target="_blank" rel="noopener">
+            <i class="bi bi-journal-text"></i><span>Carta</span>
+          </a>
 
           <button type="button" class="sidebar-item sidebar-toggle<?php echo $sys_active!="" ? " active" : ""; ?>" data-bs-toggle="collapse" data-bs-target="#menuSistema" aria-expanded="<?php echo $sys_active!="" ? "true" : "false"; ?>">
             <i class="bi bi-gear"></i><span>Sistema</span>
@@ -101,6 +104,7 @@ $sys_open = $sys_active!="" ? " show" : "";
               <a class="sidebar-subitem<?php echo ($current_view=="settings" && isset($_GET["opt"]) && $_GET["opt"]=="units") ? " active" : ""; ?>" href="./?view=settings&opt=units"><i class="bi bi-rulers"></i> Unidades</a>
               <a class="sidebar-subitem<?php echo ($current_view=="settings" && isset($_GET["opt"]) && $_GET["opt"]=="ingredients") ? " active" : ""; ?>" href="./?view=settings&opt=ingredients"><i class="bi bi-egg-fried"></i> Ingredientes</a>
               <a class="sidebar-subitem<?php echo ($current_view=="settings" && isset($_GET["opt"]) && $_GET["opt"]=="bebidas") ? " active" : ""; ?>" href="./?view=settings&opt=bebidas"><i class="bi bi-cup-straw"></i> Bebidas</a>
+              <a class="sidebar-subitem<?php echo ($current_view=="settings" && isset($_GET["opt"]) && $_GET["opt"]=="carta") ? " active" : ""; ?>" href="./?view=settings&opt=carta"><i class="bi bi-journal-text"></i> Carta</a>
             </div>
           </div>
 
