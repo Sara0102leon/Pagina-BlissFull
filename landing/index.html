@@ -612,35 +612,74 @@
   </div>
 </footer>
 
-<!-- ══════════════════ DEMO: PAGO ZENOBANK ══════════════════ -->
+<!-- ══════════════════ PAGO: REGISTRO + ZENOBANK ══════════════════ -->
 <div class="pay" id="pay" role="dialog" aria-modal="true" aria-labelledby="payTitle" hidden>
   <div class="pay__backdrop" data-pay-close></div>
   <div class="pay__box">
     <button class="pay__x" type="button" aria-label="Cerrar" data-pay-close>×</button>
 
+    <!-- Paso 1: datos + resumen -->
     <div class="pay__step" data-step="1">
-      <span class="pay__badge">Modo demo</span>
+      <span class="pay__badge" id="payBadge">Pago seguro con Zenobank</span>
       <h3 class="pay__title" id="payTitle">Activa tu subdominio</h3>
       <div class="pay__summary">
         <div class="pay__row"><span>Plan</span><b id="payPlan">Restaurante</b></div>
-        <div class="pay__row"><span>Subdominio</span><b id="payDomain">mi-local.sazon.app</b></div>
         <div class="pay__row pay__row--total"><span>Total hoy</span><b id="payTotal">$19</b></div>
       </div>
+
+      <form class="pay__form" id="payForm" novalidate>
+        <label class="pay__field" for="payNombre">
+          <span>Nombre de tu local</span>
+          <input id="payNombre" name="nombre" type="text" autocomplete="organization" placeholder="P. ej. Doña Pepita" required>
+        </label>
+        <label class="pay__field" for="payDomain">
+          <span>Subdominio (se completa solo)</span>
+          <input id="payDomain" name="subdominio" type="text" autocomplete="off" spellcheck="false" placeholder="tu-local" required>
+          <span class="pay__hint">Tu dirección será <b id="payUrl">tu-local.sazon.app</b></span>
+        </label>
+        <label class="pay__field" for="payEmail">
+          <span>Email <em>opcional</em></span>
+          <input id="payEmail" name="email" type="email" autocomplete="email" placeholder="tu@email.com">
+        </label>
+        <label class="pay__field" for="payPassword">
+          <span>Contraseña <em>opcional</em></span>
+          <input id="payPassword" name="password" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+        </label>
+      </form>
+
       <button class="btn btn--primary btn--block" type="button" id="payGo">Pagar con Zenobank</button>
       <p class="pay__foot">Pago seguro con Zenobank · cancela cuando quieras</p>
     </div>
 
+    <!-- Paso 2: creando el pago / redirigiendo -->
     <div class="pay__step" data-step="2" hidden>
       <div class="pay__spinner" aria-hidden="true"></div>
       <h3 class="pay__title">Conectando con Zenobank…</h3>
-      <p class="pay__sub">No cierres esta ventana. Esto es una demostración.</p>
+      <p class="pay__sub" id="payStep2Sub">Creando tu pago seguro. No cierres esta ventana.</p>
     </div>
 
+    <!-- Paso 3: éxito -->
     <div class="pay__step" data-step="3" hidden>
       <div class="pay__check" aria-hidden="true">✓</div>
       <h3 class="pay__title">¡Pago aprobado!</h3>
       <p class="pay__sub">Tu subdominio <b id="payDomain2">mi-local.sazon.app</b> ya está listo y activo.</p>
+      <p class="pay__sub pay__sub--sm" id="payMenuNote">En tu menú digital empezarás a recibir pedidos de inmediato.</p>
       <button class="btn btn--primary btn--block" type="button" data-pay-close>Ir a mi menú</button>
+    </div>
+
+    <!-- Paso 4: error -->
+    <div class="pay__step" data-step="4" hidden>
+      <div class="pay__warn" aria-hidden="true">!</div>
+      <h3 class="pay__title">No pudimos continuar</h3>
+      <p class="pay__sub" id="payErrSub">Ocurrió un error. Inténtalo de nuevo.</p>
+      <button class="btn btn--outline" type="button" data-pay-back>Volver a intentar</button>
+    </div>
+
+    <!-- Paso 5: verificando el pago (vuelta desde Zenobank) -->
+    <div class="pay__step" data-step="5" hidden>
+      <div class="pay__spinner" aria-hidden="true"></div>
+      <h3 class="pay__title">Verificando tu pago…</h3>
+      <p class="pay__sub">Confirmando con Zenobank. Tu subdominio se activa al instante.</p>
     </div>
   </div>
 </div>

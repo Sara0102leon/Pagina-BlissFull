@@ -1,0 +1,54 @@
+# ─────────────────────────────────────────────────────────────────────
+# nginx — vhost comodín para subdominios de tiendas (A0)
+# Uso en el VPS (Ubuntu + nginx; revisar rutas reales de /var/www/blissfull):
+#   1. Copiar a /etc/nginx/sites-available/subdominios.sazon.app
+#   2. ln -s ../sites-available/subdominios.sazon.app /etc/nginx/sites-enabled/
+#   3. Certbot wildcard:  certbot certonly --manual --preferred-challenges dns -d '*.sazon.app' -d 'sazon.app'
+#   4. nginx -t && systemctl reload nginx
+# El PHP resuelve la tienda por el Host header (Tenant::resolve()).
+# ─────────────────────────────────────────────────────────────────────
+server {
+    listen 80;
+    listen [::]:80;
+    server_name *.sazon.app sazon.app;
+
+    # raíz de la app (mismo codebase; el subdominio decide la tienda)
+    root /var/www/blissfull;
+    index index.php;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        fastcgi_param HTTP_HOST $host;   # el Host original llega a PHP
+    }
+
+    location ~* \.(css|js|png|jpg|jpeg|webp|svg|ico|woff2?)$ {
+        expires 7d;
+        add_header Cache-Control "public, immutable";
+    }
+}
+
+# HTTPS (tras el cert wildcard)
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name *.sazon.app sazon.app;
+
+    ssl_certificate     /etc/letsencrypt/live/sazon.app/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/sazon.app/privkey.pem;
+
+    root /var/www/blissfull;
+    index index.php;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+    }
+}

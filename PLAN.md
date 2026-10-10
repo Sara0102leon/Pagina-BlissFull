@@ -39,12 +39,33 @@ el cliente se registra, paga un plan y se le activa su **menú en un subdominio 
 - El primer cliente = la pizzería actual: sus datos `tacomenu` migran como una tienda.
 
 ### Hoja de ruta de producto
-- **A0** Arquitectura multi-tenant (tienda/plan/roles) + subdominios en el VPS.
-- **A1** Landing + registro + planes ← "primero mi landing".
-- **A2** Migrar el menú actual como primer cliente en su subdominio.
-- **A3** Panel con roles: cocina (pedidos) y repartidor (delivery).
-- **A4** Drag & drop del orden de menú (categorías y productos).
+- **A0** Arquitectura multi-tenant (tienda/plan/roles) + subdominios → ✅ (oct 2026)
+- **A1** Landing + registro + planes → ✅ (oct 2026)
+- **A2** Migrar el menú actual como primer cliente (tienda 1) → ✅ (oct 2026)
+- **A3** Panel con roles: cocina (pedidos) y repartidor (delivery) → pendiente.
+- **A4** Drag & drop del orden de menú (categorías y productos) → pendiente
+  (por ahora hay flechas ↑/↓ en Categorías).
 - Las **Fases 1-5** (abajo) siguen siendo el motor del menú por cliente.
+
+### A0/A2 — Multi-tenant implementado (oct 2026)
+- Migración `migracion_multitenant.sql`: `tienda_id` en `category`, `product`, `sede`,
+  `buy`, `delivery_zone` (+ índices), y clave `saas_alt_domains`.
+- Modelo **`Tenant`** (`admin/core/app/model/Tenant.php`): resuelve la tienda activa
+  por **sesión** (admin → `user.tienda_id`), por **subdominio del Host**
+  (`cliente.localhost` / `cliente.sazon.app`) y con **fallback** a la primera tienda
+  activa. Expone `Tenant::id()`, `Tenant::idSql()` e `Tenant::filter()`
+  (`tienda_id=N` o `1=1` si no hay tenant).
+- Modelos escopados por `Tenant::filter()`: `CategoryData`, `ProductData`, `SedeData`,
+  `BuyData`, `DeliveryZoneData` (lecturas y altas).
+- Migración `migracion_a2.sql`: crea la tienda #1 (`subdomain='principal'`) y estampa
+  `tienda_id=1` en los datos actuales; el admin pasa a `tienda_id=1, role='dueno'`.
+- **Verificado en local** (`Host: x.localhost` vía curl): dominio raíz y
+  `principal.*` sirven la tienda 1; una tienda 2 de prueba con su categoría/producto
+  quedó aislada (no aparecía en el menú principal ni viceversa).
+- VPS: snippet `deploy/nginx-subdominios.conf.example` (vhost comodín `*.sazon.app`
+  + cert wildcard); el hosting real se activa al desplegar.
+- **Pendiente de A0:** tema/configuración por tienda (`configuration.cfg_id` =
+  `tienda_id`, Fase 2) y carrito por tienda (hoy `$_SESSION["cart"]` es único).
 
 ---
 

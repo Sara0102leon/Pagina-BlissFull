@@ -2,7 +2,7 @@
 class ProductData {
 	public static $tablename = "product";
 
-	public $id, $short_name, $code, $name, $description, $image, $price, $price_llevar, $offer_price, $offer_finish, $free_ingredients, $house_ingredients, $allow_halves, $tipo_division, $link, $category_id, $unit_id, $sede_id, $is_public, $in_existence, $is_featured, $is_active, $created_at;
+	public $id, $short_name, $code, $name, $description, $image, $price, $price_llevar, $offer_price, $offer_finish, $free_ingredients, $house_ingredients, $allow_halves, $tipo_division, $link, $category_id, $unit_id, $sede_id, $is_public, $in_existence, $is_featured, $is_active, $created_at, $tienda_id;
 	public $offer_txt, $order_at, $meta_title, $meta_description, $meta_keywords, $is_offert;
 
 	public static function generateCode(){
@@ -55,8 +55,8 @@ class ProductData {
 		$price = self::num($this->price);
 		$pl    = self::num($this->price_llevar);
 		$op    = self::num($this->offer_price);
-		$sql = "insert into ".self::$tablename." (short_name,code,name,description,image,price,price_llevar,offer_price,offer_finish,free_ingredients,house_ingredients,allow_halves,tipo_division,link,category_id,unit_id,sede_id,is_public,in_existence,is_featured,is_offert,created_at) ";
-		$sql .= "value (\"$this->short_name\",\"$this->code\",\"$this->name\",\"$this->description\",\"$this->image\"," . ($price!==null ? "\"$price\"" : "NULL") . "," . ($pl!==null ? "\"$pl\"" : "NULL") . "," . ($op!==null ? "\"$op\"" : "NULL") . "," . ($this->offer_finish!="" ? "\"$this->offer_finish\"" : "NULL") . "," . intval($this->free_ingredients) . "," . ($this->house_ingredients!="" ? "\"$this->house_ingredients\"" : "NULL") . "," . intval($this->allow_halves) . ",\"" . ($this->tipo_division!="" ? $this->tipo_division : "normal") . "\",\"$this->link\",$this->category_id," . ($this->unit_id!="" ? "$this->unit_id" : "NULL") . "," . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",$this->is_public,$this->in_existence,$this->is_featured,$this->is_offert,$this->created_at)";
+		$sql = "insert into ".self::$tablename." (short_name,code,name,description,image,price,price_llevar,offer_price,offer_finish,free_ingredients,house_ingredients,allow_halves,tipo_division,link,category_id,unit_id,sede_id,is_public,in_existence,is_featured,is_offert,tienda_id,created_at) ";
+		$sql .= "value (\"$this->short_name\",\"$this->code\",\"$this->name\",\"$this->description\",\"$this->image\"," . ($price!==null ? "\"$price\"" : "NULL") . "," . ($pl!==null ? "\"$pl\"" : "NULL") . "," . ($op!==null ? "\"$op\"" : "NULL") . "," . ($this->offer_finish!="" ? "\"$this->offer_finish\"" : "NULL") . "," . intval($this->free_ingredients) . "," . ($this->house_ingredients!="" ? "\"$this->house_ingredients\"" : "NULL") . "," . intval($this->allow_halves) . ",\"" . ($this->tipo_division!="" ? $this->tipo_division : "normal") . "\",\"$this->link\",$this->category_id," . ($this->unit_id!="" ? "$this->unit_id" : "NULL") . "," . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",$this->is_public,$this->in_existence,$this->is_featured,$this->is_offert,".Tenant::idSql().",$this->created_at)";
 		return Executor::doit($sql);
 	}
 
@@ -90,7 +90,7 @@ class ProductData {
 	}
 
 	public static function getAll(){
-		$sql = "select * from ".self::$tablename." where is_active=1 order by created_at desc";
+		$sql = "select * from ".self::$tablename." where is_active=1 and ".Tenant::filter()." order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}
@@ -132,39 +132,39 @@ class ProductData {
 	}
 
 	public static function getBySede($sede_id){
-		$sql = "select * from ".self::$tablename." where is_active=1 and ".self::sedeFilter($sede_id)." order by created_at desc";
+		$sql = "select * from ".self::$tablename." where is_active=1 and ".Tenant::filter()." and ".self::sedeFilter($sede_id)." order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}
 
 	public static function getPublicsByCategoryId($id,$sede_id=0){
-		$sql = "select * from ".self::$tablename." where category_id=$id and is_public=1 and is_active=1 and ".self::sedeFilter($sede_id);
+		$sql = "select * from ".self::$tablename." where category_id=$id and is_public=1 and is_active=1 and ".Tenant::filter()." and ".self::sedeFilter($sede_id);
 		$sql .= " order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}
 
 	public static function getLike($q,$sede_id=0){
-		$sql = "select * from ".self::$tablename." where is_active=1 and (name like '%$q%' or description like '%$q%') and ".self::sedeFilter($sede_id);
+		$sql = "select * from ".self::$tablename." where is_active=1 and (name like '%$q%' or description like '%$q%') and ".Tenant::filter()." and ".self::sedeFilter($sede_id);
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}
 
 	public static function getFeatureds($sede_id=0){
-		$sql = "select * from ".self::$tablename." where is_featured=1 and is_active=1 and ".self::sedeFilter($sede_id);
+		$sql = "select * from ".self::$tablename." where is_featured=1 and is_active=1 and ".Tenant::filter()." and ".self::sedeFilter($sede_id);
 		$sql .= " order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}
 
 	public static function getNews(){
-		$sql = "select * from ".self::$tablename." where is_active=1 order by created_at desc";
+		$sql = "select * from ".self::$tablename." where is_active=1 and ".Tenant::filter()." order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}
 
 	public static function getOffers(){
-		$sql = "select * from ".self::$tablename." where offer_price is not null and offer_price<>'' and offer_price>0 and is_active=1 order by created_at desc";
+		$sql = "select * from ".self::$tablename." where offer_price is not null and offer_price<>'' and offer_price>0 and is_active=1 and ".Tenant::filter()." order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}

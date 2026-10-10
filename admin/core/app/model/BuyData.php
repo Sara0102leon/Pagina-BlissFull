@@ -2,7 +2,7 @@
 class BuyData {
 	public static $tablename = "buy";
 
-	public $id, $k, $code, $coupon_id, $client_id, $created_at, $paymethod_id, $delivery_zone_id, $sede_id, $capture, $note, $scheduled_at, $status_id, $name, $c, $m, $chatwoot_conversation_id, $chatwoot_contact_id, $notified, $client_name, $client_phone, $elapsed_sec, $lat, $lng, $maps, $distance_km;
+	public $id, $k, $code, $coupon_id, $client_id, $created_at, $paymethod_id, $delivery_zone_id, $sede_id, $capture, $note, $scheduled_at, $status_id, $name, $c, $m, $chatwoot_conversation_id, $chatwoot_contact_id, $notified, $client_name, $client_phone, $elapsed_sec, $lat, $lng, $maps, $distance_km, $tienda_id;
 
 	public function __construct(){
 		$this->id = null;
@@ -31,7 +31,7 @@ class BuyData {
 		$zone_sql = $this->delivery_zone_id!="" ? $this->delivery_zone_id : "NULL";
 		$sede_sql = $this->sede_id!="" ? $this->sede_id : "NULL";
 		$sched_sql = ($this->scheduled_at!="" && isset($cols["scheduled_at"])) ? "\"$this->scheduled_at\"" : "NULL";
-		$fields = array("k","code","coupon_id","client_id","created_at","paymethod_id","delivery_zone_id","sede_id","capture","note","scheduled_at","status_id","lat","lng","maps","distance_km");
+		$fields = array("k","code","coupon_id","client_id","created_at","paymethod_id","delivery_zone_id","sede_id","capture","note","scheduled_at","status_id","lat","lng","maps","distance_km","tienda_id");
 		$names = array();
 		$vals = array();
 		foreach($fields as $f){
@@ -49,6 +49,7 @@ class BuyData {
 				case "lng": $vals[] = ($this->lng!="" && is_numeric($this->lng)) ? number_format(floatval($this->lng),7,".","") : "NULL"; break;
 				case "maps": $vals[] = ($this->maps!="" ? "\"$this->maps\"" : "NULL"); break;
 				case "distance_km": $vals[] = ($this->distance_km!="" && is_numeric($this->distance_km)) ? number_format(floatval($this->distance_km),2,".","") : "NULL"; break;
+				case "tienda_id": $vals[] = Tenant::idSql(); break;
 				default: $vals[] = "\"".$this->{$f}."\"";
 			}
 		}
@@ -99,43 +100,43 @@ class BuyData {
 	}
 
 	public static function countByStatusId($id){
-		$sql = "select count(*) as c from ".self::$tablename." where status_id=$id";
+		$sql = "select count(*) as c from ".self::$tablename." where status_id=$id and ".Tenant::filter();
 		$query = Executor::doit($sql);
 		return Model::one($query[0],new BuyData());
 	}
 
 	public static function getByCode($id){
-		$sql = "select * from ".self::$tablename." where code=\"$id\"";
+		$sql = "select * from ".self::$tablename." where code=\"$id\" and ".Tenant::filter();
 		$query = Executor::doit($sql);
 		return Model::one($query[0],new BuyData());
 	}
 
 	public static function getAll(){
-		$sql = "select * from ".self::$tablename." order by created_at desc";
+		$sql = "select * from ".self::$tablename." where ".Tenant::filter()." order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new BuyData());
 	}
 
 	public static function getAllByDate($date){
-		$sql = "select * from ".self::$tablename." where date(created_at)=\"$date\"";
+		$sql = "select * from ".self::$tablename." where date(created_at)=\"$date\" and ".Tenant::filter();
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new BuyData());
 	}
 
 	public static function getByRange($start,$end){
-		$sql = "select * from ".self::$tablename." where (created_at>=\"$start\" and created_at<=\"$end\") order by created_at desc";
+		$sql = "select * from ".self::$tablename." where (created_at>=\"$start\" and created_at<=\"$end\") and ".Tenant::filter()." order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new BuyData());
 	}
 
 	public static function getByRangeDelivered($start,$end){
-		$sql = "select * from ".self::$tablename." where status_id=5 and (created_at>=\"$start\" and created_at<=\"$end\") order by created_at desc";
+		$sql = "select * from ".self::$tablename." where status_id=5 and (created_at>=\"$start\" and created_at<=\"$end\") and ".Tenant::filter()." order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new BuyData());
 	}
 
 	public static function getAllDelivered(){
-		$sql = "select * from ".self::$tablename." where status_id=5 order by created_at desc";
+		$sql = "select * from ".self::$tablename." where status_id=5 and ".Tenant::filter()." order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new BuyData());
 	}
@@ -187,11 +188,10 @@ class BuyData {
 	}
 
 	public static function getAllByClientId($id){
-		$sql = "select * from ".self::$tablename." where client_id=$id order by created_at desc";
+		$sql = "select * from ".self::$tablename." where client_id=$id and ".Tenant::filter()." order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new BuyData());
 	}
 
 }
-
 ?>

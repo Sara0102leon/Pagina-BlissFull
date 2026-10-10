@@ -2,7 +2,7 @@
 class SedeData {
 	public static $tablename = "sede";
 
-	public $id, $name, $address, $phone, $image, $lat, $lng, $maps, $is_active, $created_at, $chatwoot_group_conversation_id;
+	public $id, $name, $address, $phone, $image, $lat, $lng, $maps, $is_active, $created_at, $chatwoot_group_conversation_id, $tienda_id;
 
 	public function __construct(){
 		$this->id = null;
@@ -19,8 +19,8 @@ class SedeData {
 	public function add(){
 		$lat_sql = ($this->lat!="" && is_numeric($this->lat)) ? $this->lat : "NULL";
 		$lng_sql = ($this->lng!="" && is_numeric($this->lng)) ? $this->lng : "NULL";
-		$sql = "insert into ".self::$tablename." (name,address,phone,image,lat,lng,maps,is_active) ";
-		$sql .= "value (\"$this->name\",\"$this->address\",\"$this->phone\",\"$this->image\",$lat_sql,$lng_sql,\"$this->maps\",$this->is_active)";
+		$sql = "insert into ".self::$tablename." (name,address,phone,image,lat,lng,maps,is_active,tienda_id) ";
+		$sql .= "value (\"$this->name\",\"$this->address\",\"$this->phone\",\"$this->image\",$lat_sql,$lng_sql,\"$this->maps\",$this->is_active,".Tenant::idSql().")";
 		Executor::doit($sql);
 	}
 
@@ -43,13 +43,13 @@ class SedeData {
 	}
 
 	public static function getAll(){
-		$sql = "select * from ".self::$tablename." order by name asc";
+		$sql = "select * from ".self::$tablename." where ".Tenant::filter()." order by name asc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new SedeData());
 	}
 
 	public static function getActives(){
-		$sql = "select * from ".self::$tablename." where is_active=1 order by name asc";
+		$sql = "select * from ".self::$tablename." where is_active=1 and ".Tenant::filter()." order by name asc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new SedeData());
 	}

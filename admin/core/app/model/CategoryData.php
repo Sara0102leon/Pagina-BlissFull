@@ -2,7 +2,7 @@
 class CategoryData {
 	public static $tablename = "category";
 
-	public $id, $name, $short_name, $is_active, $in_home, $in_menu, $position;
+	public $id, $name, $short_name, $is_active, $in_home, $in_menu, $position, $tienda_id;
 
 	public function __construct(){
 		$this->name = "";
@@ -13,8 +13,8 @@ class CategoryData {
 
 	public function add(){
 		$pos = ($this->position===""||$this->position===null) ? 0 : intval($this->position);
-		$sql = "insert into ".self::$tablename." (name,short_name,is_active,position) ";
-		$sql .= "value (\"$this->name\",\"$this->short_name\",$this->is_active,$pos)";
+		$sql = "insert into ".self::$tablename." (name,short_name,is_active,position,tienda_id) ";
+		$sql .= "value (\"$this->name\",\"$this->short_name\",$this->is_active,$pos,".Tenant::idSql().")";
 		Executor::doit($sql);
 	}
 
@@ -34,18 +34,18 @@ class CategoryData {
 
 	// --- Orden del menú ---
 	public static function nextPosition(){
-		$sql = "select coalesce(max(position),0)+1 as np from ".self::$tablename;
+		$sql = "select coalesce(max(position),0)+1 as np from ".self::$tablename." where ".Tenant::filter();
 		$query = Executor::doit($sql);
 		$one = Model::one($query[0],new CategoryData());
 		return intval($one->np);
 	}
 	public static function getPrev($pos){
-		$sql = "select * from ".self::$tablename." where is_active=1 and position<$pos order by position desc, id desc limit 1";
+		$sql = "select * from ".self::$tablename." where is_active=1 and ".Tenant::filter()." and position<$pos order by position desc, id desc limit 1";
 		$query = Executor::doit($sql);
 		return Model::one($query[0],new CategoryData());
 	}
 	public static function getNext($pos){
-		$sql = "select * from ".self::$tablename." where is_active=1 and position>$pos order by position asc, id asc limit 1";
+		$sql = "select * from ".self::$tablename." where is_active=1 and ".Tenant::filter()." and position>$pos order by position asc, id asc limit 1";
 		$query = Executor::doit($sql);
 		return Model::one($query[0],new CategoryData());
 	}
@@ -57,29 +57,29 @@ class CategoryData {
 	}
 
 	public static function getActives(){
-		$sql = "select * from ".self::$tablename." where is_active=1 order by position asc, id asc";
+		$sql = "select * from ".self::$tablename." where is_active=1 and ".Tenant::filter()." order by position asc, id asc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new CategoryData());
 	}
 
 	public static function getAll(){
-		$sql = "select * from ".self::$tablename;
+		$sql = "select * from ".self::$tablename." where ".Tenant::filter();
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new CategoryData());
 	}
 	
 	public static function getLike($q){
-		$sql = "select * from ".self::$tablename." where name like '%$q%'";
+		$sql = "select * from ".self::$tablename." where name like '%$q%' and ".Tenant::filter();
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new CategoryData());
 	}
 	public static function getPublics(){
-		$sql = "select * from ".self::$tablename." where is_active=1 order by position asc, id asc";
+		$sql = "select * from ".self::$tablename." where is_active=1 and ".Tenant::filter()." order by position asc, id asc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new CategoryData());
 	}
 	public static function getByPreffix($id){
-		$sql = "select * from ".self::$tablename." where short_name=\"$id\"";
+		$sql = "select * from ".self::$tablename." where short_name=\"$id\" and ".Tenant::filter();
 		$query = Executor::doit($sql);
 		return Model::one($query[0],new CategoryData());
 	}

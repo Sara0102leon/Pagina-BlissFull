@@ -2,7 +2,7 @@
 class DeliveryZoneData {
 	public static $tablename = "delivery_zone";
 
-	public $id, $name, $price;
+	public $id, $name, $price, $tienda_id;
 
 	public function __construct(){
 		$this->id = null;
@@ -11,8 +11,8 @@ class DeliveryZoneData {
 	}
 
 	public function add(){
-		$sql = "insert into ".self::$tablename." (name,price) ";
-		$sql .= "value (\"$this->name\",\"$this->price\")";
+		$sql = "insert into ".self::$tablename." (name,price,tienda_id) ";
+		$sql .= "value (\"$this->name\",\"$this->price\"," . Tenant::idSql() . ")";
 		Executor::doit($sql);
 	}
 
@@ -28,7 +28,7 @@ class DeliveryZoneData {
 	}
 
 	public static function getAll(){
-		$sql = "select * from ".self::$tablename." order by price asc, name asc";
+		$sql = "select * from ".self::$tablename." where ".Tenant::filter()." order by price asc, name asc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new DeliveryZoneData());
 	}

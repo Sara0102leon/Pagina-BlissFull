@@ -42,6 +42,84 @@ tipo OlaClick** (`landing/` es la marketing page). Roadmap en `PLAN.md` (A0–A4
 - **Dominio provisional** en metas/JSON-LD (`https://prueba.alianzablissful.com/landing/`):
   cambiar cuando exista el dominio definitivo de sazón.
 
+## Pagos SaaS (A1 — implementado oct 2026)
+
+Registro + planes + pago Zenobank real con creación automática de subdominio.
+Migración aditiva/idempotente: **`migracion_saas.sql`** (tablas `plan`, `tienda`,
+`suscripcion`; columnas `user.tienda_id` + `user.role`; claves `zeno_*`/`saas_*`).
+
+**Flujo:** la landing (`landing/index.html` + `landing/assets/js/landing.js`) abre el
+modal `#pay` con formulario (nombre → subdominio auto-slug, email/contraseña opcionales)
+→ `POST landing/api/checkout.php` → en **modo demo** activa al instante; en **modo live**
+crea el checkout en Zenobank y redirige a `pay.zenobank.io` → al volver
+(`?pago=exito&tienda=slug`) el modal hace polling a `landing/api/checkout-status.php`.
+
+**Endpoints/archivos nuevos:**
+- `admin/core/app/model/PlanData|TiendaData|SuscripcionData.php`
+- `admin/core/controller/ZenoBank.php` — cliente API Zenobank + verificación de firma
+  **Svix** (HMAC-SHA256 sobre `{svix-id}.{svix-timestamp}.{rawBody}`, clave
+  `base64_decode(secret sin whsec_)`, tolerancia 5 min; portado del SDK oficial).
+- `webhooks/zenobank.php` — receptor: valida firma → `checkout.completed` marca la
+  suscripción COMPLETED (periodo 30 días) y la tienda `activa`. Idempotente.
+- `landing/api/` → `_bootstrap.php` (incluye `core/autoload.php` + autoload de modelos
+  + ZenoBank; helper `saz_config()` que lee claves `zeno_*`/`saas_*` de `configuration`
+  con caché, `saz_json()`, `saz_q()` escape mysqli, `saz_slugify()`), `config.php`
+  (GET: modo/moneda/dominio/planes), `checkout.php`, `checkout-status.php`.
+
+**Pasar de demo a live** (config en tabla `configuration`):
+`zeno_api_key` = `sk_...` de dashboard.zenobank.io → Developers; `zeno_webhook_secret`
+= `whsec_...`; `zeno_mode` = `live`; opcional `saas_landing_url` (fallback: host actual).
+Registrar el webhook en Zenobank → URL `<host>/webhooks/zenobank.php` (eventos completed/
+expired/partially_paid). El ruteo por subdominio (Host header) es A0/A2, aún no activo.
+
+**Nota:** los modelos del proyecto no escapan SQL; los endpoints de `landing/api/` SÍ
+usan `saz_q()` para lo que entra por HTTP (registro público).
+
+## Multi-tenant + subdominios (A0/A2 — implementado oct 2026)
+
+Cada cliente = una **tienda** (tenant). Una sola BD; las tablas de negocio llevan
+`tienda_id` y los modelos filtran por la tienda activa.
+
+**Cómo se resuelve la tienda activa** (`admin/core/app/model/Tenant.php`, caché estática
+por request, se autoejecuta al primer `Tenant::filter()` / `Tenant::id()`):
+1. **Sesión (admin):** el usuario logueado pertenece a una tienda (`user.tienda_id`).
+2. **Host header (menú público):** el subdominio (`cliente.localhost`,
+   `cliente.sazon.app`). Las bases reconocidas son `localhost`, `saas_base_domain`
+   (config) y los dominios de `saas_alt_domains` (separados por espacio, hoy
+   `prueba.alianzablissful.com`). Un subdominio desconocido cae al fallback.
+3. **Fallback:** primera tienda `activa` (tras A2 = tienda #1, la pizzería).
+
+**API de scoping:** `Tenant::id()` (int, 0 = sin tenant) · `Tenant::idSql()` (para
+INSERTs: el entero o `NULL`) · `Tenant::filter($alias="")` → devuelve `tienda_id=N`
+o `1=1` (así, sin tienda, el comportamiento es idéntico al de antes de A0).
+
+**Modelos escopados:** `CategoryData`, `ProductData`, `SedeData`, `BuyData`,
+`DeliveryZoneData` (lecturas + altas). Los `getById` quedan sin escopar (carrito/edición).
+`ConfigurationData` todavía es global (tema por tienda = Fase 2, `configuration.cfg_id`).
+
+**Migraciones aplicadas:**
+- `migracion_multitenant.sql` — `tienda_id` en `category`,`product`,`sede`,`buy`,
+  `delivery_zone` (+ índices vía information_schema) y clave `saas_alt_domains`.
+- `migracion_a2.sql` — tienda **#1** `subdomain='principal'` (id forzado a 1 con
+  `ON DUPLICATE KEY UPDATE`), estampa `tienda_id=1` en los datos actuales; admin →
+  `tienda_id=1, role='dueno'`.
+
+**Probar en local (subdominios simulados):**
+```powershell
+curl.exe -s -H "Host: principal.localhost" "http://localhost/menu/" | Select-Object -First 1
+# grid AJAX de una categoría (endpoint real del menú):
+curl.exe -s -X POST -H "Host: principal.localhost" -d "cat_id=2&q=&sede_id=0" "http://localhost/menu/?action=cart&opt=search"
+```
+Probe de resolución CLI en `%TEMP%\opencode\test-tenant.php` (incluye `core/autoload.php`
++ `core/app/autoload.php` y prueba varios `Host`).
+
+**Producción:** snippet `deploy/nginx-subdominios.conf.example` (vhost comodín
+`*.sazon.app` + cert wildcard de Let's Encrypt). Mientras no se despliegue, los
+subdominios siguen sin actividad real.
+
+**Pendiente:** carrito por tienda (`$_SESSION["cart"]` hoy es único), tema/ajustes por
+tienda (`configuration.cfg_id`), y ocultar subdominios inexistentes (hoy muestran la tienda 1).
+
 ## Despliegue en producción (VPS alianza)
 
 **Sitio público:** https://prueba.alianzablissful.com

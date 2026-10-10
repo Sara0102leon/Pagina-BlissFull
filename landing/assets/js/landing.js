@@ -341,18 +341,23 @@
   });
 
   /* ═══════════════════════════════════════════════════
-     Demo payment flow (Zenobank) — modal
+     Pago real (Zenobank / modo demo) — modal
      ═══════════════════════════════════════════════════ */
   var pay = document.getElementById("pay");
   if (pay) {
-    var plans = {
-      emprendedor: { name: "Emprendedor", price: "$9" },
-      restaurante: { name: "Restaurante", price: "$19" },
-      cadena: { name: "Cadena", price: "$39" }
+    var PLANS_FALLBACK = {
+      emprendedor: { name: "Emprendedor", price: "9", symbol: "$" },
+      restaurante: { name: "Restaurante", price: "19", symbol: "$" },
+      cadena: { name: "Cadena", price: "39", symbol: "$" }
     };
+    var apiBase = "api";          // landing/api/
+    var cfg = null;               // {mode, symbol, baseDomain, plans[]}
+    var plansMap = {};            // code -> {name, price, symbol}
     var payTimer = null;
     var lastFocus = null;
-    var domain = "mi-local.sazon.app";
+    var pollTimer = null;
+    var pollFails = 0;
+    var currentPlan = "restaurante";
     var payLive = document.getElementById("payLive");
     var bgEls = [document.querySelector(".nav"), document.getElementById("main"), document.querySelector(".footer")];
 
@@ -367,36 +372,172 @@
         s.hidden = s.dataset.step !== String(n);
       });
       announcePay(
-        n === 1 ? "Paso 1 de 3: resumen de pago." :
+        n === 1 ? "Paso 1 de 3: tus datos y resumen de pago." :
         n === 2 ? "Paso 2 de 3: conectando con Zenobank." :
-                  "Paso 3 de 3: pago aprobado. Tu subdominio está listo."
+        n === 3 ? "Paso 3 de 3: pago aprobado. Tu subdominio está listo." :
+        n === 5 ? "Verificando tu pago con Zenobank." :
+                  "Ocurrió un error, vuelve a intentarlo."
       );
     }
 
+    function planPrice(code) {
+      var p = (cfg && cfg.plans && cfg.plans.filter(function (x) { return x.code === code; })[0]) ||
+              PLANS_FALLBACK[code];
+      if (!p) return "—";
+      var s = (cfg && cfg.symbol) || p.symbol || "$";
+      return s + parseFloat(p.price).toFixed(0);
+    }
+
+    function baseDomain() { return (cfg && cfg.baseDomain) || "sazon.app"; }
+
+    function slugify(s) {
+      return (s || "").toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
+        .slice(0, 63);
+    }
+
+    function updateUrlPreview() {
+      var slug = slugify(document.getElementById("payDomain").value);
+      var url = (slug || "tu-local") + "." + baseDomain();
+      document.getElementById("payUrl").textContent = url;
+      document.getElementById("payDomain2").textContent = url;
+    }
+
     function openPay(plan) {
-      var d = plans[plan] || plans.restaurante;
-      document.getElementById("payPlan").textContent = d.name;
-      document.getElementById("payTotal").textContent = d.price;
-      document.getElementById("payDomain").textContent = domain;
-      document.getElementById("payDomain2").textContent = domain;
+      currentPlan = plan;
+      var d = plansMap[plan] || PLANS_FALLBACK.restaurante;
+      document.getElementById("payPlan").textContent = (d && d.name) || "Restaurante";
+      document.getElementById("payTotal").textContent = planPrice(plan);
+      updateUrlPreview();
       lastFocus = document.activeElement;
       pay.hidden = false;
       document.body.style.overflow = "hidden";
       bgEls.forEach(function (el) { if (el) el.setAttribute("inert", ""); });
       setStep(1);
-      document.getElementById("payGo").focus();
+      var f = document.getElementById("payNombre");
+      if (f) f.focus();
     }
 
     function closePay() {
       clearTimeout(payTimer);
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
       pay.hidden = true;
       document.body.style.overflow = "";
       bgEls.forEach(function (el) { if (el) el.removeAttribute("inert"); });
       if (lastFocus && lastFocus.focus) lastFocus.focus();
     }
 
+    function showPayError(msg) {
+      document.getElementById("payErrSub").textContent = msg || "Ocurrió un error. Inténtalo de nuevo.";
+      setStep(4);
+    }
+
+    function finalizeOk() {
+      document.getElementById("payGo").disabled = false;
+      setStep(3);
+    }
+
+    /* ---------- iniciar checkout ---------- */
+    function startCheckout() {
+      var nombreEl = document.getElementById("payNombre");
+      var domainEl = document.getElementById("payDomain");
+      var emailEl = document.getElementById("payEmail");
+      var passEl = document.getElementById("payPassword");
+      var nombre = (nombreEl.value || "").trim();
+      var sub = (domainEl.value || "").trim();
+      var email = (emailEl.value || "").trim();
+      var pass = passEl.value || "";
+
+      if (nombre.length < 3) { showPayError("Escribe el nombre de tu local (mínimo 3 letras)."); nombreEl.focus(); return; }
+      if (!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(sub)) {
+        showPayError("El subdominio solo admite letras minúsculas, números y guiones.");
+        domainEl.focus(); return;
+      }
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showPayError("Ese email no parece válido."); emailEl.focus(); return; }
+      if (pass && pass.length < 6) { showPayError("La contraseña debe tener al menos 6 caracteres."); passEl.focus(); return; }
+
+      var btn = document.getElementById("payGo");
+      btn.disabled = true;
+      setStep(2);
+
+      fetch(apiBase + "/checkout.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: currentPlan, nombre: nombre, subdominio: sub, email: email, password: pass })
+      })
+        .then(function (r) { return r.json().then(function (d) { return { http: r.ok, d: d }; }); })
+        .then(function (res) {
+          var d = res.d || {};
+          if (!res.http || !d.ok) throw d;
+
+          // demo: activación inmediata (misma animación de 3 pasos)
+          if (d.demo) {
+            document.getElementById("payDomain2").textContent = d.subdominio || "";
+            payTimer = setTimeout(finalizeOk, 1400);
+            return;
+          }
+
+          // live: guardamos el checkout y vamos a Zenobank
+          try {
+            sessionStorage.setItem("saz_checkout", d.checkoutId || "");
+            sessionStorage.setItem("saz_subdominio", d.subdominio || "");
+          } catch (e) {}
+          document.getElementById("payStep2Sub").textContent = "Te llevamos a Zenobank para completar el pago de forma segura…";
+          setTimeout(function () { window.location.href = d.checkoutUrl; }, 600);
+        })
+        .catch(function (err) {
+          btn.disabled = false;
+          showPayError((err && err.error) ? err.error : "No pudimos iniciar el pago. Inténtalo de nuevo.");
+        });
+    }
+
+    /* ---------- vuelta desde Zenobank: ?pago=exito -> verificar ---------- */
+    function verifyReturn(checkoutId) {
+      setStep(5);
+      pollFails = 0;
+      pollTimer = setInterval(function () {
+        if (!checkoutId) { clearInterval(pollTimer); pollTimer = null; showPayError("No encontramos tu pago. Si ya pagaste, tu subdominio se activará igualmente en unos minutos."); return; }
+        fetch(apiBase + "/checkout-status.php?checkout=" + encodeURIComponent(checkoutId))
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (!d) return;
+            if (d.status === "COMPLETED") {
+              clearInterval(pollTimer); pollTimer = null;
+              if (d.subdominio) document.getElementById("payDomain2").textContent = d.subdominio;
+              finalizeOk();
+            } else if (d.status === "EXPIRED" || d.status === "CANCELED") {
+              clearInterval(pollTimer); pollTimer = null;
+              showPayError("El pago no se completó. Puedes volver a intentarlo cuando quieras.");
+            }
+          })
+          .catch(function () {
+            pollFails++;
+            if (pollFails > 3) { clearInterval(pollTimer); pollTimer = null; showPayError("Tardó más de lo esperado. Si ya pagaste, tu subdominio se activará en unos minutos."); }
+          });
+      }, 3000);
+    }
+
+    function handleReturnParams() {
+      var qs = new URLSearchParams(window.location.search);
+      if (qs.get("pago") !== "exito") return;
+      var chk = "";
+      try { chk = sessionStorage.getItem("saz_checkout") || ""; } catch (e) {}
+      if (!chk) chk = qs.get("checkout") || "";
+      if (!chk) return;
+      // limpiar la URL sin recargar
+      history.replaceState(null, "", window.location.pathname + window.location.search.replace(/[?&](pago|checkout|tienda)=[^&]*/g, "").replace(/^&/, "?"));
+      openPay(currentPlan);
+      verifyReturn(chk);
+    }
+
+    /* ---------- eventos ---------- */
     pay.addEventListener("click", function (e) {
       if (e.target.closest("[data-pay-close]")) closePay();
+      if (e.target.closest("[data-pay-back]")) {
+        document.getElementById("payGo").disabled = false;
+        setStep(1);
+      }
     });
     document.addEventListener("keydown", function (e) {
       if (!pay.hidden && e.key === "Escape") { closePay(); return; }
@@ -410,10 +551,17 @@
       if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     });
-    document.getElementById("payGo").addEventListener("click", function () {
-      setStep(2);
-      payTimer = setTimeout(function () { setStep(3); }, 1700);
+
+    var payNombre = document.getElementById("payNombre");
+    var payDomain = document.getElementById("payDomain");
+    payNombre.addEventListener("input", function () {
+      // solo autocompleta si el usuario no tocó el subdominio aún
+      if (!payDomain.dataset.touched) payDomain.value = slugify(payNombre.value);
+      updateUrlPreview();
     });
+    payDomain.addEventListener("input", function () { payDomain.dataset.touched = "1"; updateUrlPreview(); });
+
+    document.getElementById("payGo").addEventListener("click", startCheckout);
 
     document.querySelectorAll(".js-pay").forEach(function (el) {
       el.addEventListener("click", function (e) {
@@ -421,6 +569,21 @@
         openPay(el.dataset.plan || "restaurante");
       });
     });
+
+    // configuración del backend (modo, moneda, dominio, planes)
+    fetch(apiBase + "/config.php")
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ok) return;
+        cfg = d;
+        (d.plans || []).forEach(function (p) { plansMap[p.code] = p; });
+        document.getElementById("payBadge").textContent = d.mode === "live" ? "Pago seguro con Zenobank" : "Modo demo · se activa al instante";
+        updateUrlPreview();
+      })
+      .catch(function () {});
+
+    // si volvimos de Zenobank con pago aprobado
+    handleReturnParams();
   }
 
   /* ---------- Footer year ---------- */
