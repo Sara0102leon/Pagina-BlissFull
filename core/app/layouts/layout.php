@@ -18,7 +18,7 @@
     <link href="./dist/css/tabler.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="assets/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="assets/css/style.css">
-    <!-- Dark Theme Tito Burger (cargado al final para sobreescribir Tabler/Bootstrap) -->
+    <!-- Dark Theme sazón (cargado al final para sobreescribir Tabler/Bootstrap) -->
     <link rel="stylesheet" href="assets/css/custom-dark.css?v=8">
     <?php
     /* ===== Motor de tema configurable desde admin (Fase 1) ===== */

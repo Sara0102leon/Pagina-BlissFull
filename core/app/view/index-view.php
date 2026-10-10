@@ -355,7 +355,7 @@ foreach($horario_keys as $hk){
 
 <div class="page-body">
 
-  <!-- ============ HERO PRINCIPAL (TITO STYLE) ============ -->
+  <!-- ============ HERO PRINCIPAL ============ -->
   <?php if($menu_show_hero): ?>
   <section class="tt-hero">
     <!-- Hero Slider (banners dinámicos del Admin) como fondo -->
