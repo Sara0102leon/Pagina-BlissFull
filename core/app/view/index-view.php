@@ -115,7 +115,8 @@ foreach(array("horario_lunes"=>"Lunes","horario_martes"=>"Martes","horario_mierc
 }
 $featured = ProductData::getFeatureds();
 $hero_hand = ConfigurationData::getByPreffix("hero_hand")?ConfigurationData::getByPreffix("hero_hand")->val:"sabor casero que enamora";
-$hero_title = ConfigurationData::getByPreffix("hero_title")?ConfigurationData::getByPreffix("hero_title")->val:"Alianza Blissfull";
+$hero_title = ConfigurationData::getByPreffix("hero_title")?ConfigurationData::getByPreffix("hero_title")->val:"sazón";
+$negocio_wa_js = addslashes($hero_title !== "" ? $hero_title : "sazón");
 $hero_sub = ConfigurationData::getByPreffix("hero_sub")?ConfigurationData::getByPreffix("hero_sub")->val:"pizzas y platillos caseros preparados al momento. Ordena desde tu celular y recíbelo caliente donde estés.";
 $flotante_pid = ConfigurationData::getByPreffix("flotante_product_id")?ConfigurationData::getByPreffix("flotante_product_id")->val:"";
 $flotante_pdata = null;
@@ -413,7 +414,7 @@ foreach($horario_keys as $hk){
             <?php if($flotante_pdata): ?>
             <a href="#" class="tt-float-link" onclick="openFlotante(); return false;" title="Agregar al pedido: <?php echo htmlspecialchars($flotante_pdata->name); ?>">
             <?php endif; ?>
-              <img src="<?php echo $hero_img; ?>" class="tt-float-img" alt="Alianzas Blissful">
+              <img src="<?php echo $hero_img; ?>" class="tt-float-img" alt="<?php echo htmlspecialchars($hero_title, ENT_QUOTES, "UTF-8"); ?>">
               <?php if($flotante_pdata): ?>
               <span class="tt-float-badge"><i class="bi bi-basket3 me-1"></i>PEDIR</span>
             </a>
@@ -1638,7 +1639,7 @@ $(document).ready(function() {
 
       const whatsappNum = (sede.phone ? String(sede.phone).replace(/\D/g, "") : "<?php echo preg_replace('/\D/','', $whatsapp_number); ?>").replace(/^0+/, "");
       // Build a compact WhatsApp message to avoid URL length truncation
-      let msg = "*NUEVA ORDEN - ALIANZAS BLISSFUL*\n\n";
+      let msg = "*NUEVA ORDEN - <?php echo $negocio_wa_js; ?>*\n\n";
       msg += "*Código:* " + buyCode + "\n\n";
       msg += "*Sede:* " + (sede.name || "") + "\n";
       msg += "*Cliente:* " + name + "\n";

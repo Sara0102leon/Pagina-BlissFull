@@ -137,7 +137,7 @@ $status = StatusData::getAll();
                   </div>
                   <div class="col">
                     <div class="font-weight-medium"><?php echo $num_users; ?> Usuarios</div>
-                    <div class="text-secondary small">Administradores</div>
+                    <div class="text-secondary small">Miembros del equipo</div>
                   </div>
                 </div>
               </div>
@@ -268,7 +268,7 @@ $values = array_values($data_points);
             padding: 4,
           },
         },
-        colors: ["#8b1538"],
+        colors: ["#e9b94a"],
         legend: {
           show: false,
         },

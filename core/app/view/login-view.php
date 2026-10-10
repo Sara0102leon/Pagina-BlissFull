@@ -1,7 +1,7 @@
 <div class="page-body">
   <div class="container-tight py-4">
     <div class="text-center mb-4">
-      <h1 class="navbar-brand navbar-brand-autodark">LegoBox</h1>
+      <h1 class="navbar-brand navbar-brand-autodark">sazón</h1>
     </div>
     <div class="card card-md">
       <div class="card-body">

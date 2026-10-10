@@ -201,7 +201,7 @@ $hero_sub = ConfigurationData::getByPreffix("hero_sub");
           </div>
           <div class="mb-3">
             <label class="form-label">Título principal</label>
-            <input type="text" class="form-control" name="hero_title" value="<?php echo htmlspecialchars($hero_title->val); ?>" placeholder="Alianza Blissfull">
+            <input type="text" class="form-control" name="hero_title" value="<?php echo htmlspecialchars($hero_title->val); ?>" placeholder="Tu marca o negocio">
           </div>
           <div class="mb-3">
             <label class="form-label">Subtítulo / descripción</label>

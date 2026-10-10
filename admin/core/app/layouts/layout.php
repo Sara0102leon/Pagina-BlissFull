@@ -11,6 +11,13 @@ $page_title = isset($admin_titles[$current_view]) ? $admin_titles[$current_view]
 $is_auth = isset($_SESSION["user_id"]);
 if($is_auth && $current_view=="login"){ header("Location: ./"); exit; }
 if(!$is_auth){ header("Location: ../login.php"); exit; }
+$user_role = "dueno";
+$user_role_label = "Dueño";
+if($is_auth){
+	$_u = UserData::getById($_SESSION["user_id"]);
+	$user_role = ($_u && $_u->role !== "") ? $_u->role : "dueno";
+	$user_role_label = $user_role=="cocina" ? "Cocina" : ($user_role=="repartidor" ? "Repartidor" : "Dueño");
+}
 $sys_active = ($current_view=="users" || $current_view=="settings") ? "active" : "";
 $sys_open = $sys_active!="" ? " show" : "";
 ?>
@@ -20,7 +27,7 @@ $sys_open = $sys_active!="" ? " show" : "";
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
-    <title>.: Alianzas Blissful - Panel Administrativo :.</title>
+    <title>sazón · Panel</title>
     <link rel="icon" type="image/png" href="assets/favicon-32.png"/>
     <!-- CSS files -->
     <link href="./dist/css/tabler.min.css" rel="stylesheet"/>
@@ -48,7 +55,7 @@ $sys_open = $sys_active!="" ? " show" : "";
   <body class="admin-jobie<?php echo $is_auth ? " is-auth" : ""; ?>">
     <div id="tt-admin-loader" class="tt-admin-loader" aria-hidden="true">
       <div class="tt-admin-loader-box">
-        <img src="assets/logo.png" alt="Blissful" class="tt-admin-loader-logo">
+        <img src="assets/logo.svg" alt="sazón" class="tt-admin-loader-logo">
         <div class="tt-admin-loader-ring"></div>
         <p class="tt-admin-loader-text">Cargando panel...</p>
       </div>
@@ -59,8 +66,8 @@ $sys_open = $sys_active!="" ? " show" : "";
       <!-- ============ SIDEBAR VERTICAL (Jobie) ============ -->
       <aside class="app-sidebar" id="appSidebar">
         <a href="./" class="sidebar-logo">
-          <img src="assets/logo.png" alt="Logo Blissful" class="sidebar-logo-img">
-          <span class="brand-name">ALIANZAS <span>BLISSFUL</span><small>Panel Admin</small></span>
+          <img src="assets/logo.svg" alt="sazón" class="sidebar-logo-img">
+          <span class="brand-name">sazón<small>Panel admin</small></span>
         </a>
 
         <nav class="sidebar-nav">
@@ -125,8 +132,8 @@ $sys_open = $sys_active!="" ? " show" : "";
           </button>
           <?php else: ?>
           <a href="./" class="app-brand">
-            <img src="assets/logo.png" alt="Logo Blissful" class="app-brand-img">
-            <span>ALIANZAS <b>BLISSFUL</b></span>
+            <img src="assets/logo.svg" alt="sazón" class="app-brand-img">
+            <span>sazón</span>
           </a>
           <div class="app-header-right">
             <a href="./?view=login" class="icon-btn btn-login-link">
@@ -173,7 +180,7 @@ $sys_open = $sys_active!="" ? " show" : "";
                 <span class="avatar avatar-sm"><i class="bi bi-person"></i></span>
                 <span class="profile-name d-none d-xl-block">
                   <span class="fw-bold d-block" style="line-height:1.1;"><?php echo htmlspecialchars($u->name." ".$u->lastname); ?></span>
-                  <span class="small text-muted" style="line-height:1.1;">Administrador</span>
+                  <span class="small text-muted" style="line-height:1.1;"><?php echo $user_role_label; ?></span>
                 </span>
               </a>
               <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
@@ -190,7 +197,7 @@ $sys_open = $sys_active!="" ? " show" : "";
           <?php View::load("index"); ?>
 
           <footer class="app-footer">
-            &copy; 2026 Alianzas Blissful. Todos los derechos reservados. Desarrollado por Sara0102leon y Keyler948
+            &copy; 2026 sazón · Menús digitales con subdominio propio. Desarrollado por Sara0102leon y Keyler948
           </footer>
         </div>
       </div>
@@ -200,7 +207,7 @@ $sys_open = $sys_active!="" ? " show" : "";
       @keyframes notifFlash{ 0%,100%{ transform: translate(-50%,-50%) scale(1); } 50%{ transform: translate(-50%,-50%) scale(1.6); } }
       @keyframes notifToastIn{ from{ transform: translateX(120%); opacity:0; } to{ transform: translateX(0); opacity:1; } }
       #notif-badge.anim-flash{ animation: notifFlash 0.5s ease-in-out 2; }
-      .notif-item{ border-left: 4px solid rgba(184,126,56,0.4); }
+      .notif-item{ border-left: 4px solid rgba(233,185,74,0.4); }
       .notif-item.notif-sch{ border-left-color: rgba(23,162,184,0.6); }
       .notif-item:hover{ border-left-width: 4px; }
       .tt-admin-loader {
@@ -210,7 +217,7 @@ $sys_open = $sys_active!="" ? " show" : "";
         display: flex;
         align-items: center;
         justify-content: center;
-        background: radial-gradient(ellipse at 50% 30%, #2a1c10 0%, #16120c 65%, #0c0a07 100%);
+        background: radial-gradient(ellipse at 50% 30%, #221505 0%, #15100b 65%, #0a0806 100%);
         transition: opacity 0.35s ease, visibility 0.35s ease;
       }
       .tt-admin-loader.done { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -220,14 +227,14 @@ $sys_open = $sys_active!="" ? " show" : "";
         width: 46px;
         height: 46px;
         margin: 0 auto 12px;
-        border: 4px solid rgba(184, 126, 56, 0.2);
-        border-top-color: #b87e38;
-        border-right-color: #e0a96d;
+        border: 4px solid rgba(233, 185, 74, 0.2);
+        border-top-color: #e9b94a;
+        border-right-color: #ffd97a;
         border-radius: 50%;
         animation: ttAdminSpin 0.85s linear infinite;
       }
       @keyframes ttAdminSpin { to { transform: rotate(360deg); } }
-      .tt-admin-loader-text { color: #e0a96d; font-weight: 600; margin: 0; letter-spacing: 0.04em; }
+      .tt-admin-loader-text { color: #e9b94a; font-weight: 600; margin: 0; letter-spacing: 0.04em; }
     </style>
     <script src="./dist/libs/apexcharts/dist/apexcharts.min.js" defer></script>
     <script type="text/javascript">

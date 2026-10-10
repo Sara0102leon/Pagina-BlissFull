@@ -4,7 +4,7 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
-    <title>Alianzas Blissful - Menú Digital</title>
+    <title>sazón · Menú Digital</title>
     <link rel="icon" type="image/png" href="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/assets/img/favicon.png">
     <link rel="shortcut icon" type="image/x-icon" href="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/favicon.ico">
     <meta name="facebook-domain-verification" content="qrvapznaazsiqazbrl2m1r0plekb22" />
@@ -139,7 +139,7 @@
     <div id="tt-loader" class="tt-loader" aria-hidden="true">
       <div class="tt-loader-box">
         <div class="tt-loader-ring"></div>
-        <div class="tt-loader-brand">ALIANZAS <span>BLISSFUL</span></div>
+        <div class="tt-loader-brand">sazón</div>
         <div class="tt-loader-sub">cargando menú...</div>
       </div>
     </div>
@@ -215,7 +215,7 @@
         <div class="container-xl">
           <div class="navbar-brand pe-0 pe-md-3">
             <a href="./" class="text-decoration-none d-flex align-items-center">
-              <img src="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/assets/img/logo.png" alt="Alianzas Blissful" class="brand-logo">
+              <img src="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/assets/img/logo-sazon.svg" alt="sazón" class="brand-logo">
             </a>
           </div>
 
@@ -361,7 +361,7 @@
           <div class="container-xl">
             <div class="row g-4">
               <div class="col-md-5 col-lg-4 mb-4 mb-md-0">
-                <img src="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/assets/img/logo.png" alt="Alianzas Blissful" class="brand-logo mb-3" style="filter: brightness(1);">
+                <img src="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/assets/img/logo-sazon.svg" alt="sazón" class="brand-logo mb-3" style="filter: brightness(1);">
                 <p class="text-white-50 small mb-3">Disfruta de la mejor experiencia gastronómica desde tu celular. Escanea, ordena y disfruta.</p>
                 <div class="d-flex gap-2">
                    <a href="<?php echo $fb_footer ? (preg_match('/^https?:\/\//i',$fb_footer) ? $fb_footer : "https://facebook.com/".ltrim($fb_footer,"@")) : "#"; ?>" class="social-icon" title="Facebook" target="_blank" rel="noopener"><i class="bi bi-facebook"></i></a>
@@ -396,7 +396,7 @@
               </div>
             </div>
             <div class="tt-footer-bottom text-center small py-3 mt-4">
-              <div class="mb-1">&copy; 2026 Alianzas Blissful. Todos los derechos reservados.</div>
+              <div class="mb-1">&copy; 2026 sazón. Menús digitales con subdominio propio.</div>
               <div class="d-flex justify-content-center gap-2 flex-wrap">
                 <span>Términos y condiciones</span>
                 <span class="tt-footer-sep" aria-hidden="true">&middot;</span>

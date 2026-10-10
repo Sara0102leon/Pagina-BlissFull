@@ -4,6 +4,8 @@ $coin_symbol = ConfigurationData::getByPreffix("general_coin")?ConfigurationData
 $iva = ConfigurationData::getByPreffix("general_iva")?ConfigurationData::getByPreffix("general_iva")->val:0;
 $ivatxt = ConfigurationData::getByPreffix("general_iva_txt")?ConfigurationData::getByPreffix("general_iva_txt")->val:"IVA";
 $whatsapp_number = ConfigurationData::getByPreffix("general_whatsapp")?ConfigurationData::getByPreffix("general_whatsapp")->val:"5555555555";
+$negocio_wa_cfg = ConfigurationData::getByPreffix("hero_title");
+$negocio_wa_js = addslashes(($negocio_wa_cfg && $negocio_wa_cfg->val !== "") ? $negocio_wa_cfg->val : "sazón");
 
 if(isset($_GET["opt"]) && $_GET["opt"]=="all"):
 $total = 0;
@@ -194,7 +196,7 @@ $total = 0;
               const coin = "<?php echo $coin_symbol; ?>";
               const total = "<?php echo number_format($total, 2); ?>";
               
-              let message = "*NUEVA ORDEN REGISTRADA - ALIANZAS BLISSFUL*\n\n";
+              let message = "*NUEVA ORDEN REGISTRADA - <?php echo $negocio_wa_js; ?>*\n\n";
               message += "*Cliente:* " + name + "\n";
               message += "*Teléfono:* " + phone + "\n";
               message += "*Dirección:* " + address + "\n\n";

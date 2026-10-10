@@ -25,8 +25,8 @@ if(isset($_SESSION["user_id"])){
       <div class="card-body">
         <div class="row align-items-center">
           <div class="col-10">
-            <h3 class="h1">Hola, Legobox</h3>
-            <div class="markdown text-muted">Legobox es un microframework para el desarrollo rápido y ligero de proyectos en PHP.</div>
+            <h3 class="h1">Bienvenido al panel</h3>
+            <div class="markdown text-muted">sazón: administra tu menú, tus pedidos y tu equipo desde aquí.</div>
           </div>
         </div>
       </div>
@@ -44,7 +44,7 @@ if(isset($_SESSION["user_id"])){
               </div>
               <div class="col">
                 <div class="font-weight-medium">Vistas</div>
-                <div class="text-muted">Las vistas sirven para mostrar contenido al usuario.</div>
+                <div class="text-muted">Gestiona las órdenes de tu tienda.</div>
               </div>
             </div>
           </div>
@@ -61,7 +61,7 @@ if(isset($_SESSION["user_id"])){
               </div>
               <div class="col">
                 <div class="font-weight-medium">Acciones</div>
-                <div class="text-muted">Las acciones sirven para procesar peticiones y ajax.</div>
+                <div class="text-muted">Mantén tu carta y tus productos al día.</div>
               </div>
             </div>
           </div>
@@ -78,7 +78,7 @@ if(isset($_SESSION["user_id"])){
               </div>
               <div class="col">
                 <div class="font-weight-medium">Modelos</div>
-                <div class="text-muted">Agilizar la manipulacion de datos bd.</div>
+                <div class="text-muted">Tu equipo, con roles por tienda.</div>
               </div>
             </div>
           </div>
@@ -95,7 +95,7 @@ if(isset($_SESSION["user_id"])){
               </div>
               <div class="col">
                 <div class="font-weight-medium">Mucho mas</div>
-                <div class="text-muted">Legobox es totalmente adaptable y flexible.</div>
+                <div class="text-muted">Tu menú digital, en tu propio subdominio.</div>
               </div>
             </div>
           </div>
