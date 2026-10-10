@@ -8,6 +8,7 @@
 class Tenant {
 	public static $current = null;   // TiendaData|null
 	public static $resolved = false;
+	public static $hostIsStore = false; // Host tipo "<sub>.<base>" (subdominio de tienda, exista o no)
 
 	public static function resolve(){
 		if(self::$resolved){ return self::$current; }
@@ -25,9 +26,15 @@ class Tenant {
 			$host = isset($_SERVER["HTTP_HOST"]) ? strtolower(trim((string)$_SERVER["HTTP_HOST"])) : "";
 			$host = preg_replace('/:\d+$/', "", $host);
 			$sub = self::subdomainFromHost($host);
+			self::$hostIsStore = self::isStoreStyleHost($host);
 			if($sub !== ""){
 				$t = TiendaData::getBySubdomain($sub);
 				if($t){ $id = (int)$t->id; }
+			}
+			// Subdominio de tienda inexistente → sin fallback (el front publicará 404)
+			if(!$id && self::$hostIsStore){
+				self::$current = null;
+				return null;
 			}
 		}
 
@@ -67,9 +74,34 @@ class Tenant {
 	}
 
 	// Extrae el subdominio de una tienda del Host, o "" si es dominio raíz/desconocido.
-	private static function subdomainFromHost($host){
+	public static function subdomainFromHost($host){
 		if($host === ""){ return ""; }
+		foreach(self::baseDomains() as $b){
+			if($host === $b){ return ""; } // dominio raíz -> sin subdominio
+			if(substr($host, -strlen($b) - 1) === "." . $b){
+				$prefix = substr($host, 0, -strlen($b) - 1);
+				if($prefix !== "" && strpos($prefix, ".") === false){ return $prefix; }
+			}
+		}
+		return "";
+	}
 
+	// true si el Host tiene forma "<sub>.<base>" con <sub> de una sola etiqueta
+	// (subdominio de tienda, exista o no). false para raíz y hosts ajenos.
+	public static function isStoreStyleHost($host){
+		if($host === ""){ return false; }
+		foreach(self::baseDomains() as $b){
+			if($host === $b){ return false; }
+			if(substr($host, -strlen($b) - 1) === "." . $b){
+				$prefix = substr($host, 0, -strlen($b) - 1);
+				if($prefix !== "" && strpos($prefix, ".") === false){ return true; }
+			}
+		}
+		return false;
+	}
+
+	// Dominios base reconocidos (raíz): localhost, saas_base_domain y saas_alt_domains.
+	private static function baseDomains(){
 		$bases = array("localhost");
 		$row = ConfigurationData::getByPreffix("saas_base_domain");
 		$base = ($row && trim($row->val) !== "") ? strtolower(trim($row->val)) : "sazon.app";
@@ -81,14 +113,6 @@ class Tenant {
 				if($d !== ""){ $bases[] = $d; }
 			}
 		}
-
-		foreach($bases as $b){
-			if($host === $b){ return ""; } // dominio raíz -> sin subdominio
-			if(substr($host, -strlen($b) - 1) === "." . $b){
-				$prefix = substr($host, 0, -strlen($b) - 1);
-				if($prefix !== "" && strpos($prefix, ".") === false){ return $prefix; }
-			}
-		}
-		return "";
+		return $bases;
 	}
 }

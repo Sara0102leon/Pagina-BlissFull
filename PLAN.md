@@ -43,7 +43,7 @@ el cliente se registra, paga un plan y se le activa su **menú en un subdominio 
 - **A1** Landing + registro + planes → ✅ (oct 2026)
 - **A2** Migrar el menú actual como primer cliente (tienda 1) → ✅ (oct 2026)
 - **C1** Carta por tienda: menú imprimible (`?action=carta`) + configuración por tienda (`configuration.cfg_id`) → ✅ (oct 2026)
-- **A3** Panel con roles: cocina (pedidos) y repartidor (delivery) → pendiente.
+- **A3** Panel con roles: cocina (pedidos) y repartidor (delivery) → ✅ (oct 2026)
 - **A4** Drag & drop del orden de menú (categorías y productos) → pendiente
   (por ahora hay flechas ↑/↓ en Categorías).
 - Las **Fases 1-5** (abajo) siguen siendo el motor del menú por cliente.
@@ -65,8 +65,16 @@ el cliente se registra, paga un plan y se le activa su **menú en un subdominio 
   quedó aislada (no aparecía en el menú principal ni viceversa).
 - VPS: snippet `deploy/nginx-subdominios.conf.example` (vhost comodín `*.sazon.app`
   + cert wildcard); el hosting real se activa al desplegar.
-- **Pendiente de A0:** carrito por tienda (hoy `$_SESSION["cart"]` es único) y ocultar
-  subdominios inexistentes (hoy muestran la tienda 1).
+- **Subdominios inexistentes → 404** ✅: `Tenant::isStoreStyleHost()` + `$hostIsStore`
+  detectan un Host tipo `"<sub>.<base>"` sin tienda y, en lugar del fallback, el
+  front público (`core/app/init.php`) responde **404** con una página "Tienda no
+  encontrada" (estilo sazón, `X-Robots-Tag: noindex`). Dominios raíz y hosts
+  ajenos siguen usando el fallback (primera tienda activa).
+- **Carrito por tienda** ✅: `$_SESSION["cart"]` (contrato intacto) se acompaña de
+  `$_SESSION["cart_tienda"]`; si el carrito pertenece a otra tienda se descarta en
+  `core/app/init.php`. Además, la cookie PHP de sesión es **host-only** (sin
+  `Domain=`), así que cada subdominio ya tiene sesión y carrito aislados de fábrica;
+  el guard `cart_tienda` es la red de seguridad para sesiones compartidas.
 
 ### C1 — Config por tienda + carta imprimible (oct 2026)
 - **Config por tienda:** `configuration` pasa de `UNIQUE(name)` global a
@@ -89,6 +97,26 @@ el cliente se registra, paga un plan y se le activa su **menú en un subdominio 
   columnas, nota al pie) guardada con `?action=settings&opt=savecarta`
   (switches no marcados = "0"). Footer público: enlace "Carta / Menú imprimible".
 - **Probar en local:** `curl -H "Host: principal.localhost" "http://localhost/menu/?action=carta"`.
+
+### A3 — Panel con roles: Cocina (KDS) y Repartidor (oct 2026)
+- **Login por rol** (`login.php`): Dueño → `admin/`, Cocina → `admin/?view=cocina`,
+  Repartidor → `admin/?view=repartidor` (según `user.role`).
+- **Guard de vistas en el layout admin**: cocina/repartidor solo ven su panel
+  (rebote a su vista); header sin notificaciones/tour y sidebar mínimo.
+- **Cocina** (`cocina-view.php` + `partials/cocina-list.php`): cola de pedidos
+  status 1|2 con ítems, extras y nota; botón **"Listo para reparto"** (→ 4);
+  polling cada 15 s con destello + sonido al llegar pedidos.
+- **Repartidor** (`repartidor-view.php` + `partials/repartidor-list.php`): cola
+  status 4 con cliente/teléfono/zona/distancia/mapa/WhatsApp; botón **"Entregado"**
+  (→ 5); polling igual.
+- **Transiciones** (`pedidos-action.php`): `preparar` (cocina/dueño, solo desde
+  1|2) y `entregar` (repartidor/dueño, solo desde 4); verifica `tienda_id` del
+  pedido. Filas parciales AJAX (`opt=cocina_rows` / `repartidor_rows`).
+- **Usuarios**: alta/edición con campo **"Rol en la tienda"** (`role` +
+  `tienda_id` del tenant) y guard de dueño en `users-action`.
+- **Fix de columnas**: `UserData::add()/register()` insertaban la columna `kind`
+  inexistente en la BD real (el alta web de usuarios estaba roto); ahora persisten
+  `role` + `tienda_id`. Se quitó el select "Tipo" de la vista de usuarios.
 
 ---
 

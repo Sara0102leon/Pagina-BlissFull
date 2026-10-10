@@ -117,8 +117,18 @@ Probe de resolución CLI en `%TEMP%\opencode\test-tenant.php` (incluye `core/aut
 `*.sazon.app` + cert wildcard de Let's Encrypt). Mientras no se despliegue, los
 subdominios siguen sin actividad real.
 
-**Pendiente:** carrito por tienda (`$_SESSION["cart"]` hoy es único) y ocultar
-subdominios inexistentes (hoy muestran la tienda 1). El **tema/ajustes por tienda**
+**Resuelto (oct 2026):**
+- **Carrito por tienda:** `$_SESSION["cart"]` (contrato intacto) lleva una clave
+  compañera `$_SESSION["cart_tienda"]`; si el carrito pertenece a otra tienda se
+  descarta en `core/app/init.php`. Además la cookie de sesión PHP es host-only
+  (sin `Domain=`), por lo que cada subdominio ya tiene sesión/carrito aislados de
+  fábrica; el guard es la red de seguridad para sesiones compartidas.
+- **Ocultar subdominios inexistentes:** `Tenant::$hostIsStore`
+  (`Tenant::isStoreStyleHost()`) detecta un Host tipo `<sub>.<base>` sin tienda y
+  el front público responde **404** con una página "Tienda no encontrada" (estilo
+  sazón, `X-Robots-Tag: noindex`); la raíz y hosts ajenos mantienen el fallback.
+- `Tenant.php` expone además `Tenant::baseDomains()` (localhost + `saas_base_domain`
+  + `saas_alt_domains`). El **tema/ajustes por tienda**
 ya está resuelto con C1 (sección siguiente).
 
 ## Carta por tienda + configuración por tienda (C1 — oct 2026)
