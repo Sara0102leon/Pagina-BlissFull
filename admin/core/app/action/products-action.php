@@ -63,6 +63,8 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="add"){
 else if(isset($_GET["opt"]) && $_GET["opt"]=="upd"){
 	if(count($_POST)>0){
 		$product = ProductData::getById($_POST["id"]);
+		// Seguridad multi-tenant: solo se puede editar un producto de la tienda activa
+		if(!$product || (Tenant::id()>0 && intval($product->tienda_id)!==Tenant::id())){ Core::redir("./?view=products&opt=all"); }
 		foreach ($_POST as $k => $v) {
 			if(isset($PRODUCT_FIELDS[$k])){ $product->$k = $v; }
 		}
@@ -108,6 +110,8 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="upd"){
 }
 else if(isset($_GET["opt"]) && $_GET["opt"]=="del"){
 	$product = ProductData::getById($_GET["id"]);
+	// Seguridad multi-tenant: solo se puede borrar un producto de la tienda activa
+	if(!$product || (Tenant::id()>0 && intval($product->tienda_id)!==Tenant::id())){ Core::redir("./?view=products&opt=all"); }
 	$product->del();
 	Core::redir("./?view=products&opt=all");
 }

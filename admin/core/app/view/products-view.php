@@ -190,425 +190,498 @@ $(function(){
 });
 </script>
 
-<?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="new"):?>
-<?php $coin = ConfigurationData::getByPreffix("general_coin")->val; ?>
-<?php $sedes_form = SedeData::getAll(); ?>
-<div class="page-header d-print-none">
-  <div class="container-xl">
-    <div class="row g-2 align-items-center">
-      <div class="col">
-        <h2 class="page-title">Nuevo Producto</h2>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="page-body">
-  <div class="container-xl">
-    <div class="card">
-      <div class="card-status-top bg-success"></div>
-      <div class="card-header">
-        <h3 class="card-title">Nuevo Producto</h3>
-      </div>
-      <div class="card-body">
-        <form method="post" enctype="multipart/form-data" action="./?action=products&opt=add">
-          <div class="row row-cards">
-            <div class="col-12">
-              <div class="mb-3">
-                <label class="form-label">Nombre</label>
-                <input type="text" class="form-control" name="name" required placeholder="Nombre del producto">
-              </div>
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Descripción</label>
-            <textarea class="form-control" placeholder="Descripción" rows="4" name="description"></textarea>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Precio</label>
-            <div class="input-group">
-              <span class="input-group-text"><?php echo $coin; ?></span>
-              <input type="text" class="form-control" placeholder="Precio" required name="price">
-            </div>
-          </div>
-          <div class="row row-cards">
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Precio en oferta <span class="text-muted small">(opcional: al colocarlo, el producto entra en oferta automáticamente y se muestra este precio con el anterior tachado)</span></label>
-                <div class="input-group">
-                  <span class="input-group-text"><?php echo $coin; ?></span>
-                  <input type="text" class="form-control" placeholder="Precio de oferta" name="offer_price">
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Fin de la oferta <span class="text-muted small">(opcional: después de esta fecha se cobra el precio normal)</span></label>
-                <input type="date" class="form-control" name="offer_finish">
-              </div>
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Precio para llevar (Delivery) <span class="text-muted small">(opcional, si es distinto al precio normal)</span></label>
-            <div class="input-group">
-              <span class="input-group-text"><?php echo $coin; ?></span>
-              <input type="text" class="form-control" placeholder="Precio al llevar" name="price_llevar">
-            </div>
-          </div>
-          <div class="row row-cards">
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Categoria</label>
-                <?php $categories = CategoryData::getActives(); ?>
-                <select id="cat_select" name="category_id" class="form-select" required>
-                  <option value="">-- SELECCIONE CATEGORIA --</option>
-                  <?php foreach($categories as $cat):?>
-                  <option value="<?php echo $cat->id; ?>"><?php echo $cat->name; ?></option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="mb-3">
-                <label class="form-label">Disponible en <span class="text-muted small">(menú por sucursal)</span></label>
-                <label class="form-check">
-                  <input class="form-check-input tt-sedes-all" type="checkbox" name="sedes_all" checked>
-                  <span class="form-check-label">Todas las sedes</span>
-                </label>
-                <div class="tt-sedes-list">
-                  <?php foreach($sedes_form as $sd): ?>
-                  <label class="form-check form-check-inline mb-1">
-                    <input class="form-check-input tt-sede-chk" type="checkbox" name="sedes[]" value="<?php echo intval($sd->id); ?>">
-                    <span class="form-check-label"><?php echo htmlspecialchars($sd->name); ?></span>
-                  </label>
-                  <?php endforeach; ?>
-                  <div class="text-muted small mt-1">Desmarca "Todas las sedes" para elegir en cuáles aparece.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="mb-3 d-none" id="tt_cat_guide_wrap">
-            <div class="alert alert-info tt-cat-guide mb-0" id="tt_cat_guide"></div>
-          </div>
-          <div id="tt_pizza_fields" class="tt-cat-fields d-none">
-            <div class="mb-3">
-              <label class="form-label">Ingredientes gratis <span class="text-muted small">(cuántos ingredientes van incluidos sin costo; el resto se cobra. Ej: 3 en la pizza familiar)</span></label>
-              <input type="number" min="0" step="1" class="form-control" placeholder="0" name="free_ingredients" value="0">
-            </div>
-            <?php $house_catalog = array();
-            foreach(ProductExtraData::getAll() as $pe){
-              if(intval($pe->is_ingredient)==1 && trim($pe->name)!=""){
-                $house_catalog[strtr(mb_strtolower(trim($pe->name)), array("á"=>"a","é"=>"e","í"=>"i","ó"=>"o","ú"=>"u","ñ"=>"n"))] = $pe->name;
-              }
-            }
-            ksort($house_catalog); ?>
-            <div class="mb-3">
-              <label class="form-label">Ingredientes que trae el producto <span class="text-muted small">(se premarcan como incluidos en el menú del público y no se pueden quitar; si no marcas ninguno se detectan solos desde la descripción)</span></label>
-              <div class="row g-2">
-                <?php foreach($house_catalog as $hkey => $hname): ?>
-                <div class="col-6 col-md-4 col-lg-3">
-                  <label class="form-check">
-                    <input class="form-check-input" type="checkbox" name="house_ingredients[]" value="<?php echo htmlspecialchars($hname); ?>">
-                    <span class="form-check-label"><?php echo htmlspecialchars($hname); ?></span>
-                  </label>
-                </div>
-                <?php endforeach; ?>
-              </div>
-            </div>
-            <div class="mb-3">
-              <label class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" name="has_extras">
-                <span class="form-check-label">¿Tiene ingredientes extra? <span class="text-muted small">(si lo marcas, al guardar el producto se agrega automáticamente a todos los ingredientes)</span></span>
-              </label>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Tipo de división <span class="text-muted small">(solo pizzas: el cliente elige el sabor de cada fracción; los ingredientes de la pizza son las opciones)</span></label>
-              <select name="tipo_division" class="form-select">
-                <option value="normal">Normal (el cliente arma su pizza con ingredientes)</option>
-                <option value="2_estaciones">2 Estaciones (cliente elige 2 mitades)</option>
-                <option value="4_estaciones">4 Estaciones (cliente elige 4 cuartos)</option>
-              </select>
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Imagen</label>
-            <input type="file" class="form-control" name="image">
-          </div>
-          <div class="mb-3">
-            <div class="form-label">Opciones</div>
-            <div class="d-flex gap-3">
-              <label class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" name="is_public">
-                <span class="form-check-label">Es Visible</span>
-              </label>
-              <label class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" name="in_existence">
-                <span class="form-check-label">En Existencia</span>
-              </label>
-              <label class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" name="is_featured">
-                <span class="form-check-label">Producto Destacado</span>
-              </label>
-            </div>
-          </div>
-          <div class="form-footer">
-            <button type="submit" class="btn btn-primary w-100">Agregar Producto</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="edit"):?>
-<?php 
-$product = ProductData::getById($_GET["id"]);
-$url = "storage/products/$product->image";
-if($product->image!="" && file_exists($url)){ $url .= "?v=".filemtime($url); }
-$url_exists = ($product->image!="" && file_exists("storage/products/$product->image"));
-$coin = ConfigurationData::getByPreffix("general_coin")->val; 
+<?php elseif(isset($_GET["opt"]) && ($_GET["opt"]=="new" || $_GET["opt"]=="edit")):?>
+<?php
+// Asistente de producto (nuevo/editar): misma acción de backend (products&opt=add|upd),
+// mismos nombre= de campos. Sólo cambia la experiencia: pasos + vista previa en vivo.
+$pw_mode = ($_GET["opt"]=="edit") ? "edit" : "new";
+$product = null;
+$url_exists = false;
+$pv_img_src = "";
+$ps_sedes_all = true;
+$ps_multi = array();
+$house_current = array();
+$td_val = "normal";
+if($pw_mode=="edit"){
+  $product = ProductData::getById(intval($_GET["id"]));
+  if(!$product){ Core::redir("./?view=products&opt=all"); }
+  // Seguridad multi-tenant: no editar productos de otra tienda
+  if(Tenant::id()>0 && intval($product->tienda_id)!==Tenant::id()){ Core::redir("./?view=products&opt=all"); }
+  $url = "storage/products/".$product->image;
+  $url_exists = ($product->image!="" && file_exists($url));
+  if($url_exists){ $pv_img_src = $url."?v=".filemtime($url); }
+  $ps_sedes_all = ($product->sede_id === "" || $product->sede_id === null);
+  if(!$ps_sedes_all){
+    if(intval($product->sede_id) === 0){
+      $ps_multi = $product->getSedes();
+      if(count($ps_multi) === 0){ $ps_sedes_all = true; }
+    } else {
+      $ps_multi = array(intval($product->sede_id));
+    }
+  }
+  if(trim((string)$product->house_ingredients)!=""){
+    foreach(explode(",", $product->house_ingredients) as $hc){
+      $house_current[] = strtr(mb_strtolower(trim($hc)), array("á"=>"a","é"=>"e","í"=>"i","ó"=>"o","ú"=>"u","ñ"=>"n"));
+    }
+  }
+  $td_val = isset($product->tipo_division) ? trim((string)$product->tipo_division) : "normal";
+  if(!in_array($td_val, array("normal","2_estaciones","4_estaciones"))){ $td_val = "normal"; }
+}
+$coin_row = ConfigurationData::getByPreffix("general_coin");
+$coin = $coin_row ? $coin_row->val : "$";
+$sedes_form = SedeData::getAll();
+$categories = CategoryData::getActives();
+$house_catalog = array();
+foreach(ProductExtraData::getAll() as $pe){
+  if(intval($pe->is_ingredient)==1 && trim($pe->name)!=""){
+    $house_catalog[strtr(mb_strtolower(trim($pe->name)), array("á"=>"a","é"=>"e","í"=>"i","ó"=>"o","ú"=>"u","ñ"=>"n"))] = $pe->name;
+  }
+}
+ksort($house_catalog);
+$pw_v = function($prop) use ($product){ return $product ? htmlspecialchars((string)$product->$prop, ENT_QUOTES) : ""; };
 ?>
 <div class="page-header d-print-none">
   <div class="container-xl">
     <div class="row g-2 align-items-center">
       <div class="col">
-        <h2 class="page-title">Editar Producto: <?php echo $product->name; ?></h2>
+        <h2 class="page-title"><?php echo $pw_mode=="edit" ? "Editar producto" : "Nuevo producto"; ?></h2>
+        <div class="text-muted"><?php echo $pw_mode=="edit" ? htmlspecialchars($product->name) : "Se guarda en 4 pasos sencillos."; ?></div>
+      </div>
+      <div class="col-auto ms-auto d-print-none">
+        <a href="./?view=products&opt=all" class="btn btn-ghost-secondary"><i class="bi bi-arrow-left"></i> Volver a la lista</a>
       </div>
     </div>
   </div>
 </div>
 <div class="page-body">
   <div class="container-xl">
-    <div class="card">
-      <div class="card-status-top bg-info"></div>
-      <div class="card-header">
-        <h3 class="card-title">Editar Producto</h3>
-      </div>
-      <div class="card-body">
-        <form method="post" enctype="multipart/form-data" action="./?action=products&opt=upd">
-          <input type="hidden" name="id" value="<?php echo $product->id;?>">
-          <div class="row row-cards">
-            <div class="col-12">
-              <div class="mb-3">
-                <label class="form-label">Nombre</label>
-                <input type="text" class="form-control" name="name" value="<?php echo $product->name; ?>" required placeholder="Nombre del producto">
-              </div>
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Descripción</label>
-            <textarea class="form-control" placeholder="Descripción" rows="4" name="description"><?php echo $product->description; ?></textarea>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Precio</label>
-            <div class="input-group">
-              <span class="input-group-text"><?php echo $coin; ?></span>
-              <input type="text" class="form-control" placeholder="Precio" value="<?php echo $product->price; ?>" required name="price">
-            </div>
-          </div>
-          <div class="row row-cards">
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Precio en oferta <span class="text-muted small">(opcional: al colocarlo, el producto entra en oferta automáticamente y se muestra este precio con el anterior tachado)</span></label>
-                <div class="input-group">
-                  <span class="input-group-text"><?php echo $coin; ?></span>
-                  <input type="text" class="form-control" placeholder="Precio de oferta" value="<?php echo $product->offer_price; ?>" name="offer_price">
+    <form method="post" enctype="multipart/form-data" action="./?action=products&opt=<?php echo $pw_mode=="edit" ? "upd" : "add"; ?>" id="pw_form">
+      <?php if($pw_mode=="edit"): ?><input type="hidden" name="id" value="<?php echo intval($product->id); ?>"><?php endif; ?>
+      <div class="row g-4">
+        <div class="col-lg-7">
+          <div class="card">
+            <div class="card-status-top bg-primary"></div>
+            <div class="card-body">
+              <ul class="pw-steps" id="pw_steps">
+                <li class="pw-step active" data-goto="1"><span class="pw-dot">1</span><span class="pw-label">Básicos</span></li>
+                <li class="pw-step" data-goto="2"><span class="pw-dot">2</span><span class="pw-label">Precio</span></li>
+                <li class="pw-step" data-goto="3"><span class="pw-dot">3</span><span class="pw-label">En el menú</span></li>
+                <li class="pw-step" data-goto="4"><span class="pw-dot">4</span><span class="pw-label">Publicar</span></li>
+              </ul>
+
+              <!-- Paso 1: datos básicos -->
+              <section class="pw-pane" data-pane="1">
+                <div class="pw-field">
+                  <label class="form-label">Foto del producto</label>
+                  <div class="pw-dropzone" id="pw_drop">
+                    <i class="bi bi-cloud-arrow-up h1 d-block mb-1"></i>
+                    <div class="fw-bold">Haz clic o arrastra una imagen aquí</div>
+                    <div class="text-muted small">JPG o PNG. Se mostrará en grande en tu menú.</div>
+                  </div>
+                  <input type="file" name="image" id="pw_image" accept="image/*" class="d-none">
+                  <div class="text-muted small mt-1" id="pw_file_name"><?php echo ($url_exists ? "Imagen actual cargada" : "Sin imagen (opcional)"); ?></div>
                 </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Fin de la oferta <span class="text-muted small">(opcional: después de esta fecha se cobra el precio normal)</span></label>
-                <input type="date" class="form-control" value="<?php echo $product->offer_finish; ?>" name="offer_finish">
-              </div>
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Precio para llevar (Delivery) <span class="text-muted small">(opcional, si es distinto al precio normal)</span></label>
-            <div class="input-group">
-              <span class="input-group-text"><?php echo $coin; ?></span>
-              <input type="text" class="form-control" placeholder="Precio al llevar" value="<?php echo $product->price_llevar; ?>" name="price_llevar">
-            </div>
-          </div>
-          <div class="row row-cards">
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Categoria</label>
-                <?php $categories = CategoryData::getActives(); ?>
-                <select id="cat_select" name="category_id" class="form-select" required>
-                  <option value="">-- SELECCIONE CATEGORIA --</option>
-                  <?php foreach($categories as $cat):?>
-                  <option value="<?php echo $cat->id; ?>" <?php if($product->category_id==$cat->id){ echo "selected";} ?>><?php echo $cat->name; ?></option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Disponible en <span class="text-muted small">(menú por sucursal)</span></label>
-                <?php $sedes_form = SedeData::getAll(); ?>
-                <?php
-                $ps_sedes_all = ($product->sede_id === "" || $product->sede_id === null);
-                $ps_multi = array();
-                if(!$ps_sedes_all){
-                  if(intval($product->sede_id) === 0){
-                    $ps_multi = $product->getSedes();
-                    if(count($ps_multi) === 0){ $ps_sedes_all = true; }
-                  } else {
-                    $ps_multi = array(intval($product->sede_id));
-                  }
-                }
-                ?>
-                <label class="form-check">
-                  <input class="form-check-input tt-sedes-all" type="checkbox" name="sedes_all" <?php echo $ps_sedes_all ? "checked" : ""; ?>>
-                  <span class="form-check-label">Todas las sedes</span>
-                </label>
-                <div class="tt-sedes-list <?php echo $ps_sedes_all ? "tt-sedes-disabled" : ""; ?>">
-                  <?php foreach($sedes_form as $sd): ?>
-                  <label class="form-check form-check-inline mb-1">
-                    <input class="form-check-input tt-sede-chk" type="checkbox" name="sedes[]" value="<?php echo intval($sd->id); ?>" <?php echo in_array(intval($sd->id), $ps_multi) ? "checked" : ""; ?>>
-                    <span class="form-check-label"><?php echo htmlspecialchars($sd->name); ?></span>
-                  </label>
-                  <?php endforeach; ?>
-                  <div class="text-muted small mt-1">Desmarca "Todas las sedes" para elegir en cuáles aparece.</div>
+                <div class="pw-field">
+                  <label class="form-label required">Nombre</label>
+                  <input type="text" class="form-control form-control-lg" name="name" id="pw_name" placeholder="Ej: Pizza Gigante Pepperoni" value="<?php echo $pw_v("name"); ?>" required>
                 </div>
-              </div>
-            </div>
-          </div>
-          <div class="mb-3 d-none" id="tt_cat_guide_wrap">
-            <div class="alert alert-info tt-cat-guide mb-0" id="tt_cat_guide"></div>
-          </div>
-          <div id="tt_pizza_fields" class="tt-cat-fields d-none">
-            <div class="mb-3">
-              <label class="form-label">Ingredientes gratis <span class="text-muted small">(cuántos ingredientes van incluidos sin costo; el resto se cobra. Ej: 3 en la pizza familiar)</span></label>
-              <input type="number" min="0" step="1" class="form-control" placeholder="0" name="free_ingredients" value="<?php echo intval($product->free_ingredients); ?>">
-            </div>
-            <?php $house_catalog = array();
-            foreach(ProductExtraData::getAll() as $pe){
-              if(intval($pe->is_ingredient)==1 && trim($pe->name)!=""){
-                $house_catalog[strtr(mb_strtolower(trim($pe->name)), array("á"=>"a","é"=>"e","í"=>"i","ó"=>"o","ú"=>"u","ñ"=>"n"))] = $pe->name;
-              }
-            }
-            ksort($house_catalog);
-            $house_current = array();
-            if(trim((string)$product->house_ingredients)!=""){
-              foreach(explode(",", $product->house_ingredients) as $hc){
-                $hcn = strtr(mb_strtolower(trim($hc)), array("á"=>"a","é"=>"e","í"=>"i","ó"=>"o","ú"=>"u","ñ"=>"n"));
-                $house_current[] = $hcn;
-              }
-            } ?>
-            <div class="mb-3">
-              <label class="form-label">Ingredientes que trae el producto <span class="text-muted small">(se premarcan como incluidos en el menú del público y no se pueden quitar; si no marcas ninguno se detectan solos desde la descripción)</span></label>
-              <div class="row g-2">
-                <?php foreach($house_catalog as $hkey => $hname): ?>
-                <div class="col-6 col-md-4 col-lg-3">
+                <div class="pw-field">
+                  <label class="form-label">Descripción <span class="text-muted small">(opcional, se ve debajo del nombre en el modal)</span></label>
+                  <textarea class="form-control" name="description" id="pw_desc" rows="3" placeholder="Ej: Salsa de tomate, mozzarella y pepperoni"><?php echo $pw_v("description"); ?></textarea>
+                </div>
+              </section>
+
+              <!-- Paso 2: precio -->
+              <section class="pw-pane d-none" data-pane="2">
+                <div class="pw-field">
+                  <label class="form-label required">Precio</label>
+                  <div class="input-group input-group-lg">
+                    <span class="input-group-text"><?php echo $coin; ?></span>
+                    <input type="text" inputmode="decimal" class="form-control" name="price" id="pw_price" placeholder="0.00" value="<?php echo $pw_v("price"); ?>" required>
+                  </div>
+                </div>
+                <div class="pw-field">
+                  <label class="form-label">Precio para llevar (Delivery) <span class="text-muted small">(opcional)</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text"><?php echo $coin; ?></span>
+                    <input type="text" inputmode="decimal" class="form-control" name="price_llevar" id="pw_price_llevar" placeholder="Igual al precio normal" value="<?php echo $pw_v("price_llevar"); ?>">
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="pw-field">
+                      <label class="form-label">Precio en oferta <span class="text-muted small">(opcional)</span></label>
+                      <div class="input-group">
+                        <span class="input-group-text"><?php echo $coin; ?></span>
+                        <input type="text" inputmode="decimal" class="form-control" name="offer_price" id="pw_offer_price" placeholder="Precio rebajado" value="<?php echo $pw_v("offer_price"); ?>">
+                      </div>
+                      <div class="text-muted small mt-1">Al colocarlo, el producto queda en oferta automáticamente.</div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="pw-field">
+                      <label class="form-label">Fin de la oferta <span class="text-muted small">(opcional)</span></label>
+                      <input type="date" class="form-control" name="offer_finish" id="pw_offer_finish" value="<?php echo $pw_v("offer_finish"); ?>">
+                      <div class="text-muted small mt-1">Después de esta fecha vuelve al precio normal.</div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Paso 3: en el menú -->
+              <section class="pw-pane d-none" data-pane="3">
+                <div class="pw-field">
+                  <label class="form-label required">Categoría</label>
+                  <select id="pw_cat" name="category_id" class="form-select form-select-lg" required>
+                    <option value="">-- Elige la categoría --</option>
+                    <?php foreach($categories as $cat):?>
+                    <option value="<?php echo $cat->id; ?>" <?php if($product && $product->category_id==$cat->id){ echo "selected"; } ?>><?php echo htmlspecialchars($cat->name); ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                  <div class="alert alert-info mt-3 mb-0 d-none" id="pw_cat_guide"></div>
+                </div>
+                <div class="pw-field">
+                  <label class="form-label">Disponible en</label>
                   <label class="form-check">
-                    <input class="form-check-input" type="checkbox" name="house_ingredients[]" value="<?php echo htmlspecialchars($hname); ?>" <?php if(in_array($hkey, $house_current)){ echo "checked"; } ?>>
-                    <span class="form-check-label"><?php echo htmlspecialchars($hname); ?></span>
+                    <input class="form-check-input pw-sedes-all" type="checkbox" name="sedes_all" <?php echo $ps_sedes_all ? "checked" : ""; ?>>
+                    <span class="form-check-label">Todas las sedes</span>
+                  </label>
+                  <div class="pw-sedes-list <?php echo $ps_sedes_all ? "pw-disabled" : ""; ?>">
+                    <?php foreach($sedes_form as $sd): ?>
+                    <label class="form-check form-check-inline mb-1">
+                      <input class="form-check-input pw-sede-chk" type="checkbox" name="sedes[]" value="<?php echo intval($sd->id); ?>" <?php echo in_array(intval($sd->id), $ps_multi) ? "checked" : ""; ?>>
+                      <span class="form-check-label"><?php echo htmlspecialchars($sd->name); ?></span>
+                    </label>
+                    <?php endforeach; ?>
+                    <div class="text-muted small mt-1">Desmarca "Todas las sedes" para elegir en cuáles aparece.</div>
+                  </div>
+                </div>
+                <div id="pw_pizza_fields" class="d-none">
+                  <hr>
+                  <div class="h4 mb-3"><i class="bi bi-pie-chart-fill text-gold me-1"></i> Datos de pizza</div>
+                  <div class="pw-field">
+                    <label class="form-label">Ingredientes gratis <span class="text-muted small">(cuántos van incluidos sin costo)</span></label>
+                    <input type="number" min="0" step="1" class="form-control" name="free_ingredients" value="<?php echo $product ? intval($product->free_ingredients) : 0; ?>">
+                  </div>
+                  <div class="pw-field">
+                    <label class="form-label">Ingredientes que trae <span class="text-muted small">(se premarcan como incluidos en el menú; si no marcas ninguno se detectan desde la descripción)</span></label>
+                    <div class="row g-2">
+                      <?php foreach($house_catalog as $hkey => $hname): ?>
+                      <div class="col-6 col-md-4">
+                        <label class="form-check">
+                          <input class="form-check-input" type="checkbox" name="house_ingredients[]" value="<?php echo htmlspecialchars($hname); ?>" <?php if(in_array($hkey, $house_current)){ echo "checked"; } ?>>
+                          <span class="form-check-label"><?php echo htmlspecialchars($hname); ?></span>
+                        </label>
+                      </div>
+                      <?php endforeach; ?>
+                    </div>
+                  </div>
+                  <div class="pw-field">
+                    <label class="form-check form-check-inline">
+                      <input class="form-check-input" type="checkbox" name="has_extras">
+                      <span class="form-check-label">¿Tiene ingredientes extra? <span class="text-muted small">(al guardar se agrega a todos los grupos de ingredientes)</span></span>
+                    </label>
+                  </div>
+                  <div class="pw-field">
+                    <label class="form-label">Tipo de división <span class="text-muted small">(el cliente elige el sabor de cada fracción)</span></label>
+                    <select name="tipo_division" class="form-select">
+                      <option value="normal" <?php if($td_val=="normal"){ echo "selected"; } ?>>Normal (arma su pizza con ingredientes)</option>
+                      <option value="2_estaciones" <?php if($td_val=="2_estaciones"){ echo "selected"; } ?>>2 Estaciones (elige 2 mitades)</option>
+                      <option value="4_estaciones" <?php if($td_val=="4_estaciones"){ echo "selected"; } ?>>4 Estaciones (elige 4 cuartos)</option>
+                    </select>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Paso 4: publicar -->
+              <section class="pw-pane d-none" data-pane="4">
+                <div class="pw-review mb-4">
+                  <div class="pw-review-img"><img id="rv_img" alt=""></div>
+                  <div class="pw-review-txt">
+                    <div class="pw-review-name" id="rv_name">—</div>
+                    <div class="text-muted small" id="rv_cat">—</div>
+                    <div class="pw-review-price" id="rv_price">—</div>
+                  </div>
+                </div>
+                <label class="form-label">Estado en el menú</label>
+                <div class="pw-toggles">
+                  <label class="pw-toggle">
+                    <input class="form-check-input" type="checkbox" name="is_public" <?php if($pw_mode=="new" || ($product && $product->is_public)){ echo "checked"; } ?>>
+                    <span><b>Visible</b><br><span class="text-muted small">Aparece en el menú de los clientes</span></span>
+                  </label>
+                  <label class="pw-toggle">
+                    <input class="form-check-input" type="checkbox" name="in_existence" <?php if($pw_mode=="new" || ($product && $product->in_existence)){ echo "checked"; } ?>>
+                    <span><b>En existencia</b><br><span class="text-muted small">Se puede pedir ahora mismo</span></span>
+                  </label>
+                  <label class="pw-toggle">
+                    <input class="form-check-input" type="checkbox" name="is_featured" <?php if($product && $product->is_featured){ echo "checked"; } ?>>
+                    <span><b>Destacado</b><br><span class="text-muted small">Sale primero en "Destacados"</span></span>
                   </label>
                 </div>
-                <?php endforeach; ?>
+                <div class="alert alert-warning mt-3 mb-0 d-none" id="pw_inactive_warn">
+                  <i class="bi bi-exclamation-triangle me-1"></i>Este producto quedará <b>oculto</b> para los clientes.
+                </div>
+              </section>
+            </div>
+            <div class="card-footer d-flex align-items-center">
+              <button type="button" class="btn btn-ghost-secondary d-none" id="pw_prev"><i class="bi bi-arrow-left"></i> Anterior</button>
+              <div class="ms-auto">
+                <button type="button" class="btn btn-primary" id="pw_next">Siguiente <i class="bi bi-arrow-right"></i></button>
+                <button type="submit" class="btn btn-success d-none" id="pw_submit"><i class="bi bi-check-lg"></i> <?php echo $pw_mode=="edit" ? "Guardar cambios" : "Publicar producto"; ?></button>
               </div>
             </div>
-            <?php $td_val = isset($product->tipo_division) ? trim((string)$product->tipo_division) : "normal"; ?>
-            <div class="mb-3">
-              <label class="form-label">Tipo de división <span class="text-muted small">(solo pizzas: el cliente elige el sabor de cada fracción; los ingredientes de la pizza son las opciones)</span></label>
-              <select name="tipo_division" class="form-select">
-                <option value="normal" <?php if($td_val=="normal"){ echo "selected"; } ?>>Normal (el cliente arma su pizza con ingredientes)</option>
-                <option value="2_estaciones" <?php if($td_val=="2_estaciones"){ echo "selected"; } ?>>2 Estaciones (cliente elige 2 mitades)</option>
-                <option value="4_estaciones" <?php if($td_val=="4_estaciones"){ echo "selected"; } ?>>4 Estaciones (cliente elige 4 cuartos)</option>
-              </select>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="pw-preview-wrap">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><i class="bi bi-eye me-1"></i> Vista previa</h3>
+                <div class="card-actions text-muted small">Así se verá en tu menú</div>
+              </div>
+              <div class="card-body text-center">
+                <div class="tt-product-card pw-live">
+                  <div class="pc-img-wrap">
+                    <img id="pv_img" class="pc-img" alt="Vista previa" src="<?php echo $pv_img_src; ?>" <?php echo $url_exists ? "" : "style=\"display:none\""; ?>>
+                    <div class="pc-img-ph" id="pv_img_ph" <?php echo $url_exists ? "style=\"display:none\"" : ""; ?>><i class="bi bi-image"></i></div>
+                    <span class="pc-feat-badge" id="pv_feat" <?php if(!($product && $product->is_featured)){ echo "style=\"display:none\""; } ?>><i class="bi bi-star-fill me-1"></i>Destacado</span>
+                  </div>
+                  <div class="pc-body">
+                    <h3 class="pc-name" id="pv_name"><?php echo $product ? htmlspecialchars($product->name) : "Nombre del producto"; ?></h3>
+                    <div class="pc-meta">
+                      <span class="pc-price-pill" id="pv_price"><?php echo $coin; ?>0.00</span>
+                      <span class="pc-price-old" id="pv_old" style="display:none"></span>
+                      <span class="pc-price-dine" id="pv_llevar" style="display:none"></span>
+                    </div>
+                  </div>
+                  <div class="pc-footer">
+                    <button type="button" class="pc-add-btn" tabindex="-1" aria-hidden="true"><i class="bi bi-plus-lg"></i></button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <?php if( $url_exists):?>
-          <div class="mb-3">
-            <img src="<?php echo $url; ?>" class="img-fluid rounded border" style="max-height: 200px;">
-</div>
-<?php endif; ?>
-          <div class="mb-3">
-            <label class="form-label">Imagen</label>
-            <input type="file" class="form-control" name="image">
-          </div>
-          <div class="mb-3">
-            <div class="form-label">Opciones</div>
-            <div class="d-flex gap-3">
-              <label class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" name="is_public" <?php if($product->is_public){ echo "checked";} ?>>
-                <span class="form-check-label">Es Visible</span>
-              </label>
-              <label class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" name="in_existence" <?php if($product->in_existence){ echo "checked";} ?>>
-                <span class="form-check-label">En Existencia</span>
-              </label>
-              <label class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" name="is_featured" <?php if($product->is_featured){ echo "checked";} ?>>
-                <span class="form-check-label">Producto Destacado</span>
-              </label>
-            </div>
-          </div>
-          <div class="form-footer">
-            <button type="submit" class="btn btn-success w-100">Actualizar Producto</button>
-          </div>
-        </form>
+        </div>
       </div>
-    </div>
+    </form>
   </div>
 </div>
-<?php endif; ?>
-<?php if(isset($_GET["opt"]) && ($_GET["opt"]=="new" || $_GET["opt"]=="edit")):?>
+
+<style>
+  .pw-steps{ list-style:none; display:flex; gap:.25rem; padding:0; margin:0 0 1.5rem; }
+  .pw-step{ flex:1; text-align:center; cursor:pointer; color:#6c757d; }
+  .pw-step .pw-dot{ display:inline-flex; width:30px; height:30px; border-radius:50%; background:#e9ecef; color:#6c757d; align-items:center; justify-content:center; font-weight:700; transition:.15s; }
+  .pw-step .pw-label{ display:block; font-size:.78rem; margin-top:.25rem; }
+  .pw-step.active{ color:var(--tblr-primary,#206bc4); }
+  .pw-step.active .pw-dot{ background:var(--tblr-primary,#206bc4); color:#fff; transform:scale(1.08); }
+  .pw-step.done{ color:#2fb344; }
+  .pw-step.done .pw-dot{ background:#2fb344; color:#fff; }
+  .pw-field{ margin-bottom:1.1rem; }
+  .pw-dropzone{ border:2px dashed #ced4da; border-radius:12px; padding:1.5rem 1rem; text-align:center; cursor:pointer; color:#6c757d; background:#f8f9fa; transition:.15s; }
+  .pw-dropzone:hover,.pw-dropzone.pw-drag{ border-color:var(--tblr-primary,#206bc4); background:#eef4fb; color:var(--tblr-primary,#206bc4); }
+  .pw-disabled{ opacity:.45; }
+  .pw-preview-wrap{ position:sticky; top:1rem; }
+  .pw-live{ max-width:300px; margin:0 auto; background:#0c0c0c; border:1px solid #262626; border-radius:16px; overflow:hidden; color:#fff; text-align:left; }
+  .pw-live .pc-img-wrap{ position:relative; height:170px; background:#161616; display:flex; align-items:center; justify-content:center; }
+  .pw-live .pc-img{ width:100%; height:100%; object-fit:cover; }
+  .pw-live .pc-img-ph{ font-size:2.5rem; color:#3a3a3a; }
+  .pw-live .pc-feat-badge{ position:absolute; top:.5rem; left:.5rem; background:#ffb703; color:#111; font-size:.7rem; font-weight:700; padding:.15rem .5rem; border-radius:999px; }
+  .pw-live .pc-body{ padding:.85rem .95rem .4rem; }
+  .pw-live .pc-name{ font-size:1.25rem; font-weight:700; margin:0 0 .5rem; line-height:1.15; }
+  .pw-live .pc-price-pill{ display:inline-block; background:#ffb703; color:#111; font-weight:700; padding:.2rem .7rem; border-radius:999px; font-size:.95rem; }
+  .pw-live .pc-price-old{ text-decoration:line-through; color:#8a8a8a; font-size:.82rem; margin-left:.4rem; }
+  .pw-live .pc-price-dine{ display:block; color:#b5b5b5; font-size:.78rem; margin-top:.3rem; }
+  .pw-live .pc-footer{ padding:.7rem .95rem; display:flex; justify-content:flex-end; }
+  .pw-live .pc-add-btn{ width:34px; height:34px; border-radius:50%; border:0; background:#ffb703; color:#111; font-size:1.1rem; }
+  .pw-review{ display:flex; gap:1rem; align-items:center; padding:1rem; border:1px solid #dee2e6; border-radius:12px; background:#f8f9fa; }
+  .pw-review-img{ width:64px; height:64px; border-radius:10px; background:#e9ecef center/cover no-repeat; flex:0 0 64px; }
+  .pw-review-name{ font-weight:700; font-size:1.05rem; }
+  .pw-review-price{ color:#0a3622; font-weight:700; margin-top:.15rem; }
+  .pw-toggles{ display:grid; gap:.6rem; }
+  .pw-toggle{ display:flex; gap:.65rem; align-items:flex-start; padding:.75rem .9rem; border:1px solid #dee2e6; border-radius:10px; cursor:pointer; }
+  .pw-toggle:hover{ border-color:var(--tblr-primary,#206bc4); }
+</style>
+
 <script>
 $(function(){
+  var PW_COIN = <?php echo json_encode($coin); ?>;
   var TT_GUIDES = <?php echo $tt_cat_guides_json; ?>;
   var CAT_TYPES = <?php echo $tt_cat_guide_map_json; ?>;
+  var PW_STEP = 1;
+  var PW_LAST = 4;
+
+  function pwParse(v){
+    var s = String(v == null ? "" : v).replace(/\s/g, "");
+    if(s === ""){ return 0; }
+    if(s.indexOf(",") >= 0 && s.indexOf(".") >= 0){ s = s.replace(/\./g, "").replace(",", "."); }
+    else if(s.indexOf(",") >= 0){ s = s.replace(",", "."); }
+    var n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+  }
+  function pwMoney(v){ return PW_COIN + pwParse(v).toFixed(2); }
+  function pwNum(v){ return pwParse(v); }
+  function pwAlert(msg){
+    if(window.Swal){ Swal.fire({ icon:"info", title:"Falta un dato", text:msg, confirmButtonColor:"#1a0004" }); }
+    else { alert(msg); }
+  }
+
+  function validateStep(n){
+    if(n === 1 && !$.trim($("#pw_name").val())){ pwAlert("Escribe el nombre del producto."); return false; }
+    if(n === 2 && !$.trim($("#pw_price").val())){ pwAlert("Escribe el precio del producto."); return false; }
+    if(n === 3 && !$("#pw_cat").val()){ pwAlert("Elige la categoría del producto."); return false; }
+    return true;
+  }
+
+  function goToStep(n){
+    if(n < 1) n = 1;
+    if(n > PW_LAST) n = PW_LAST;
+    if(n > PW_STEP && !validateStep(PW_STEP)){ return; }
+    PW_STEP = n;
+    $(".pw-pane").addClass("d-none").filter("[data-pane='" + n + "']").removeClass("d-none");
+    $(".pw-step").each(function(i){
+      var s = i + 1;
+      $(this).removeClass("active done");
+      if(s < n) $(this).addClass("done");
+      if(s === n) $(this).addClass("active");
+    });
+    $("#pw_prev").toggleClass("d-none", n === 1);
+    $("#pw_next").toggleClass("d-none", n === PW_LAST);
+    $("#pw_submit").toggleClass("d-none", n !== PW_LAST);
+    if(n === PW_LAST){ renderReview(); }
+    $("html, body").animate({ scrollTop: 0 }, 150);
+  }
+  $("#pw_next").on("click", function(){ goToStep(PW_STEP + 1); });
+  $("#pw_prev").on("click", function(){ goToStep(PW_STEP - 1); });
+  $(".pw-step").on("click", function(){ goToStep(parseInt($(this).data("goto"), 10)); });
+
+  // ---- Guía según categoría y campos de pizza ----
   function applyCatFields(cid){
     var t = CAT_TYPES[cid] || "general";
     var isPizza = (t === "pizza");
     if(cid === "" || cid === null || cid === undefined){
-      $("#tt_pizza_fields").addClass("d-none");
-      $("#tt_cat_guide_wrap").addClass("d-none");
+      $("#pw_cat_guide").addClass("d-none");
+      $("#pw_pizza_fields").addClass("d-none");
       return;
     }
-    if(isPizza){ $("#tt_pizza_fields").removeClass("d-none"); }
-    else { $("#tt_pizza_fields").addClass("d-none"); }
-    $("#tt_cat_guide").html(TT_GUIDES[t] || TT_GUIDES.general);
-    $("#tt_cat_guide_wrap").removeClass("d-none");
+    $("#pw_cat_guide").html(TT_GUIDES[t] || TT_GUIDES.general).removeClass("d-none");
+    $("#pw_pizza_fields").toggleClass("d-none", !isPizza);
   }
-  $("#cat_select").on("change", function(){ applyCatFields($(this).val()); });
-  applyCatFields($("#cat_select").val());
+  $("#pw_cat").on("change", function(){ applyCatFields($(this).val()); });
 
-  function ttSyncSedes(){
-    var all = $(".tt-sedes-all").is(":checked");
-    $(".tt-sedes-list").toggleClass("tt-sedes-disabled", all);
-    $(".tt-sede-chk").prop("disabled", all);
-    if(!all && $(".tt-sede-chk:checked").length === 0){
-      $(".tt-sede-chk").first().prop("checked", true);
-    }
+  // ---- Sedes ----
+  function pwSyncSedes(){
+    var all = $(".pw-sedes-all").is(":checked");
+    $(".pw-sedes-list").toggleClass("pw-disabled", all);
+    $(".pw-sede-chk").prop("disabled", all);
+    if(!all && $(".pw-sede-chk:checked").length === 0){ $(".pw-sede-chk").first().prop("checked", true); }
   }
-  $(".tt-sedes-all").on("change", ttSyncSedes);
-  ttSyncSedes();
+  $(".pw-sedes-all").on("change", pwSyncSedes);
 
-  function ttCheckInactive(e){
+  // ---- Vista previa en vivo ----
+  function pvRender(){
+    var name = $.trim($("#pw_name").val()) || "Nombre del producto";
+    $("#pv_name").text(name);
+    var base = pwNum($("#pw_price").val());
+    var offer = pwNum($("#pw_offer_price").val());
+    var llevar = pwNum($("#pw_price_llevar").val());
+    var show = (offer > 0) ? offer : base;
+    $("#pv_price").text(pwMoney(show));
+    if(offer > 0 && base > 0){
+      $("#pv_old").text("antes " + pwMoney(base)).show();
+    } else { $("#pv_old").hide(); }
+    if(llevar > 0 && Math.abs(llevar - show) > 0.0001){
+      $("#pv_llevar").text("para llevar " + pwMoney(llevar)).show();
+    } else { $("#pv_llevar").hide(); }
+    $("#pv_feat").toggle($("input[name='is_featured']").is(":checked"));
+  }
+  $("#pw_name, #pw_price, #pw_offer_price, #pw_price_llevar").on("input", pvRender);
+  $("input[name='is_featured']").on("change", pvRender);
+
+  // ---- Imagen (drag & drop + preview) ----
+  function setPreviewImage(src){
+    $("#pv_img").attr("src", src).show();
+    $("#pv_img_ph").hide();
+    $("#rv_img").css("background-image", "url('" + src + "')");
+  }
+  function readFile(file){
+    if(!file){ return; }
+    if(!/^image\//.test(file.type)){ pwAlert("El archivo debe ser una imagen (JPG o PNG)."); return; }
+    var r = new FileReader();
+    r.onload = function(e){ setPreviewImage(e.target.result); };
+    r.readAsDataURL(file);
+    $("#pw_file_name").text(file.name);
+  }
+  $("#pw_drop").on("click", function(){ $("#pw_image").trigger("click"); });
+  $("#pw_image").on("change", function(){ if(this.files && this.files[0]){ readFile(this.files[0]); } });
+  var dz = $("#pw_drop")[0];
+  if(dz){
+    ["dragenter","dragover"].forEach(function(ev){ dz.addEventListener(ev, function(e){ e.preventDefault(); $("#pw_drop").addClass("pw-drag"); }); });
+    ["dragleave","drop"].forEach(function(ev){ dz.addEventListener(ev, function(e){ e.preventDefault(); $("#pw_drop").removeClass("pw-drag"); }); });
+    dz.addEventListener("drop", function(e){
+      if(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]){
+        var f = e.dataTransfer.files[0];
+        var dt = new DataTransfer(); dt.items.add(f);
+        $("#pw_image")[0].files = dt.files;
+        readFile(f);
+      }
+    });
+  }
+
+  // ---- Resumen del paso 4 ----
+  function renderReview(){
+    $("#rv_name").text($.trim($("#pw_name").val()) || "—");
+    var catTxt = $("#pw_cat option:selected").text();
+    $("#rv_cat").text(catTxt && catTxt.indexOf("--") !== 0 ? catTxt : "Sin categoría");
+    var base = pwNum($("#pw_price").val());
+    var offer = pwNum($("#pw_offer_price").val());
+    $("#rv_price").text(offer > 0 ? (pwMoney(offer) + "  (oferta)") : pwMoney(base));
+  }
+
+  // ---- Aviso si queda oculto + confirmación al guardar ----
+  function pwRefreshWarn(){
     var vis = $("input[name='is_public']").is(":checked");
     var exi = $("input[name='in_existence']").is(":checked");
-    if(!vis || !exi){
-      var msgs = [];
-      if(!vis) msgs.push("no est\u00e1 visible en el men\u00fa");
-      if(!exi) msgs.push("no est\u00e1 en existencia");
-      var txt = msgs.join(" y ");
-      e.preventDefault();
-      if(!window.Swal){ if(confirm("\u00bfEl producto " + txt + ".\n\n\u00bfDeseas guardarlo de todas formas?")){ e.target.submit(); } return; }
-      Swal.fire({
-        title: "\u00bfProducto inactivo?",
-        html: "El producto <b>" + txt + "</b>.<br>No ser\u00e1 visible para los clientes.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Guardar de todas formas",
-        cancelButtonText: "Cancelar y revisar",
-        confirmButtonColor: "#1a0004",
-        cancelButtonColor: "#000000"
-      }).then(function(r){ if(r.isConfirmed){ e.target.submit(); } });
-    }
+    $("#pw_inactive_warn").toggleClass("d-none", vis && exi);
   }
-  $("form[action*='products&opt=add'], form[action*='products&opt=upd']").on("submit", ttCheckInactive);
+  $("input[name='is_public'], input[name='in_existence']").on("change", pwRefreshWarn);
+
+  $("#pw_form").on("submit", function(e){
+    if(PW_STEP !== PW_LAST){
+      e.preventDefault();
+      goToStep(PW_LAST);
+      return;
+    }
+    var vis = $("input[name='is_public']").is(":checked");
+    var exi = $("input[name='in_existence']").is(":checked");
+    if(vis && exi){ return; }
+    e.preventDefault();
+    var msgs = [];
+    if(!vis) msgs.push("no est\u00e1 visible en el men\u00fa");
+    if(!exi) msgs.push("no est\u00e1 en existencia");
+    var txt = msgs.join(" y ");
+    var self = this;
+    var go = function(){ self.submit(); };
+    if(!window.Swal){ if(confirm("\u00bfEl producto " + txt + ".\n\n\u00bfDeseas guardarlo de todas formas?")){ go(); } return; }
+    Swal.fire({
+      title: "\u00bfProducto inactivo?",
+      html: "El producto <b>" + txt + "</b>.<br>No ser\u00e1 visible para los clientes.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Guardar de todas formas",
+      cancelButtonText: "Cancelar y revisar",
+      confirmButtonColor: "#1a0004",
+      cancelButtonColor: "#000000"
+    }).then(function(r){ if(r.isConfirmed){ go(); } });
+  });
+
+  // ---- Arranque ----
+  goToStep(1);
+  applyCatFields($("#pw_cat").val());
+  pwSyncSedes();
+  pwRefreshWarn();
+  pvRender();
+  <?php if($url_exists): ?>setPreviewImage(<?php echo json_encode($pv_img_src); ?>);<?php endif; ?>
 });
 </script>
 <?php endif; ?>
