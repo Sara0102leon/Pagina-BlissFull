@@ -207,8 +207,9 @@ class ProductData {
 		return Model::many($query[0],new ProductData());
 	}
 
-	public static function getOffers(){
-		$sql = "select * from ".self::$tablename." where offer_price is not null and offer_price<>'' and offer_price>0 and is_active=1 and ".Tenant::filter()." order by created_at desc";
+	public static function getOffers($sede_id=0){
+		$sql = "select * from ".self::$tablename." where offer_price is not null and offer_price<>'' and offer_price>0 and is_active=1 and ".Tenant::filter()." and ".self::sedeFilter($sede_id);
+		$sql .= " order by created_at desc";
 		$query = Executor::doit($sql);
 		return Model::many($query[0],new ProductData());
 	}

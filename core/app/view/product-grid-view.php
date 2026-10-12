@@ -18,7 +18,9 @@ if(isset($_POST["q"])){ $query = $_POST["q"]; }
 $sede_id = 0;
 if(isset($_POST["sede_id"]) && $_POST["sede_id"]!=""){ $sede_id = intval($_POST["sede_id"]); }
 
-if($cat_id>0){
+if(isset($_POST["ofertas"]) && $_POST["ofertas"]){
+  $products = ProductData::getOffers($sede_id);
+} else if($cat_id>0){
   $products = ProductData::getPublicsByCategoryId($cat_id,$sede_id);
 } else if($query!=""){
   $products = ProductData::getLike($query,$sede_id);

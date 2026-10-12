@@ -18,6 +18,9 @@ $menu_show_sedes_cfg = ConfigurationData::getByPreffix("menu_show_sedes");
 $menu_show_sedes = ($menu_show_sedes_cfg && $menu_show_sedes_cfg->val!=="0");
 $menu_cat_icons_cfg = ConfigurationData::getByPreffix("menu_cat_icons");
 $menu_cat_icons = ($menu_cat_icons_cfg && $menu_cat_icons_cfg->val!=="0");
+$menu_show_ofertas_cfg = ConfigurationData::getByPreffix("menu_show_ofertas");
+$menu_show_ofertas = ($menu_show_ofertas_cfg && $menu_show_ofertas_cfg->val!=="0");
+$ofertas = $menu_show_ofertas ? ProductData::getOffers() : array();
 $bcv_rate = 0;
 $bcv_rate_row = ConfigurationData::getByPreffix("bcv_rate");
 if($bcv_rate_row && $bcv_rate_row->val){ $bcv_rate = floatval($bcv_rate_row->val); }
@@ -426,6 +429,26 @@ foreach($horario_keys as $hk){
   </section>
   <?php endif; ?>
 
+  <?php if($menu_show_ofertas && count($ofertas)>0): ?>
+  <!-- ============ OFERTAS DEL DÍA ============ -->
+  <div class="container-xl mt-5" id="ofertas-section">
+    <hr class="tt-divider">
+    <div class="tt-section-head text-center mt-4 mb-4">
+      <div class="tt-hand tt-hand-big">precios especiales</div>
+      <h2 class="tt-display tt-section-title">OFERTAS <span class="text-gold">DEL DÍA</span></h2>
+    </div>
+    <?php
+      $__post_backup = $_POST;
+      $_POST["q"] = "";
+      $_POST["cat_id"] = "";
+      $_POST["sede_id"] = isset($__post_backup["sede_id"]) ? $__post_backup["sede_id"] : 0;
+      $_POST["ofertas"] = 1;
+      View::load("product-grid");
+      $_POST = $__post_backup;
+    ?>
+  </div>
+  <?php endif; ?>
+
   <!-- ============ MENÚ SEMANAL (Carrusel Scroll/Swipe) ============ -->
 
   <div class="container-xl mt-5">
@@ -446,9 +469,14 @@ foreach($horario_keys as $hk){
             <?php if($menu_show_featured): ?>
             <button type="button" class="btn-category-ajax active" data-cat=""><i class="bi bi-star-fill me-1"></i> Destacados</button>
             <?php endif; ?>
-            <?php foreach($categories as $cat): ?>
-            <button type="button" class="btn-category-ajax text-nowrap" data-cat="<?php echo $cat->id; ?>" data-ic="<?php echo tt_cat_ic($cat->name); ?>">
-              <?php if($menu_cat_icons): ?><i class="bi bi-<?php echo tt_cat_ic($cat->name); ?> cat-ic"></i><?php endif; ?> <?php echo htmlspecialchars($cat->name); ?>
+            <?php foreach($categories as $cat):
+              $cat_img = "";
+              if($cat->image!="" && file_exists("admin/storage/categories/".$cat->image)){
+                $cat_img = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/')."/admin/storage/categories/".$cat->image;
+              }
+            ?>
+            <button type="button" class="btn-category-ajax text-nowrap" data-cat="<?php echo $cat->id; ?>" data-ic="<?php echo tt_cat_ic($cat->name); ?>"<?php if($cat_img): ?> data-img="<?php echo htmlspecialchars($cat_img, ENT_QUOTES); ?>"<?php endif; ?>>
+              <?php if($cat_img): ?><img src="<?php echo $cat_img; ?>" class="cat-chip-img" alt="" loading="lazy"><?php elseif($menu_cat_icons): ?><i class="bi bi-<?php echo tt_cat_ic($cat->name); ?> cat-ic"></i><?php endif; ?> <?php echo htmlspecialchars($cat->name); ?>
             </button>
             <?php endforeach; ?>
           </div>
@@ -1352,14 +1380,25 @@ $(document).ready(function() {
     updateGrid();
   }
 
+  // Título del grid (usa la imagen de la categoría si existe)
+  function catTitleHtml(btn) {
+    const cid = (btn && btn.data("cat") !== undefined) ? btn.data("cat") : "";
+    if (cid === "" || cid === undefined || cid === null) {
+      return '<i class="bi bi-star-fill me-1"></i> Destacados';
+    }
+    const nm = btn.text().trim();
+    const img = btn.data("img");
+    const ic2 = btn.data("ic") || "pie-chart-fill";
+    if (img) { return '<img src="' + img + '" class="grid-title-img" alt=""> ' + nm; }
+    return '<i class="bi bi-' + ic2 + ' text-gold me-1"></i> ' + nm;
+  }
+
   // Category AJAX Toggle
   $(".btn-category-ajax").click(function() {
     $(".btn-category-ajax").removeClass("active");
     $(this).addClass("active");
     currentCatId = $(this).data("cat");
-    const name = $(this).text().trim();
-    const ic = $(this).data("ic") || "pie-chart-fill";
-    $("#grid-title").html(currentCatId === "" ? '<i class="bi bi-star-fill me-1"></i> Destacados' : '<i class="bi bi-' + ic + ' text-gold me-1"></i> ' + name);
+    $("#grid-title").html(catTitleHtml($(this)));
     updateGrid();
   });
 
@@ -1374,9 +1413,7 @@ $(document).ready(function() {
         $("#grid-title").html('<i class="bi bi-search me-1"></i> Buscando: ' + currentSearch);
       } else {
         const activeBtn = $(".btn-category-ajax.active");
-        const activeName = activeBtn.text().trim();
-        const activeIc = activeBtn.data("ic") || "pie-chart-fill";
-        $("#grid-title").html(currentCatId === "" ? '<i class="bi bi-star-fill me-1"></i> Destacados' : '<i class="bi bi-' + activeIc + ' text-gold me-1"></i> ' + activeName);
+        $("#grid-title").html(catTitleHtml(activeBtn));
       }
       updateGrid();
     }, 400); 

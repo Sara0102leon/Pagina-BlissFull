@@ -164,9 +164,25 @@ el cliente se registra, paga un plan y se le activa su **menú en un subdominio 
   Migración aditiva `migracion_esquema.sql` (aplicada). También se silenciaron los
   deprecations de PHP 8.2 (`@` en `Model::one/many`) que polucionaban el output.
 
-## Fase 2 — Panel "Apariencia / Menú" completo
-- Imágenes por categoría, orden dentro de la categoría (productos), textos del hero
-  (ya parcial), logo, sección de ofertas. Configurar todo desde admin.
+## Fase 2 — Panel "Apariencia / Menú" completo ✅ (completada oct 2026)
+- Migración **`migracion_fase2.sql`** (aplicada; aditiva/idempotente).
+- **Imágenes por categoría**: columna `category.image`. Se sube desde Categorías
+  (alta/edición, `enctype` multipart → `Upload` a `admin/storage/categories/`; el
+  formulario de edición trae **"Quitar imagen"**). En el menú público se muestra como
+  miniatura redonda en el chip de la categoría y como banner junto al título del grid
+  (`#grid-title`, vía `data-img`) al seleccionarla.
+- **Logo propio del negocio**: claves `tema_logo`/`tema_logo_alt`, tarjeta **"Marca"**
+  en Apariencia (subir/quitar). Se guarda en `admin/storage/brand/`. Helpers
+  `tt_logo_url()`/`tt_logo_alt()` en `core/app/layouts/layout.php` lo usan en navbar y
+  footer con fallback a `assets/img/logo-sazon.svg`.
+- **Sección de ofertas**: toggle **`menu_show_ofertas`** (default "1"). Bloque
+  "OFERTAS DEL DÍA" tras el hero con los productos con `offer_price>0`
+  (`ProductData::getOffers($sede_id)`, que ahora filtra por sede). Reusa
+  `product-grid-view` con `$_POST["ofertas"]=1`. Si no hay ofertas, no se muestra.
+- **Orden dentro de la categoría (productos)**: cubierto por **A4** (`product.position`).
+- **Textos del hero**: ya editables en `?view=slider&opt=hero`
+  (`hero_hand`/`hero_title`/`hero_sub`).
+- "Restaurar por defecto" (Apariencia) también limpia `tema_logo`/`tema_logo_alt`.
 
 ## Fase 3 — Rediseño visual del menú público
 - Nueva identidad/paleta/tipografías/layout con el motor de tema por debajo.

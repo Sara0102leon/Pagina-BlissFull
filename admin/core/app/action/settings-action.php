@@ -269,12 +269,20 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="updsedezone"){
 }
 else if(isset($_GET["opt"]) && $_GET["opt"]=="savetema"){
 	if(count($_POST)>0){
+		// Logo del negocio (archivo subido) — storage/brand/
+		if(isset($_POST["remove_logo"]) && $_POST["remove_logo"]=="1"){
+			ConfigurationData::updateValFromName("tema_logo","");
+		}
+		if(isset($_FILES["logo"]) && isset($_FILES["logo"]["name"]) && $_FILES["logo"]["name"]!=""){
+			$handle = new Upload($_FILES["logo"]);
+			if($handle->uploaded){ $handle->Process("storage/brand/"); ConfigurationData::updateValFromName("tema_logo",$handle->file_dst_name); }
+		}
 		foreach($_POST as $k=>$v){
 			if(preg_match("/^tema_/",$k)){
 				ConfigurationData::updateValFromName($k, trim($v));
 			}
 		}
-		$tt_toggles = array("menu_show_hero","menu_show_slides","menu_show_featured","menu_show_bebidas","menu_show_sedes","menu_cat_icons");
+		$tt_toggles = array("menu_show_hero","menu_show_slides","menu_show_featured","menu_show_ofertas","menu_show_bebidas","menu_show_sedes","menu_cat_icons");
 		foreach($tt_toggles as $t){
 			$on = (isset($_POST[$t]) && $_POST[$t]!=="0") ? "1" : "0";
 			ConfigurationData::updateValFromName($t, $on);
@@ -288,7 +296,8 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="restoretema"){
 		"tema_bg"=>"#000000","tema_bg_2"=>"#050505","tema_card"=>"#050505","tema_card_2"=>"#1a0004","tema_text"=>"#ffffff",
 		"tema_muted"=>"rgba(255,255,255,0.62)","tema_border"=>"rgba(184,126,56,0.35)",
 		"tema_font_display"=>"Bebas Neue","tema_font_hand"=>"Caveat","tema_font_body"=>"Inter",
-		"menu_show_hero"=>"1","menu_show_slides"=>"1","menu_show_featured"=>"1","menu_show_bebidas"=>"1","menu_show_sedes"=>"1","menu_cat_icons"=>"1"
+		"tema_logo"=>"","tema_logo_alt"=>"",
+		"menu_show_hero"=>"1","menu_show_slides"=>"1","menu_show_featured"=>"1","menu_show_ofertas"=>"1","menu_show_bebidas"=>"1","menu_show_sedes"=>"1","menu_cat_icons"=>"1"
 	);
 	foreach($tt_defaults as $k=>$v){ ConfigurationData::updateValFromName($k,$v); }
 	Core::redir("./?view=settings&opt=apariencia");

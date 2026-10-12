@@ -1152,7 +1152,7 @@ $ttc_defaults = array(
  "tema_font_display"=>"Bebas Neue","tema_font_hand"=>"Caveat","tema_font_body"=>"Inter",
 );
 $ttc_fonts = array("tema_font_display"=>"Títulos (display)","tema_font_hand"=>"Cursiva","tema_font_body"=>"Texto");
-$ttc_toggles = array("menu_show_hero"=>"Hero (portada)","menu_show_slides"=>"Carrusel de ofertas","menu_show_featured"=>"Destacados","menu_show_bebidas"=>"Sección de bebidas","menu_show_sedes"=>"Sedes / ubicación","menu_cat_icons"=>"Iconos en categorías");
+$ttc_toggles = array("menu_show_hero"=>"Hero (portada)","menu_show_slides"=>"Carrusel de ofertas","menu_show_featured"=>"Destacados","menu_show_ofertas"=>"Sección de ofertas","menu_show_bebidas"=>"Sección de bebidas","menu_show_sedes"=>"Sedes / ubicación","menu_cat_icons"=>"Iconos en categorías");
 ?>
 <div class="page-header d-print-none">
   <div class="container-xl">
@@ -1172,8 +1172,41 @@ $ttc_toggles = array("menu_show_hero"=>"Hero (portada)","menu_show_slides"=>"Car
 </div>
 <div class="page-body">
   <div class="container-xl">
-    <form method="post" action="./?action=settings&opt=savetema">
+    <form method="post" enctype="multipart/form-data" action="./?action=settings&opt=savetema">
       <div class="card">
+        <div class="card-status-top bg-primary"></div>
+        <div class="card-header"><h3 class="card-title">Marca</h3></div>
+        <div class="card-body">
+          <?php
+            $tt_logo_now = tt_cfgv_now("tema_logo","");
+            $tt_logo_show = ($tt_logo_now!="" && file_exists("storage/brand/".$tt_logo_now)) ? "storage/brand/".$tt_logo_now : "../assets/img/logo-sazon.svg";
+          ?>
+          <div class="row g-3 align-items-center">
+            <div class="col-md-4">
+              <label class="form-label">Logo actual</label>
+              <div>
+                <img src="<?php echo htmlspecialchars($tt_logo_show); ?>" alt="logo" style="max-height:64px;max-width:100%;background:#0d0a07;border-radius:10px;padding:8px;" class="border">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Subir logo</label>
+              <input type="file" name="logo" class="form-control" accept="image/*">
+              <div class="text-muted small mt-1">PNG/SVG/WebP con fondo transparente (recomendado). Reemplaza al logo sazón en el menú público.</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Texto alternativo</label>
+              <input type="text" name="tema_logo_alt" value="<?php echo htmlspecialchars(tt_cfgv_now("tema_logo_alt","")); ?>" class="form-control" placeholder="Nombre del negocio">
+              <?php if($tt_logo_now!=""): ?>
+              <label class="form-check mt-2">
+                <input class="form-check-input" type="checkbox" name="remove_logo" value="1">
+                <span class="form-check-label">Quitar logo (volver al de sazón)</span>
+              </label>
+              <?php endif; ?>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card mt-3">
         <div class="card-status-top bg-primary"></div>
         <div class="card-header"><h3 class="card-title">Colores</h3></div>
         <div class="card-body">

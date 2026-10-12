@@ -50,6 +50,11 @@ $tt_theme = array();
 foreach(ConfigurationData::getAll() as $c){ $tt_theme[$c->name] = $c->val; }
 $tg = function($name,$def="") use ($tt_theme){ return (isset($tt_theme[$name]) && $tt_theme[$name]!=="") ? $tt_theme[$name] : $def; };
 
+// Logo: el de la tienda (Fase 2) si está definido; si no, el logo legacy de la carta.
+$carta_logo = $base."/assets/img/logo.png";
+$carta_logo_fn = $tg("tema_logo","");
+if($carta_logo_fn!=="" && file_exists("admin/storage/brand/".$carta_logo_fn)){ $carta_logo = $base."/admin/storage/brand/".$carta_logo_fn; }
+
 $accent  = $tg("tema_primary","#e0a96d");
 $accent2 = $tg("tema_primary_2","#b87e38");
 $red     = $tg("tema_red","#e63946");
@@ -197,7 +202,7 @@ foreach($categories as $cat){
 
   <main class="paper">
     <header class="head">
-      <?php if($show_logo): ?><img class="logo" src="<?php echo $base; ?>/assets/img/logo.png" alt=""><?php endif; ?>
+      <?php if($show_logo): ?><img class="logo" src="<?php echo $carta_logo; ?>" alt=""><?php endif; ?>
       <div class="head-txt">
         <h1 class="title"><?php echo htmlspecialchars($title); ?></h1>
         <?php if($c_sub!==""): ?><p class="sub"><?php echo htmlspecialchars($c_sub); ?></p><?php endif; ?>

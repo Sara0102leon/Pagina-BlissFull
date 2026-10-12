@@ -2,19 +2,21 @@
 class CategoryData {
 	public static $tablename = "category";
 
-	public $id, $name, $short_name, $is_active, $in_home, $in_menu, $position, $tienda_id;
+	public $id, $name, $short_name, $is_active, $in_home, $in_menu, $position, $tienda_id, $image;
 
 	public function __construct(){
 		$this->name = "";
 		$this->short_name = "";
 		$this->is_active = "1";
 		$this->position = 0;
+		$this->image = "";
 	}
 
 	public function add(){
 		$pos = ($this->position===""||$this->position===null) ? 0 : intval($this->position);
-		$sql = "insert into ".self::$tablename." (name,short_name,is_active,position,tienda_id) ";
-		$sql .= "value (\"$this->name\",\"$this->short_name\",$this->is_active,$pos,".Tenant::idSql().")";
+		$img = isset($this->image) ? $this->image : "";
+		$sql = "insert into ".self::$tablename." (name,short_name,is_active,position,image,tienda_id) ";
+		$sql .= "value (\"$this->name\",\"$this->short_name\",$this->is_active,$pos,\"$img\",".Tenant::idSql().")";
 		Executor::doit($sql);
 	}
 
@@ -28,7 +30,8 @@ class CategoryData {
 	}
 
 	public function update(){
-		$sql = "update ".self::$tablename." set name=\"$this->name\",short_name=\"$this->short_name\",is_active=\"$this->is_active\",position=".intval($this->position)." where id=$this->id";
+		$img = isset($this->image) ? $this->image : "";
+		$sql = "update ".self::$tablename." set name=\"$this->name\",short_name=\"$this->short_name\",is_active=\"$this->is_active\",position=".intval($this->position).",image=\"$img\" where id=$this->id";
 		Executor::doit($sql);
 	}
 

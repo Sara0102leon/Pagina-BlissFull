@@ -6,6 +6,10 @@ if(count($_POST)>0){
 	$cat->short_name = $_POST["short_name"];
 	$cat->is_active = isset($_POST["is_active"])?1:0;
 	$cat->position = CategoryData::nextPosition();
+	if(isset($_FILES["image"]) && isset($_FILES["image"]["name"]) && $_FILES["image"]["name"]!=""){
+		$handle = new Upload($_FILES["image"]);
+		if($handle->uploaded){ $handle->Process("storage/categories/"); $cat->image = $handle->file_dst_name; }
+	}
 	$cat->add();
 	//Core::alert("Categoria agregada!");
 	Core::redir("./?view=categories&opt=all");
@@ -18,6 +22,11 @@ if(count($_POST)>0){
 	$cat->short_name = $_POST["short_name"];
 	$cat->is_active = isset($_POST["is_active"])?1:0;
 	$cat->position = isset($_POST["position"])?intval($_POST["position"]):$cat->position;
+	if(isset($_POST["remove_image"]) && $_POST["remove_image"]=="1"){ $cat->image = ""; }
+	if(isset($_FILES["image"]) && isset($_FILES["image"]["name"]) && $_FILES["image"]["name"]!=""){
+		$handle = new Upload($_FILES["image"]);
+		if($handle->uploaded){ $handle->Process("storage/categories/"); $cat->image = $handle->file_dst_name; }
+	}
 	$cat->update();
 	//Core::alert("Categoria actualizada!");
 	Core::redir("./?view=categories&opt=all");

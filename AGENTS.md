@@ -194,6 +194,37 @@ Categorías y productos se reordenan arrastrando en una página nueva.
 
 **Probar en local:** entra a `http://localhost/menu/admin/?view=order` con `admin/admin`.
 
+## Apariencia / Menú por tienda (Fase 2 — oct 2026)
+
+Migración **`migracion_fase2.sql`** (aplicada; aditiva/idempotente).
+
+**Imágenes por categoría**
+- Columna **`category.image`**; `CategoryData` la incluye en `add()`/`update()`.
+- Alta/Edición de categoría (`?view=categories&opt=new|edit`) tienen `enctype`
+  multipart + input `image`; el action (`categories-action.php`) sube con `Upload` a
+  `admin/storage/categories/`. En edición hay checkbox **`remove_image`**.
+- Menú público (`index-view.php`): el chip de categoría muestra una miniatura redonda
+  (`.cat-chip-img`) y expone `data-img`; el JS del título del grid (`catTitleHtml()`)
+  usa esa imagen como banner (`.grid-title-img`) al seleccionar la categoría.
+
+**Logo propio del negocio**
+- Claves `tema_logo` (archivo en `admin/storage/brand/`) y `tema_logo_alt` (alt).
+- Se gestionan en **Apariencia → tarjeta "Marca"** (`?view=settings&opt=apariencia`;
+  subir/quitar + texto alternativo). El POST va a `savetema` (con `enctype` multipart).
+- Helpers `tt_logo_url()` / `tt_logo_alt()` en `core/app/layouts/layout.php` (navbar y
+  footer). Fallback: `assets/img/logo-sazon.svg`.
+
+**Sección de ofertas**
+- Toggle **`menu_show_ofertas`** (default "1"), en Apariencia → "Secciones visibles".
+- `ProductData::getOffers($sede_id=0)` (ahora filtra por sede). El bloque "OFERTAS DEL
+  DÍA" se pinta tras el hero reusando `product-grid-view` con `$_POST["ofertas"]=1`
+  (`View::load` con backup/restore de `$_POST`). Si no hay ofertas, no se muestra.
+
+**Restaurar por defecto** (Apariencia) también limpia `tema_logo`/`tema_logo_alt`.
+
+**Probar en local:** sube una imagen en `?view=categories&opt=edit&id=2` y mira el chip
+en `http://localhost/menu/`; sube un logo en Apariencia y verifica navbar/footer.
+
 ## Despliegue en producción (VPS alianza)
 
 **Sitio público:** https://prueba.alianzablissful.com

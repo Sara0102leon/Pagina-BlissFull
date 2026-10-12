@@ -35,6 +35,19 @@
         $v = tt_theme_get($name,"");
         return $v==="" ? $def : $v;
       }
+      // Logo del negocio (configurable por tienda). Fallback: logo sazón.
+      function tt_logo_file(){
+        $f = tt_theme_get("tema_logo","");
+        if($f!=="" && file_exists("admin/storage/brand/".$f)){ return "admin/storage/brand/".$f; }
+        return "assets/img/logo-sazon.svg";
+      }
+      function tt_logo_url(){
+        return rtrim(dirname($_SERVER['SCRIPT_NAME']), '/')."/".tt_logo_file();
+      }
+      function tt_logo_alt(){
+        $a = tt_theme_get("tema_logo_alt","");
+        return $a!=="" ? $a : "sazón";
+      }
     }
     $tt_env_colors = array(
       "--tt-gold"=>"tema_primary","--tt-gold-2"=>"tema_primary_2","--tt-accent"=>"tema_accent",
@@ -215,7 +228,7 @@
         <div class="container-xl">
           <div class="navbar-brand pe-0 pe-md-3">
             <a href="./" class="text-decoration-none d-flex align-items-center">
-              <img src="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/assets/img/logo-sazon.svg" alt="sazón" class="brand-logo">
+              <img src="<?php echo tt_logo_url(); ?>" alt="<?php echo htmlspecialchars(tt_logo_alt(), ENT_QUOTES, "UTF-8"); ?>" class="brand-logo">
             </a>
           </div>
 
@@ -361,7 +374,7 @@
           <div class="container-xl">
             <div class="row g-4">
               <div class="col-md-5 col-lg-4 mb-4 mb-md-0">
-                <img src="<?php echo rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>/assets/img/logo-sazon.svg" alt="sazón" class="brand-logo mb-3" style="filter: brightness(1);">
+                <img src="<?php echo tt_logo_url(); ?>" alt="<?php echo htmlspecialchars(tt_logo_alt(), ENT_QUOTES, "UTF-8"); ?>" class="brand-logo mb-3" style="filter: brightness(1);">
                 <p class="text-white-50 small mb-3">Disfruta de la mejor experiencia gastronómica desde tu celular. Escanea, ordena y disfruta.</p>
                 <div class="d-flex gap-2">
                    <a href="<?php echo $fb_footer ? (preg_match('/^https?:\/\//i',$fb_footer) ? $fb_footer : "https://facebook.com/".ltrim($fb_footer,"@")) : "#"; ?>" class="social-icon" title="Facebook" target="_blank" rel="noopener"><i class="bi bi-facebook"></i></a>
