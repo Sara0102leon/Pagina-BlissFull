@@ -48,10 +48,30 @@
         $a = tt_theme_get("tema_logo_alt","");
         return $a!=="" ? $a : "sazón";
       }
+      /* Fase 3: utilidades de color para el motor de tema */
+      function tt_hex_rgb($hex){
+        $hex = strtolower(ltrim(trim((string)$hex), "#"));
+        if(strlen($hex)===3){ $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2]; }
+        if(strlen($hex)!==6 || !ctype_xdigit($hex)){ return "0,0,0"; }
+        return hexdec(substr($hex,0,2)).",".hexdec(substr($hex,2,2)).",".hexdec(substr($hex,4,2));
+      }
+      /* true si el color es claro (para elegir tinta oscura encima). */
+      function tt_hex_light($hex){
+        $hex = strtolower(ltrim(trim((string)$hex), "#"));
+        if(strlen($hex)===3){ $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2]; }
+        if(strlen($hex)!==6 || !ctype_xdigit($hex)){ return false; }
+        $r=hexdec(substr($hex,0,2)); $g=hexdec(substr($hex,2,2)); $b=hexdec(substr($hex,4,2));
+        return ((0.299*$r + 0.587*$g + 0.114*$b)/255) > 0.6;
+      }
+      /* Tinta legible sobre un color de acento (por luminancia). */
+      function tt_on_accent($hex){
+        return tt_hex_light($hex) ? "#000000" : "#ffffff";
+      }
     }
     $tt_env_colors = array(
       "--tt-gold"=>"tema_primary","--tt-gold-2"=>"tema_primary_2","--tt-accent"=>"tema_accent",
       "--tt-red"=>"tema_red","--tt-red-2"=>"tema_red_2","--tt-bg"=>"tema_bg","--tt-bg-2"=>"tema_bg_2",
+      "--tt-bg-3"=>"tema_bg_3",
       "--tt-card"=>"tema_card","--tt-card-2"=>"tema_card_2","--tt-text"=>"tema_text",
       "--tt-muted"=>"tema_muted","--tt-border"=>"tema_border"
     );
@@ -64,6 +84,19 @@
         --tt-hand: '<?php echo addslashes(tt_theme_var("tema_font_hand","Caveat")); ?>', cursive;
         --tt-display: '<?php echo addslashes(tt_theme_var("tema_font_display","Bebas Neue")); ?>', 'Outfit', sans-serif;
         --tt-font-body: '<?php echo addslashes(tt_theme_var("tema_font_body","Inter")); ?>', -apple-system, sans-serif;
+      <?php
+      /* Companeros RGB (para usar los colores de marca con alfa) + tinta sobre acento */
+      $tt_rgb_map = array(
+        "--tt-gold-rgb"   => array("tema_primary","#e0a96d"),
+        "--tt-gold-2-rgb" => array("tema_primary_2","#b87e38"),
+        "--tt-accent-rgb" => array("tema_accent","#ffb703"),
+        "--tt-red-rgb"    => array("tema_red","#e63946"),
+        "--tt-red-2-rgb"  => array("tema_red_2","#ff2a2a"),
+        "--tt-bg-3-rgb"   => array("tema_bg_3","#0a0a0a"),
+      );
+      foreach($tt_rgb_map as $var=>$pair){ echo "  ".$var.": ".tt_hex_rgb(tt_theme_var($pair[0],$pair[1])).";\n"; }
+      echo "  --tt-on-gold: ".tt_on_accent(tt_theme_var("tema_primary","#e0a96d")).";\n";
+      ?>
       }
     </style>
     
@@ -97,7 +130,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: radial-gradient(ellipse at 50% 30%, #1c1210 0%, #0d0a09 65%, #000 100%);
+        background: radial-gradient(ellipse at 50% 30%, var(--tt-card-2) 0%, var(--tt-bg) 65%, var(--tt-bg) 100%);
         transition: opacity 0.35s ease, visibility 0.35s ease;
       }
       .tt-loader.done { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -105,7 +138,7 @@
         width: 62px;
         height: 62px;
         margin: 0 auto 16px;
-        border: 5px solid rgba(255, 183, 3, 0.18);
+        border: 5px solid rgba(var(--tt-accent-rgb), 0.18);
         border-top-color: var(--tt-accent, #ffb703);
         border-right-color: var(--tt-gold, #e0a96d);
         border-radius: 50%;
@@ -117,7 +150,7 @@
         font-family: 'Bebas Neue', 'Outfit', sans-serif;
         font-size: 1.9rem;
         letter-spacing: 0.1em;
-        color: #ffffff;
+        color: var(--tt-text);
         line-height: 1;
       }
       .tt-loader-brand span { color: var(--tt-accent, #ffb703); }
@@ -135,7 +168,7 @@
         width: 46px;
         height: 46px;
         margin: 0 auto 12px;
-        border: 4px solid rgba(255, 183, 3, 0.18);
+        border: 4px solid rgba(var(--tt-accent-rgb), 0.18);
         border-top-color: var(--tt-accent, #ffb703);
         border-radius: 50%;
         animation: ttLoaderSpin 0.85s linear infinite;
@@ -297,7 +330,7 @@
 
       <!-- Offcanvas Cart (Mobile/Desktop Swipe) -->
       <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
-        <div class="offcanvas-header" style="background: linear-gradient(135deg,var(--tt-gold),var(--tt-gold-2)); color: #000000;">
+        <div class="offcanvas-header" style="background: linear-gradient(135deg,var(--tt-gold),var(--tt-gold-2)); color: var(--tt-on-gold);">
           <h5 class="offcanvas-title fw-bold" id="offcanvasCartLabel"><i class="bi bi-bag-heart me-2"></i> Mi Orden</h5>
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
@@ -334,11 +367,11 @@
             icon: "error",
             title: "ESTAMOS CERRADOS",
             html: TITO_CLOSED_MSG,
-            background: "#000000",
-            color: "#ffffff",
-            iconColor: "#ff2a2a",
+            background: "<?php echo tt_theme_var("tema_bg","#000000"); ?>",
+            color: "<?php echo tt_theme_var("tema_text","#ffffff"); ?>",
+            iconColor: "<?php echo tt_theme_var("tema_red_2","#ff2a2a"); ?>",
             confirmButtonText: "Entendido",
-            confirmButtonColor: "#ff2a2a",
+            confirmButtonColor: "<?php echo tt_theme_var("tema_red_2","#ff2a2a"); ?>",
             customClass: { title: "tt-swal-closed-title" }
           });
           return true;
@@ -360,7 +393,7 @@
                title: "¡Pedido registrado!",
                html: "Tu WhatsApp se ha abierto para enviar el detalle.",
                confirmButtonText: "Perfecto",
-               confirmButtonColor: "#e0a96d"
+               confirmButtonColor: "<?php echo tt_theme_var("tema_primary","#e0a96d"); ?>"
              });
           }
         });

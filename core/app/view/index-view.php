@@ -163,7 +163,7 @@ foreach($horario_keys as $hk){
 <div class="modal modal-blur fade" id="modal-sede" tabindex="-1" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
   <div class="modal-dialog modal-dialog-centered modal-lg tt-sede-modal" role="document">
     <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header" style="background: linear-gradient(135deg,#e0a96d,#b87e38); color: #000000;">
+      <div class="modal-header" style="background: linear-gradient(135deg,var(--tt-gold),var(--tt-gold-2)); color: var(--tt-on-gold);">
         <div>
           <h3 class="modal-title fw-bold"><i class="bi bi-geo-alt-fill me-2"></i>¿Cuál sede te queda más cerca?</h3>
           <div class="fs-5 mt-1">Elige tu sucursal y tu pedido se enviará directo a su WhatsApp</div>
@@ -205,7 +205,7 @@ foreach($horario_keys as $hk){
 <div class="modal modal-blur fade" id="modal-checkout" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header" style="background: linear-gradient(135deg,#e0a96d,#b87e38); color: #000000;">
+      <div class="modal-header" style="background: linear-gradient(135deg,var(--tt-gold),var(--tt-gold-2)); color: var(--tt-on-gold);">
         <h5 class="modal-title fw-bold"><i class="bi bi-cart-check-fill me-2"></i> Estás a un paso de tu pedido</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -328,7 +328,7 @@ foreach($horario_keys as $hk){
 <div class="modal modal-blur fade" id="modal-extras" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header" style="background: linear-gradient(135deg,#e0a96d,#b87e38); color: #000000;">
+      <div class="modal-header" style="background: linear-gradient(135deg,var(--tt-gold),var(--tt-gold-2)); color: var(--tt-on-gold);">
         <h5 class="modal-title fw-bold" id="extras_modal_title">Extras</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -676,11 +676,11 @@ function sedeClosedGuard() {
     icon: "error",
     title: "ESTAMOS CERRADOS",
     html: closedMsg ? closedMsg : "Estamos cerrados en este momento.",
-    background: "#000000",
-    color: "#ffffff",
-    iconColor: "#ff2a2a",
+    background: "<?php echo tt_theme_var("tema_bg","#000000"); ?>",
+    color: "<?php echo tt_theme_var("tema_text","#ffffff"); ?>",
+    iconColor: "<?php echo tt_theme_var("tema_red_2","#ff2a2a"); ?>",
     confirmButtonText: "Entendido",
-    confirmButtonColor: "#ff2a2a",
+    confirmButtonColor: "<?php echo tt_theme_var("tema_red_2","#ff2a2a"); ?>",
     customClass: { title: "tt-swal-closed-title" }
   });
   return true;
@@ -1135,7 +1135,7 @@ function confirmExtras() {
     for (let b = 1; b <= pendingDivision; b++) {
       const checked = $("input[name='sabor_" + b + "']:checked");
       if (!checked.length) {
-        Swal.fire({ icon: "warning", title: "Falta elegir un sabor", text: "Elige el sabor del " + blockName.toLowerCase() + " " + b + " para continuar.", confirmButtonColor: "#b87e38" });
+        Swal.fire({ icon: "warning", title: "Falta elegir un sabor", text: "Elige el sabor del " + blockName.toLowerCase() + " " + b + " para continuar.", confirmButtonColor: "<?php echo tt_theme_var("tema_primary_2","#b87e38"); ?>" });
         return;
       }
       const sb = pendingSabores[parseInt(checked.data("sabor"), 10)];
@@ -1147,7 +1147,7 @@ function confirmExtras() {
     const ingIdx = [];
     $(".ing-opt input:checked").each(function(){ ingIdx.push(parseInt($(this).data("idx"))); });
     if (pendingFreeExtra > 0 && ingIdx.length < pendingFreeExtra) {
-      Swal.fire({ icon: "warning", title: "Elige tus ingredientes gratis", text: "Esta pizza incluye " + pendingFreeExtra + " ingredientes gratuitos. Selecciona al menos " + pendingFreeExtra + " antes de continuar.", confirmButtonColor: "#b87e38" });
+      Swal.fire({ icon: "warning", title: "Elige tus ingredientes gratis", text: "Esta pizza incluye " + pendingFreeExtra + " ingredientes gratuitos. Selecciona al menos " + pendingFreeExtra + " antes de continuar.", confirmButtonColor: "<?php echo tt_theme_var("tema_primary_2","#b87e38"); ?>" });
       return;
     }
     for (let i = 0; i < ingIdx.length; i++) {
@@ -1169,7 +1169,7 @@ function confirmExtras() {
   if (pendingGigante && BEBIDAS.length > 0) {
     const selB = $(".bebida-radio:checked");
     if (!selB.length) {
-      Swal.fire({ icon: "warning", title: "Elige tu refresco", text: "Tu pizza gigante incluye 1 refresco gratis: selecciona uno para continuar.", confirmButtonColor: "#b87e38" });
+      Swal.fire({ icon: "warning", title: "Elige tu refresco", text: "Tu pizza gigante incluye 1 refresco gratis: selecciona uno para continuar.", confirmButtonColor: "<?php echo tt_theme_var("tema_primary_2","#b87e38"); ?>" });
       return;
     }
     const b = BEBIDAS.find(function(x){ return String(x.id) === String(selB.data("idx")); });
@@ -1348,7 +1348,7 @@ $(document).ready(function() {
   $("#btn_confirm_sede").click(function() {
     const sel = $(".sede-option.selected");
     if (sel.length === 0) {
-      Swal.fire({ icon: "warning", title: "Elige una sede", text: "Selecciona la sede que te queda más cerca para continuar.", confirmButtonColor: "#b87e38" });
+      Swal.fire({ icon: "warning", title: "Elige una sede", text: "Selecciona la sede que te queda más cerca para continuar.", confirmButtonColor: "<?php echo tt_theme_var("tema_primary_2","#b87e38"); ?>" });
       return;
     }
     const prevSede = localStorage.getItem("blissfull_sede_id");
@@ -1543,7 +1543,7 @@ $(document).ready(function() {
   $("#btn_use_location").on("click", async function() {
     const sede = getSelectedSede();
     if (!sede) {
-      Swal.fire({ icon: "warning", title: "Elige tu sede", text: "Primero selecciona la sede para calcular la distancia.", confirmButtonColor: "#b87e38" });
+      Swal.fire({ icon: "warning", title: "Elige tu sede", text: "Primero selecciona la sede para calcular la distancia.", confirmButtonColor: "<?php echo tt_theme_var("tema_primary_2","#b87e38"); ?>" });
       return;
     }
     $(this).prop("disabled", true).html('<span class="spinner-border spinner-border-sm me-1"></span> Obteniendo ubicación…');
@@ -1553,7 +1553,7 @@ $(document).ready(function() {
       await applyClientGeo(pos.coords.latitude, pos.coords.longitude, sede);
     } catch(e) {
       geoRefused = true;
-      Swal.fire({ icon: "info", title: "Necesitamos tu ubicación", html: "Para poder hacer el envío y conseguir tu dirección, comparte tu ubicación desde el navegador, o escribe tu dirección manualmente.", confirmButtonColor: "#b87e38" });
+      Swal.fire({ icon: "info", title: "Necesitamos tu ubicación", html: "Para poder hacer el envío y conseguir tu dirección, comparte tu ubicación desde el navegador, o escribe tu dirección manualmente.", confirmButtonColor: "<?php echo tt_theme_var("tema_primary_2","#b87e38"); ?>" });
     }
     $(this).prop("disabled", false).html('<i class="bi bi-crosshair me-1"></i> Usar mi ubicación');
   });
@@ -1563,7 +1563,7 @@ $(document).ready(function() {
     if (sedeClosedGuard()) { return; }
     const sede = getSelectedSede();
     if (!sede) {
-      Swal.fire({ icon: "warning", title: "Elige tu sede", text: "Primero selecciona la sede que te queda más cerca, así tu pedido llega al WhatsApp correcto.", confirmButtonColor: "#b87e38" }).then(function(){ openSedeModal(); });
+      Swal.fire({ icon: "warning", title: "Elige tu sede", text: "Primero selecciona la sede que te queda más cerca, así tu pedido llega al WhatsApp correcto.", confirmButtonColor: "<?php echo tt_theme_var("tema_primary_2","#b87e38"); ?>" }).then(function(){ openSedeModal(); });
       return;
     }
     const name = $("#order_name").val().trim();
@@ -1579,13 +1579,13 @@ $(document).ready(function() {
 
     if (name === "") {
       $("#order_name").addClass("is-invalid").focus();
-      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor escribe tu nombre.", confirmButtonColor: "#b87e38" });
+      Swal.fire({ icon: "warning", title: "Faltan datos", text: "Por favor escribe tu nombre.", confirmButtonColor: "<?php echo tt_theme_var("tema_primary_2","#b87e38"); ?>" });
       return;
     }
     const phoneDigits = String(phone).replace(/\D/g, "");
     if (phone === "" || phoneDigits.length < 7) {
       $("#order_phone").addClass("is-invalid").focus();
-      Swal.fire({ icon: "warning", title: "Teléfono inválido", text: "Escribe un número de teléfono válido (mínimo 7 dígitos, sin letras).", confirmButtonColor: "#b87e38" });
+      Swal.fire({ icon: "warning", title: "Teléfono inválido", text: "Escribe un número de teléfono válido (mínimo 7 dígitos, sin letras).", confirmButtonColor: "<?php echo tt_theme_var("tema_primary_2","#b87e38"); ?>" });
       return;
     }
     let orderModeLabel = "";
@@ -1593,11 +1593,11 @@ $(document).ready(function() {
     else if (isDineIn) { orderModeLabel = "Comer en sucursal"; address = "Comer en sucursal"; }
     else if (address.length < 5) {
       $("#order_address").addClass("is-invalid").focus();
-      Swal.fire({ icon: "warning", title: "Dirección inválida", text: "Escribe una dirección de entrega válida (al menos 5 caracteres, con más detalle).", confirmButtonColor: "#b87e38" });
+      Swal.fire({ icon: "warning", title: "Dirección inválida", text: "Escribe una dirección de entrega válida (al menos 5 caracteres, con más detalle).", confirmButtonColor: "<?php echo tt_theme_var("tema_primary_2","#b87e38"); ?>" });
       return;
     }
     if (!inStore && !zoneSel) {
-      Swal.fire({ icon: "warning", title: "Zona de entrega", text: "Selecciona tu zona de entrega, o marca que comerás o recogerás en sucursal.", confirmButtonColor: "#b87e38" });
+      Swal.fire({ icon: "warning", title: "Zona de entrega", text: "Selecciona tu zona de entrega, o marca que comerás o recogerás en sucursal.", confirmButtonColor: "<?php echo tt_theme_var("tema_primary_2","#b87e38"); ?>" });
       return;
     }
 
@@ -1611,7 +1611,7 @@ $(document).ready(function() {
       } catch(e) {
         geoRefused = true;
         $("#order_location_info").html("");
-        Swal.fire({ icon: "info", title: "Necesitamos tu ubicación", html: "Para poder hacer el envío y conseguir tu dirección, comparte tu ubicación con el botón <b>Usar mi ubicación</b>, o escribe tu dirección manualmente y vuelve a confirmar.", confirmButtonColor: "#b87e38" });
+        Swal.fire({ icon: "info", title: "Necesitamos tu ubicación", html: "Para poder hacer el envío y conseguir tu dirección, comparte tu ubicación con el botón <b>Usar mi ubicación</b>, o escribe tu dirección manualmente y vuelve a confirmar.", confirmButtonColor: "<?php echo tt_theme_var("tema_primary_2","#b87e38"); ?>" });
         return;
       } finally {
         $("#btn_use_location").prop("disabled", false).html('<i class="bi bi-crosshair me-1"></i> Usar mi ubicación');
@@ -1633,17 +1633,17 @@ $(document).ready(function() {
     let scheduledLabel = "";
     if (isScheduled) {
       if (!schedDate || !schedTime) {
-        Swal.fire({ icon: "warning", title: "Falta fecha u hora", text: "Selecciona la fecha y la hora para programar tu pedido.", confirmButtonColor: "#b87e38" });
+        Swal.fire({ icon: "warning", title: "Falta fecha u hora", text: "Selecciona la fecha y la hora para programar tu pedido.", confirmButtonColor: "<?php echo tt_theme_var("tema_primary_2","#b87e38"); ?>" });
         return;
       }
       const dt = new Date(schedDate + "T" + schedTime + ":00");
       const MIN_LEAD_MS = 3 * 60 * 60 * 1000; // mínimo 3 horas de anticipación
       if (isNaN(dt.getTime()) || dt <= new Date()) {
-        Swal.fire({ icon: "warning", title: "Fecha inválida", text: "La fecha y hora del pedido programado debe ser futura.", confirmButtonColor: "#b87e38" });
+        Swal.fire({ icon: "warning", title: "Fecha inválida", text: "La fecha y hora del pedido programado debe ser futura.", confirmButtonColor: "<?php echo tt_theme_var("tema_primary_2","#b87e38"); ?>" });
         return;
       }
       if (dt.getTime() - Date.now() < MIN_LEAD_MS) {
-        Swal.fire({ icon: "warning", title: "Anticipación mínima", text: "Los pedidos programados deben hacerse con al menos <b>3 horas</b> de anticipación. Elige una fecha/hora posterior.", confirmButtonColor: "#b87e38" });
+        Swal.fire({ icon: "warning", title: "Anticipación mínima", text: "Los pedidos programados deben hacerse con al menos <b>3 horas</b> de anticipación. Elige una fecha/hora posterior.", confirmButtonColor: "<?php echo tt_theme_var("tema_primary_2","#b87e38"); ?>" });
         return;
       }
       scheduledAt = schedDate + " " + schedTime + ":00";
@@ -1724,12 +1724,12 @@ $(document).ready(function() {
           title: "¡Pedido enviado!",
           html: "Tu pedido ha sido enviado por WhatsApp. Te confirmaremos pronto.",
           confirmButtonText: "¡Genial!",
-          confirmButtonColor: "#e0a96d"
+          confirmButtonColor: "<?php echo tt_theme_var("tema_primary","#e0a96d"); ?>"
         }).then(function(){ location.reload(); });
       }
     }).fail(function() {
       btn.prop("disabled", false).html('CONFIRMAR Y PEDIR POR WHATSAPP <i class="bi bi-whatsapp ms-2"></i>');
-      Swal.fire({ icon: "error", title: "Error", text: "Ocurrió un error al registrar tu pedido. Intenta de nuevo.", confirmButtonColor: "#ff2a2a" });
+      Swal.fire({ icon: "error", title: "Error", text: "Ocurrió un error al registrar tu pedido. Intenta de nuevo.", confirmButtonColor: "<?php echo tt_theme_var("tema_red_2","#ff2a2a"); ?>" });
     });
   });
 
@@ -1751,20 +1751,20 @@ $(document).ready(function() {
   padding: 0.55rem 1.3rem;
   border-radius: 2rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--tt-text);
   transition: 0.2s;
 }
-.btn-category-ajax:hover { color: #ffffff; border-color: rgba(255, 183, 3, 0.55); }
+.btn-category-ajax:hover { color: var(--tt-text); border-color: rgba(var(--tt-accent-rgb), 0.55); }
 .btn-category-ajax.active {
-  background: linear-gradient(135deg, #e0a96d, #b87e38) !important;
-  color: #000000 !important;
+  background: linear-gradient(135deg, var(--tt-gold), var(--tt-gold-2)) !important;
+  color: var(--tt-on-gold) !important;
   border-color: transparent !important;
-  box-shadow: 0 8px 20px rgba(255, 159, 28, 0.35);
+  box-shadow: 0 8px 20px rgba(var(--tt-accent-rgb), 0.35);
 }
 .sede-option { cursor: pointer; }
-.sede-card { transition: 0.2s; background: #0a0a0a; }
-.sede-option:hover .sede-card { border-color: rgba(255, 183, 3, 0.45); }
-.sede-check { color: rgba(255, 183, 3, 0.4); }
-.sede-option.selected .sede-card { border-color: #e0a96d; background: rgba(255, 183, 3, 0.08); box-shadow: 0 8px 22px rgba(255, 159, 28, 0.18); }
-.sede-option.selected .sede-check { color: #e0a96d; }
+.sede-card { transition: 0.2s; background: var(--tt-bg-3); }
+.sede-option:hover .sede-card { border-color: rgba(var(--tt-accent-rgb), 0.45); }
+.sede-check { color: rgba(var(--tt-accent-rgb), 0.4); }
+.sede-option.selected .sede-card { border-color: var(--tt-gold); background: rgba(var(--tt-accent-rgb), 0.08); box-shadow: 0 8px 22px rgba(var(--tt-accent-rgb), 0.18); }
+.sede-option.selected .sede-check { color: var(--tt-gold); }
 </style>

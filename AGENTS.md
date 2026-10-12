@@ -225,6 +225,36 @@ Migración **`migracion_fase2.sql`** (aplicada; aditiva/idempotente).
 **Probar en local:** sube una imagen en `?view=categories&opt=edit&id=2` y mira el chip
 en `http://localhost/menu/`; sube un logo en Apariencia y verifica navbar/footer.
 
+## Tema 100% variable (Fase 3 — oct 2026)
+
+Migración **`migracion_fase3.sql`** (aplicada; aditiva/idempotente): añade la clave
+`tema_bg_3` (base `cfg_id=1`).
+
+El menú público ya **no tiene colores de marca hardcodeados**: se pinta con variables
+`--tt-*` (definidas en `custom-dark.css` `:root` e inyectadas por `layout.php`).
+Cambiar la paleta en **Apariencia** recolorea todo el sitio.
+
+**Tokens nuevos** (`:root` de `custom-dark.css` + inyección en `layout.php`):
+- `--tt-accent` — acento explícito (antes solo se inyectaba si `tema_accent` existía).
+- `--tt-bg-3` — superficie alterna (tarjetas de sede, `<option>`, cuerpo de modales);
+  clave editable **`tema_bg_3`** (Apariencia → Colores → "Fondo alterno").
+- `--tt-on-gold` — tinta sobre el acento; **calculada por luminancia** en PHP
+  (`tt_on_accent()`): acento claro → texto oscuro (`#000`); acento oscuro → `#fff`.
+- Compañeros RGB para usar marca **con alfa**:
+  `--tt-gold-rgb · --tt-gold-2-rgb · --tt-accent-rgb · --tt-red-rgb · --tt-red-2-rgb · --tt-bg-3-rgb`
+  → `rgba(var(--tt-accent-rgb), 0.35)`. Se calculan en `layout.php` con `tt_hex_rgb()`.
+
+**Helpers nuevos** en `layout.php`: `tt_hex_rgb()`, `tt_hex_light()`, `tt_on_accent()`.
+
+**Alcance del barrido:** `assets/css/custom-dark.css`, `core/app/layouts/layout.php` e
+`core/app/view/index-view.php`. Se conservan a propósito los colores **decorativos**
+(ladrillo/brasas) y **semánticos** (verdes de éxito) y las superficies blanco-alfa.
+
+**Probar el tema:** en `?view=settings&opt=apariencia` cambia "Color principal" y
+"Fondo alterno"; el menú entero (chips, precios, botones, modales, footer) cambia y la
+tinta sobre el dorado se ajusta sola. Verificar computed styles:
+`getComputedStyle(document.documentElement).getPropertyValue('--tt-gold')`.
+
 ## Despliegue en producción (VPS alianza)
 
 **Sitio público:** https://prueba.alianzablissful.com

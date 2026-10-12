@@ -184,10 +184,24 @@ el cliente se registra, paga un plan y se le activa su **menú en un subdominio 
   (`hero_hand`/`hero_title`/`hero_sub`).
 - "Restaurar por defecto" (Apariencia) también limpia `tema_logo`/`tema_logo_alt`.
 
-## Fase 3 — Rediseño visual del menú público
-- Nueva identidad/paleta/tipografías/layout con el motor de tema por debajo.
-- Sustituir colores hardcodeados de layout/index por variables `--tt-*`.
-- Conservar estructura de flujo (hero → categorías → grid → carrito → WhatsApp).
+## Fase 3 — Rediseño visual del menú público ✅ (oct 2026)
+- **Todo el look es configurable**: el menú público se pinta 100% con variables `--tt-*`;
+  cambiar la paleta en Apariencia recolorea todo (hero, chips, tarjetas, precios, botones,
+  modales, footer), sin tocar código.
+- **Tokens nuevos** (`assets/css/custom-dark.css` `:root` + inyectados por `layout.php`):
+  - `--tt-accent` (acento explícito).
+  - `--tt-bg-3` — superficie alterna (tarjetas de sede, `<option>`, cuerpo de modales);
+    editable en Apariencia como `tema_bg_3` (ver `migracion_fase3.sql`).
+  - `--tt-on-gold` — tinta legible sobre el acento; **se calcula por luminancia** en PHP
+    (`tt_on_accent()`): paleta clara → texto oscuro; paleta oscura → texto blanco.
+  - compañeros RGB `--tt-gold-rgb|--tt-gold-2-rgb|--tt-accent-rgb|--tt-red-rgb|--tt-red-2-rgb|--tt-bg-3-rgb`
+    para usar los colores de marca **con alfa**: `rgba(var(--tt-accent-rgb), 0.35)`.
+- **Barrido de hardcodes** en `custom-dark.css`, `layout.php` e `index-view.php`
+  (hex de marca, `rgba()` de marca, `color:#000/#fff`, fondos `#000`/`#0a0a0a`).
+  Se conservan a propósito los colores decorativos (ladrillo) y semánticos (verdes de éxito).
+- Los avisos de **SweetAlert** también toman el tema (`tt_theme_var(...)`).
+- La estructura y el flujo (hero → categorías → grid → carrito → WhatsApp) no cambian.
+- **Probar**: cambiar `tema_primary`/`tema_accent` en Apariencia y ver el menú recoloreado.
 
 ## Fase 4 — Nuevas funciones de menú (a definir con Sara)
 - Ideas: badges dinámicos, ofertas por franja horaria, "agotado", favoritos,
