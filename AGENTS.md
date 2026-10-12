@@ -255,6 +255,50 @@ Cambiar la paleta en **Apariencia** recolorea todo el sitio.
 tinta sobre el dorado se ajusta sola. Verificar computed styles:
 `getComputedStyle(document.documentElement).getPropertyValue('--tt-gold')`.
 
+## Funciones de menú opt-in (Fase 4 — oct 2026)
+
+Migración **`migracion_fase4.sql`** (aplicada; aditiva/idempotente): columnas
+`product.badge`, `product.badge_color`, `product.offer_from`, `product.offer_to`
+(+ índice de ofertas intacto) y las claves **`menu_show_favs` · `menu_show_share` ·
+`menu_show_listmode`** (default **"0"**). **Todo es opt-in**: con los toggles en "0" el
+menú público es idéntico al de antes de Fase 4 (verificado con smoke HTTP).
+
+**Data-driven (por producto, sin toggle):**
+- **Etiqueta**: `badge` (texto ≤24) + `badge_color` (`accent|gold|red|dark|outline`).
+  Se pinta `.pc-badge.pc-badge--<color>` en la tarjeta. El color va **por clase CSS**,
+  NO con `tt_on_accent()`: `product-grid-view.php` se sirve por AJAX
+  (`?action=cart&opt=search`) **sin layout**, así que los helpers `tt_*` de
+  `layout.php` no existen ahí. Editado en productos (preview `#pv_badge`).
+- **Agotado**: reutiliza **`product.in_existence=0`** (sin columna nueva). Tarjeta
+  `.is-soldout` + overlay `.pc-soldout` "AGOTADO" + imagen gris + botón
+  `.pc-add-off` deshabilitado. **Guard real** en `cart-action.php` `opt=add`:
+  descarta producto inexistente / agotado / de otra tienda. (El detalle público
+  `?view=products&opt=open` ya respetaba `in_existence`.)
+- **Oferta por franja**: `offer_from`/`offer_to` (TIME, opcionales). `offerActive()`
+  soporta **cruce de medianoche** (20:00–02:00) y un solo extremo; `getOffers()` ahora
+  filtra con `offerActive()` (antes **ignoraba `offer_finish`**). El form los normaliza
+  con `tt_norm_time()` (HH:MM[:SS] → `HH:MM:SS` o "" si inválido).
+
+**Opt-in (Apariencia → tarjeta "Funciones del menú", `$ttc_features` en
+`settings-view.php`; acción `savetema` con `$tt_toggles` extendido; `restoretema` los
+devuelve a "0"):** `menu_show_favs` (corazón + filtro "solo favoritos"),
+`menu_show_share` (Web Share API / copiar enlace), `menu_show_listmode` (cuadrícula /
+lista compacta). Son **solo front-end** (`localStorage`: `tt_menu_favs`,
+`tt_menu_listmode`) y `ttApplyGridState()` los re-aplica tras el AJAX del grid.
+La barra `#tt_fav_filter` / `#tt_view_toggle` (`.tt-tool-group`) solo se pinta si el
+toggle está activo; con los toggles en "0" no aparece markup (el JS queda inerte).
+
+**Ojo con el form de producto (bug sutil):** `is_public`/`in_existence`/`is_featured`
+usan `isset($_POST[...])` → **enviar `in_existence=0` lo interpreta como MARCADO (=1)**.
+Para poner 0 hay que **omitir** el campo. Y un POST parcial necesita `sedes_all=1`
+(si no, `sede_id` pasa a 0 y el producto sale del grid, cuyo filtro exige
+`sede_id is null` o pivote).
+
+**Probar:** `?view=products&opt=edit&id=N` (etiqueta + franja) →
+`?view=settings&opt=apariencia` (activar toggles) → `http://localhost/menu/` (badges,
+agotado, corazón, compartir, modo lista). Lógica de oferta: test CLI `27/27` en
+`%TEMP%\opencode\test-fase4.php`; E2E Playwright en `%TEMP%\opencode\fase4-shot.js`.
+
 ## Despliegue en producción (VPS alianza)
 
 **Sitio público:** https://prueba.alianzablissful.com

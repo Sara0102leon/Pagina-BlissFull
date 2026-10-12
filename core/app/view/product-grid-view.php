@@ -7,6 +7,11 @@ $bcv_row = ConfigurationData::getByPreffix("bcv_rate");
 if($bcv_row && $bcv_row->val){ $bcv_rate = floatval($bcv_row->val); }
 $bs_symbol = "Bs";
 
+$menu_show_favs_cfg = ConfigurationData::getByPreffix("menu_show_favs");
+$menu_show_favs = ($menu_show_favs_cfg && $menu_show_favs_cfg->val!=="0");
+$menu_show_share_cfg = ConfigurationData::getByPreffix("menu_show_share");
+$menu_show_share = ($menu_show_share_cfg && $menu_show_share_cfg->val!=="0");
+
 $cat_id = 0;
 if(isset($_POST["cat_id"]) && $_POST["cat_id"]!=""){
   $cat_id = intval($_POST["cat_id"]);
@@ -73,9 +78,22 @@ if($cat_id>0 && count($products)==0 && in_array($cat_id, array(5,6)) && $sede_id
   $pizza_edit_json_str = htmlspecialchars(json_encode($pizza_edit_json), ENT_QUOTES);
   ?>
   <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-    <div class="tt-product-card">
+    <div class="tt-product-card<?php echo ProductData::isSoldOut($p) ? " is-soldout" : ""; ?>" data-pid="<?php echo intval($p->id); ?>" data-name="<?php echo htmlspecialchars($p->name, ENT_QUOTES); ?>">
       <div class="pc-img-wrap">
         <img src="<?php echo $img; ?>" class="pc-img" alt="<?php echo htmlspecialchars($p->name); ?>" loading="lazy">
+        <?php $p_badge = ProductData::badgeText($p); ?>
+        <?php if($p_badge!=""): ?>
+        <span class="pc-badge pc-badge--<?php echo ProductData::badgeColor($p); ?>"><?php echo htmlspecialchars($p_badge); ?></span>
+        <?php endif; ?>
+        <?php if($menu_show_favs): ?>
+        <button type="button" class="pc-icon-btn pc-fav-btn" data-pid="<?php echo intval($p->id); ?>" title="Guardar en favoritos" aria-label="Guardar en favoritos" aria-pressed="false"><i class="bi bi-heart"></i></button>
+        <?php endif; ?>
+        <?php if($menu_show_share): ?>
+        <button type="button" class="pc-icon-btn pc-share-btn" data-pid="<?php echo intval($p->id); ?>" data-name="<?php echo htmlspecialchars($p->name, ENT_QUOTES); ?>" title="Compartir" aria-label="Compartir"><i class="bi bi-share"></i></button>
+        <?php endif; ?>
+        <?php if(ProductData::isSoldOut($p)): ?>
+        <div class="pc-soldout"><span><i class="bi bi-slash-circle me-1"></i>AGOTADO</span></div>
+        <?php endif; ?>
       </div>
       <div class="pc-body">
         <h3 class="pc-name" title="<?php echo htmlspecialchars($p->name); ?>"><?php echo htmlspecialchars($p->name); ?></h3>
@@ -102,7 +120,11 @@ if($cat_id>0 && count($products)==0 && in_array($cat_id, array(5,6)) && $sede_id
         </div>
       </div>
       <div class="pc-footer">
-        <?php if($has_edit): ?>
+        <?php if(ProductData::isSoldOut($p)): ?>
+        <button type="button" class="pc-add-btn pc-add-off" disabled title="Agotado" aria-label="Agotado">
+          <i class="bi bi-slash-circle"></i>
+        </button>
+        <?php elseif($has_edit): ?>
         <button type="button" class="pc-add-btn" onclick="openExtrasModal(<?php echo $p->id; ?>, '<?php echo addslashes($p->name); ?>', '<?php echo $pizza_edit_json_str; ?>')" title="Agregar al carrito" aria-label="Agregar al carrito">
           <i class="bi bi-plus-lg"></i>
         </button>

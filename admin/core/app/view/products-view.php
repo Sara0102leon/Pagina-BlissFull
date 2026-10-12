@@ -326,6 +326,21 @@ $pw_v = function($prop) use ($product){ return $product ? htmlspecialchars((stri
                     </div>
                   </div>
                 </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="pw-field">
+                      <label class="form-label">Oferta desde <span class="text-muted small">(hora, opcional)</span></label>
+                      <input type="time" class="form-control" name="offer_from" id="pw_offer_from" value="<?php echo $pw_v("offer_from"); ?>">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="pw-field">
+                      <label class="form-label">Oferta hasta <span class="text-muted small">(hora, opcional)</span></label>
+                      <input type="time" class="form-control" name="offer_to" id="pw_offer_to" value="<?php echo $pw_v("offer_to"); ?>">
+                    </div>
+                  </div>
+                </div>
+                <div class="text-muted small">Si defines una franja horaria, la oferta solo aplica en ese horario (ej. 20:00 a 02:00). Déjalo vacío para que aplique todo el día.</div>
               </section>
 
               <!-- Paso 3: en el menú -->
@@ -403,6 +418,24 @@ $pw_v = function($prop) use ($product){ return $product ? htmlspecialchars((stri
                     <div class="pw-review-price" id="rv_price">—</div>
                   </div>
                 </div>
+                <div class="pw-field">
+                  <label class="form-label">Etiqueta <span class="text-muted small">(opcional, aparece sobre la foto)</span></label>
+                  <div class="row g-2">
+                    <div class="col-8">
+                      <input type="text" class="form-control" name="badge" id="pw_badge" maxlength="24" placeholder="Ej: NUEVO, MÁS VENDIDO, 2x1" value="<?php echo $pw_v("badge"); ?>">
+                    </div>
+                    <div class="col-4">
+                      <select class="form-select" name="badge_color" id="pw_badge_color">
+                        <?php $bc_val = $product ? trim((string)$product->badge_color) : "accent"; if($bc_val===""){ $bc_val = "accent"; } ?>
+                        <option value="accent" <?php if($bc_val=="accent"){ echo "selected"; } ?>>Dorado</option>
+                        <option value="red" <?php if($bc_val=="red"){ echo "selected"; } ?>>Rojo</option>
+                        <option value="dark" <?php if($bc_val=="dark"){ echo "selected"; } ?>>Oscuro</option>
+                        <option value="outline" <?php if($bc_val=="outline"){ echo "selected"; } ?>>Contorno</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="text-muted small mt-1">Se muestra como un "sticker" sobre la imagen del producto en el menú.</div>
+                </div>
                 <label class="form-label">Estado en el menú</label>
                 <div class="pw-toggles">
                   <label class="pw-toggle">
@@ -411,7 +444,7 @@ $pw_v = function($prop) use ($product){ return $product ? htmlspecialchars((stri
                   </label>
                   <label class="pw-toggle">
                     <input class="form-check-input" type="checkbox" name="in_existence" <?php if($pw_mode=="new" || ($product && $product->in_existence)){ echo "checked"; } ?>>
-                    <span><b>En existencia</b><br><span class="text-muted small">Se puede pedir ahora mismo</span></span>
+                    <span><b>En existencia</b><br><span class="text-muted small">Si lo desmarcas aparece como <b>AGOTADO</b> y no se puede pedir</span></span>
                   </label>
                   <label class="pw-toggle">
                     <input class="form-check-input" type="checkbox" name="is_featured" <?php if($product && $product->is_featured){ echo "checked"; } ?>>
@@ -446,6 +479,7 @@ $pw_v = function($prop) use ($product){ return $product ? htmlspecialchars((stri
                     <img id="pv_img" class="pc-img" alt="Vista previa" src="<?php echo $pv_img_src; ?>" <?php echo $url_exists ? "" : "style=\"display:none\""; ?>>
                     <div class="pc-img-ph" id="pv_img_ph" <?php echo $url_exists ? "style=\"display:none\"" : ""; ?>><i class="bi bi-image"></i></div>
                     <span class="pc-feat-badge" id="pv_feat" <?php if(!($product && $product->is_featured)){ echo "style=\"display:none\""; } ?>><i class="bi bi-star-fill me-1"></i>Destacado</span>
+                    <span class="pc-badge pc-badge--accent" id="pv_badge" style="display:none"></span>
                   </div>
                   <div class="pc-body">
                     <h3 class="pc-name" id="pv_name"><?php echo $product ? htmlspecialchars($product->name) : "Nombre del producto"; ?></h3>
@@ -487,6 +521,10 @@ $pw_v = function($prop) use ($product){ return $product ? htmlspecialchars((stri
   .pw-live .pc-img{ width:100%; height:100%; object-fit:cover; }
   .pw-live .pc-img-ph{ font-size:2.5rem; color:#3a3a3a; }
   .pw-live .pc-feat-badge{ position:absolute; top:.5rem; left:.5rem; background:#ffb703; color:#111; font-size:.7rem; font-weight:700; padding:.15rem .5rem; border-radius:999px; }
+  .pw-live .pc-badge{ position:absolute; top:.5rem; right:.5rem; background:#ffb703; color:#111; font-size:.7rem; font-weight:800; padding:.15rem .55rem; border-radius:999px; max-width:60%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .pw-live .pc-badge--red{ background:#e63946; color:#fff; }
+  .pw-live .pc-badge--dark{ background:#222; color:#fff; border:1px solid #444; }
+  .pw-live .pc-badge--outline{ background:transparent; color:#ffb703; border:1px solid #ffb703; }
   .pw-live .pc-body{ padding:.85rem .95rem .4rem; }
   .pw-live .pc-name{ font-size:1.25rem; font-weight:700; margin:0 0 .5rem; line-height:1.15; }
   .pw-live .pc-price-pill{ display:inline-block; background:#ffb703; color:#111; font-weight:700; padding:.2rem .7rem; border-radius:999px; font-size:.95rem; }
@@ -594,8 +632,16 @@ $(function(){
       $("#pv_llevar").text("para llevar " + pwMoney(llevar)).show();
     } else { $("#pv_llevar").hide(); }
     $("#pv_feat").toggle($("input[name='is_featured']").is(":checked"));
+    var badge = $.trim($("#pw_badge").val());
+    if(badge){
+      $("#pv_badge").text(badge)
+        .removeClass("pc-badge--accent pc-badge--red pc-badge--dark pc-badge--outline")
+        .addClass("pc-badge--" + ($("#pw_badge_color").val() || "accent")).show();
+    } else { $("#pv_badge").hide(); }
   }
   $("#pw_name, #pw_price, #pw_offer_price, #pw_price_llevar").on("input", pvRender);
+  $("#pw_badge").on("input", pvRender);
+  $("#pw_badge_color").on("change", pvRender);
   $("input[name='is_featured']").on("change", pvRender);
 
   // ---- Imagen (drag & drop + preview) ----

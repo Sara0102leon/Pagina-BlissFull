@@ -2,7 +2,34 @@
 if(!isset($_SESSION["user_id"])){ Core::redir("./");}
 
 // Solo se copian a $product las propiedades declaradas en ProductData
-$PRODUCT_FIELDS = array_flip(array("id","short_name","code","name","description","image","link","price","price_llevar","offer_price","offer_finish","free_ingredients","house_ingredients","allow_halves","tipo_division","category_id","unit_id","sede_id","is_public","in_existence","is_featured","is_active","created_at","order_at","offer_txt","meta_title","meta_description","meta_keywords","is_offert"));
+$PRODUCT_FIELDS = array_flip(array("id","short_name","code","name","description","image","link","price","price_llevar","offer_price","offer_finish","offer_from","offer_to","badge","badge_color","free_ingredients","house_ingredients","allow_halves","tipo_division","category_id","unit_id","sede_id","is_public","in_existence","is_featured","is_active","created_at","order_at","offer_txt","meta_title","meta_description","meta_keywords","is_offert"));
+
+// Normaliza la hora (HH:MM[:SS]) al formato de MySQL o "" si no es válida
+if(!function_exists("tt_norm_time")){
+	function tt_norm_time($t){
+		$t = trim((string)$t);
+		if($t===""){ return ""; }
+		if(preg_match('/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/', $t, $m)){
+			$h = intval($m[1]); $i = intval($m[2]); $s = isset($m[3]) ? intval($m[3]) : 0;
+			if($h>23 || $i>59 || $s>59){ return ""; }
+			return sprintf("%02d:%02d:%02d", $h, $i, $s);
+		}
+		return "";
+	}
+}
+// Etiqueta/color de etiqueta + franja horaria de la oferta
+if(!function_exists("tt_norm_product_extras")){
+	function tt_norm_product_extras($product){
+		$badge = trim((string)$product->badge);
+		$badge = (function_exists("mb_substr") ? mb_substr($badge, 0, 24) : substr($badge, 0, 24));
+		$product->badge = $badge;
+		$allowed = array("accent","gold","red","dark","outline");
+		$bc = strtolower(trim((string)$product->badge_color));
+		$product->badge_color = in_array($bc, $allowed) ? $bc : "";
+		$product->offer_from = tt_norm_time($product->offer_from);
+		$product->offer_to = tt_norm_time($product->offer_to);
+	}
+}
 
 if(isset($_GET["opt"]) && $_GET["opt"]=="add"){
 	if(count($_POST)>0){
@@ -10,6 +37,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="add"){
 		foreach ($_POST as $k => $v) {
 			if(isset($PRODUCT_FIELDS[$k])){ $product->$k = $v; }
 		}
+		tt_norm_product_extras($product);
 		$alphabeth ="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWYZ1234567890_-";
 		$code = "";
 		for($i=0;$i<11;$i++){
@@ -68,6 +96,7 @@ else if(isset($_GET["opt"]) && $_GET["opt"]=="upd"){
 		foreach ($_POST as $k => $v) {
 			if(isset($PRODUCT_FIELDS[$k])){ $product->$k = $v; }
 		}
+		tt_norm_product_extras($product);
 
 		if(isset($_FILES["image"])){
 			$handle = new Upload($_FILES['image']);

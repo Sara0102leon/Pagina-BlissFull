@@ -4,6 +4,7 @@ class ProductData {
 
 	public $id, $short_name, $code, $name, $description, $image, $price, $price_llevar, $offer_price, $offer_finish, $free_ingredients, $house_ingredients, $allow_halves, $tipo_division, $link, $category_id, $unit_id, $sede_id, $is_public, $in_existence, $is_featured, $is_active, $created_at, $tienda_id, $position;
 	public $offer_txt, $order_at, $meta_title, $meta_description, $meta_keywords, $is_offert;
+	public $badge, $badge_color, $offer_from, $offer_to;
 
 	public static function generateCode(){
 		$alphabeth = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWYZ1234567890_-";
@@ -15,8 +16,51 @@ class ProductData {
 	public static function offerActive($p){
 		if(!$p){ return false; }
 		if($p->offer_price=="" || $p->offer_price===null || floatval($p->offer_price)<=0){ return false; }
-		if($p->offer_finish=="" || $p->offer_finish===null){ return true; }
-		return date("Y-m-d") <= date("Y-m-d", strtotime($p->offer_finish));
+		// Fecha de fin (inclusive)
+		if($p->offer_finish!="" && $p->offer_finish!==null){
+			if(date("Y-m-d") > date("Y-m-d", strtotime($p->offer_finish))){ return false; }
+		}
+		// Franja horaria opcional (offer_from / offer_to, formato HH:MM:SS).
+		// Si solo hay una de las dos, se interpreta como "desde" o "hasta" abierto.
+		$from = isset($p->offer_from) ? trim((string)$p->offer_from) : "";
+		$to   = isset($p->offer_to)   ? trim((string)$p->offer_to)   : "";
+		if($from!=="" || $to!==""){
+			$now = date("H:i:s");
+			if($from!=="" && $to!==""){
+				if($from <= $to){
+					if($now < $from || $now > $to){ return false; }
+				}else{
+					// franja que cruza medianoche (ej. 20:00 - 02:00)
+					if($now < $from && $now > $to){ return false; }
+				}
+			}else if($from!==""){
+				if($now < $from){ return false; }
+			}else{
+				if($now > $to){ return false; }
+			}
+		}
+		return true;
+	}
+
+	// Producto agotado: no se puede pedir. Reutiliza la columna in_existence.
+	public static function isSoldOut($p){
+		if(!$p){ return false; }
+		return intval($p->in_existence)===0;
+	}
+
+	// Texto de la etiqueta del producto (vacío = sin etiqueta)
+	public static function badgeText($p){
+		if(!$p || !isset($p->badge)){ return ""; }
+		$b = trim((string)$p->badge);
+		if($b===""){ return ""; }
+		return (function_exists("mb_substr") ? mb_substr($b,0,24) : substr($b,0,24));
+	}
+
+	// Clave de color de la etiqueta (se resuelve a una clase CSS; ver custom-dark.css)
+	public static function badgeColor($p){
+		$allowed = array("accent","gold","red","dark","outline");
+		$c = ($p && isset($p->badge_color)) ? strtolower(trim((string)$p->badge_color)) : "";
+		return in_array($c, $allowed) ? $c : "accent";
 	}
 
 	public static function getEffectivePrice($p){
@@ -38,6 +82,10 @@ class ProductData {
 		$this->is_active = "1";
 		$this->created_at = "NOW()";
 		$this->position = 0;
+		$this->offer_from = "";
+		$this->offer_to = "";
+		$this->badge = "";
+		$this->badge_color = "";
 	}
 
 	public function getUnit(){ return UnitData::getById($this->unit_id);}
@@ -57,8 +105,8 @@ class ProductData {
 		$pl    = self::num($this->price_llevar);
 		$op    = self::num($this->offer_price);
 		$pos   = self::nextPosition($this->category_id); // los productos nuevos van al final de su categoría
-		$sql = "insert into ".self::$tablename." (short_name,code,name,description,image,price,price_llevar,offer_price,offer_finish,free_ingredients,house_ingredients,allow_halves,tipo_division,link,category_id,unit_id,sede_id,is_public,in_existence,is_featured,is_offert,tienda_id,position,created_at) ";
-		$sql .= "value (\"$this->short_name\",\"$this->code\",\"$this->name\",\"$this->description\",\"$this->image\"," . ($price!==null ? "\"$price\"" : "NULL") . "," . ($pl!==null ? "\"$pl\"" : "NULL") . "," . ($op!==null ? "\"$op\"" : "NULL") . "," . ($this->offer_finish!="" ? "\"$this->offer_finish\"" : "NULL") . "," . intval($this->free_ingredients) . "," . ($this->house_ingredients!="" ? "\"$this->house_ingredients\"" : "NULL") . "," . intval($this->allow_halves) . ",\"" . ($this->tipo_division!="" ? $this->tipo_division : "normal") . "\",\"$this->link\",$this->category_id," . ($this->unit_id!="" ? "$this->unit_id" : "NULL") . "," . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",$this->is_public,$this->in_existence,$this->is_featured,$this->is_offert,".Tenant::idSql().",".intval($pos).",$this->created_at)";
+		$sql = "insert into ".self::$tablename." (short_name,code,name,description,image,price,price_llevar,offer_price,offer_finish,offer_from,offer_to,badge,badge_color,free_ingredients,house_ingredients,allow_halves,tipo_division,link,category_id,unit_id,sede_id,is_public,in_existence,is_featured,is_offert,tienda_id,position,created_at) ";
+		$sql .= "value (\"$this->short_name\",\"$this->code\",\"$this->name\",\"$this->description\",\"$this->image\"," . ($price!==null ? "\"$price\"" : "NULL") . "," . ($pl!==null ? "\"$pl\"" : "NULL") . "," . ($op!==null ? "\"$op\"" : "NULL") . "," . ($this->offer_finish!="" ? "\"$this->offer_finish\"" : "NULL") . "," . ($this->offer_from!="" ? "\"$this->offer_from\"" : "NULL") . "," . ($this->offer_to!="" ? "\"$this->offer_to\"" : "NULL") . "," . ($this->badge!="" ? "\"$this->badge\"" : "NULL") . "," . ($this->badge_color!="" ? "\"$this->badge_color\"" : "NULL") . "," . intval($this->free_ingredients) . "," . ($this->house_ingredients!="" ? "\"$this->house_ingredients\"" : "NULL") . "," . intval($this->allow_halves) . ",\"" . ($this->tipo_division!="" ? $this->tipo_division : "normal") . "\",\"$this->link\",$this->category_id," . ($this->unit_id!="" ? "$this->unit_id" : "NULL") . "," . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",$this->is_public,$this->in_existence,$this->is_featured,$this->is_offert,".Tenant::idSql().",".intval($pos).",$this->created_at)";
 		return Executor::doit($sql);
 	}
 
@@ -102,7 +150,7 @@ class ProductData {
 		$price = self::num($this->price);
 		$pl    = self::num($this->price_llevar);
 		$op    = self::num($this->offer_price);
-		$sql = "update ".self::$tablename." set code=\"$this->code\",name=\"$this->name\",description=\"$this->description\",link=\"$this->link\",price=" . ($price!==null ? "\"$price\"" : "NULL") . ",price_llevar=" . ($pl!==null ? "\"$pl\"" : "NULL") . ",offer_price=" . ($op!==null ? "\"$op\"" : "NULL") . ",offer_finish=" . ($this->offer_finish!="" ? "\"$this->offer_finish\"" : "NULL") . ",free_ingredients=" . intval($this->free_ingredients) . ",house_ingredients=" . ($this->house_ingredients!="" ? "\"$this->house_ingredients\"" : "NULL") . ",allow_halves=" . intval($this->allow_halves) . ",tipo_division=\"" . ($this->tipo_division!="" ? $this->tipo_division : "normal") . "\",in_existence=\"$this->in_existence\",is_public=\"$this->is_public\",is_featured=\"$this->is_featured\",unit_id=" . ($this->unit_id!="" ? "$this->unit_id" : "NULL") . ",category_id=\"$this->category_id\",sede_id=" . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",is_offert=\"$this->is_offert\" where id=$this->id";
+		$sql = "update ".self::$tablename." set code=\"$this->code\",name=\"$this->name\",description=\"$this->description\",link=\"$this->link\",price=" . ($price!==null ? "\"$price\"" : "NULL") . ",price_llevar=" . ($pl!==null ? "\"$pl\"" : "NULL") . ",offer_price=" . ($op!==null ? "\"$op\"" : "NULL") . ",offer_finish=" . ($this->offer_finish!="" ? "\"$this->offer_finish\"" : "NULL") . ",offer_from=" . ($this->offer_from!="" ? "\"$this->offer_from\"" : "NULL") . ",offer_to=" . ($this->offer_to!="" ? "\"$this->offer_to\"" : "NULL") . ",badge=" . ($this->badge!="" ? "\"$this->badge\"" : "NULL") . ",badge_color=" . ($this->badge_color!="" ? "\"$this->badge_color\"" : "NULL") . ",free_ingredients=" . intval($this->free_ingredients) . ",house_ingredients=" . ($this->house_ingredients!="" ? "\"$this->house_ingredients\"" : "NULL") . ",allow_halves=" . intval($this->allow_halves) . ",tipo_division=\"" . ($this->tipo_division!="" ? $this->tipo_division : "normal") . "\",in_existence=\"$this->in_existence\",is_public=\"$this->is_public\",is_featured=\"$this->is_featured\",unit_id=" . ($this->unit_id!="" ? "$this->unit_id" : "NULL") . ",category_id=\"$this->category_id\",sede_id=" . ($this->sede_id!="" ? "$this->sede_id" : "NULL") . ",is_offert=\"$this->is_offert\" where id=$this->id";
 		Executor::doit($sql);
 	}
 
@@ -211,7 +259,11 @@ class ProductData {
 		$sql = "select * from ".self::$tablename." where offer_price is not null and offer_price<>'' and offer_price>0 and is_active=1 and ".Tenant::filter()." and ".self::sedeFilter($sede_id);
 		$sql .= " order by created_at desc";
 		$query = Executor::doit($sql);
-		return Model::many($query[0],new ProductData());
+		$rows = Model::many($query[0],new ProductData());
+		// Solo las ofertas vigentes (fecha de fin y franja horaria)
+		$out = array();
+		foreach($rows as $p){ if(self::offerActive($p)){ $out[] = $p; } }
+		return $out;
 	}
 
 }

@@ -1154,6 +1154,7 @@ $ttc_defaults = array(
 );
 $ttc_fonts = array("tema_font_display"=>"Títulos (display)","tema_font_hand"=>"Cursiva","tema_font_body"=>"Texto");
 $ttc_toggles = array("menu_show_hero"=>"Hero (portada)","menu_show_slides"=>"Carrusel de ofertas","menu_show_featured"=>"Destacados","menu_show_ofertas"=>"Sección de ofertas","menu_show_bebidas"=>"Sección de bebidas","menu_show_sedes"=>"Sedes / ubicación","menu_cat_icons"=>"Iconos en categorías");
+$ttc_features = array("menu_show_favs"=>"Favoritos (guardar platillos)","menu_show_share"=>"Compartir platillo","menu_show_listmode"=>"Alternar vista cuadrícula / lista");
 ?>
 <div class="page-header d-print-none">
   <div class="container-xl">
@@ -1264,6 +1265,23 @@ $ttc_toggles = array("menu_show_hero"=>"Hero (portada)","menu_show_slides"=>"Car
           <?php endforeach; ?>
           </div>
           <p class="text-muted small mb-0 mt-2">Recuerda guardar antes de cambiar de página.</p>
+        </div>
+      </div>
+      <div class="card mt-3">
+        <div class="card-status-top bg-primary"></div>
+        <div class="card-header"><h3 class="card-title">Funciones del menú</h3></div>
+        <div class="card-body">
+          <div class="row g-3">
+          <?php foreach($ttc_features as $name=>$label): $on = tt_cfgv_now($name,"0")==="1"; ?>
+            <div class="col-md-4">
+              <label class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" name="<?php echo $name; ?>" value="1" <?php echo $on?"checked":""; ?>>
+                <span class="form-check-label"><?php echo $label; ?></span>
+              </label>
+            </div>
+          <?php endforeach; ?>
+          </div>
+          <p class="text-muted small mb-0 mt-2">Funciones opcionales del menú público: favoritos, compartir platillo y vista de lista. No cambian la carta hasta que las actives.</p>
         </div>
       </div>
       <div class="card-footer d-flex justify-content-between align-items-center">

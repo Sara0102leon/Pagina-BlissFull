@@ -524,7 +524,7 @@ body {
   position: absolute;
   top: 10px;
   left: 10px;
-  z-index: 2;
+  z-index: 3;
   font-family: var(--tt-hand);
   font-size: 0.95rem;
   font-weight: 700;
@@ -535,7 +535,114 @@ body {
   color: var(--tt-text);
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
   transform: rotate(-6deg);
+  max-width: 80%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+/* Colores de etiqueta (claves: accent|gold|red|dark|outline) */
+.pc-badge--accent { background: linear-gradient(135deg, var(--tt-gold), var(--tt-gold-2)); color: var(--tt-on-gold); }
+.pc-badge--gold { background: var(--tt-gold); color: var(--tt-on-gold); }
+.pc-badge--red { background: var(--tt-red); color: var(--tt-text); }
+.pc-badge--dark { background: rgba(var(--tt-bg-3-rgb), 0.94); color: var(--tt-text); border: 1px solid var(--tt-border); }
+.pc-badge--outline { background: rgba(var(--tt-bg-3-rgb), 0.55); color: var(--tt-gold); border: 1px solid var(--tt-gold); }
+
+/* Botones flotantes sobre la imagen (favorito / compartir) */
+.pc-icon-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 4;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.45);
+  color: var(--tt-text);
+  font-size: 1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: 0.2s;
+}
+.pc-icon-btn:hover { background: rgba(0, 0, 0, 0.72); color: var(--tt-gold); transform: scale(1.08); }
+.pc-share-btn { top: 54px; }
+.pc-fav-btn.active { color: var(--tt-red); border-color: rgba(var(--tt-red-rgb), 0.6); }
+.pc-fav-btn.active:hover { color: var(--tt-red-2); }
+
+/* Producto agotado */
+.pc-soldout {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+}
+.pc-soldout span {
+  font-family: var(--tt-display);
+  font-size: 1.3rem;
+  letter-spacing: 0.1em;
+  color: var(--tt-text);
+  border: 2px solid var(--tt-red);
+  border-radius: 10px;
+  padding: 0.15rem 0.85rem;
+  background: rgba(var(--tt-red-rgb), 0.28);
+  transform: rotate(-6deg);
+}
+.tt-product-card.is-soldout .pc-img { filter: grayscale(0.7); }
+.tt-product-card.is-soldout .pc-price-pill { opacity: 0.75; }
+.pc-add-btn.pc-add-off,
+.pc-add-btn.pc-add-off:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--tt-muted);
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
+}
+
+/* Barra de herramientas del menú (Fase 4) */
+.tt-tool-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.tt-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--tt-text);
+  border-radius: 2rem;
+  padding: 0.5rem 0.95rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: 0.2s;
+}
+.tt-tool-btn:hover { color: var(--tt-text); border-color: rgba(var(--tt-accent-rgb), 0.55); }
+.tt-tool-btn.active {
+  background: linear-gradient(135deg, var(--tt-gold), var(--tt-gold-2));
+  color: var(--tt-on-gold);
+  border-color: transparent;
+  box-shadow: 0 8px 20px rgba(var(--tt-accent-rgb), 0.35);
+}
+
+/* Vista de lista compacta */
+#product-grid-container.tt-list-mode .row > [class*="col-"] { flex: 0 0 100%; max-width: 100%; }
+#product-grid-container.tt-list-mode .tt-product-card { flex-direction: row; align-items: stretch; gap: 0.9rem; padding: 12px; }
+#product-grid-container.tt-list-mode .pc-img-wrap { flex: 0 0 104px; width: 104px; }
+#product-grid-container.tt-list-mode .pc-img { height: 104px; aspect-ratio: 1 / 1; }
+#product-grid-container.tt-list-mode .pc-body { flex: 1 1 auto; justify-content: center; padding-top: 0; }
+#product-grid-container.tt-list-mode .pc-name { white-space: normal; overflow: visible; text-overflow: clip; font-size: 1.15rem; }
+#product-grid-container.tt-list-mode .pc-footer { align-items: center; margin-top: 0; }
+#product-grid-container.tt-list-mode .pc-add-btn { width: 42px; height: 42px; font-size: 1.2rem; }
+#product-grid-container.tt-list-mode .pc-icon-btn { width: 32px; height: 32px; font-size: 0.9rem; }
+#product-grid-container.tt-list-mode .pc-share-btn { top: 48px; }
+.tt-fav-empty { color: var(--tt-text); }
 
 .pc-body {
   flex: 1 1 auto;

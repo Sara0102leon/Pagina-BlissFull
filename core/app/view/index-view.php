@@ -20,6 +20,12 @@ $menu_cat_icons_cfg = ConfigurationData::getByPreffix("menu_cat_icons");
 $menu_cat_icons = ($menu_cat_icons_cfg && $menu_cat_icons_cfg->val!=="0");
 $menu_show_ofertas_cfg = ConfigurationData::getByPreffix("menu_show_ofertas");
 $menu_show_ofertas = ($menu_show_ofertas_cfg && $menu_show_ofertas_cfg->val!=="0");
+$menu_show_favs_cfg = ConfigurationData::getByPreffix("menu_show_favs");
+$menu_show_favs = ($menu_show_favs_cfg && $menu_show_favs_cfg->val!=="0");
+$menu_show_share_cfg = ConfigurationData::getByPreffix("menu_show_share");
+$menu_show_share = ($menu_show_share_cfg && $menu_show_share_cfg->val!=="0");
+$menu_show_listmode_cfg = ConfigurationData::getByPreffix("menu_show_listmode");
+$menu_show_listmode = ($menu_show_listmode_cfg && $menu_show_listmode_cfg->val!=="0");
 $ofertas = $menu_show_ofertas ? ProductData::getOffers() : array();
 $bcv_rate = 0;
 $bcv_rate_row = ConfigurationData::getByPreffix("bcv_rate");
@@ -487,12 +493,24 @@ foreach($horario_keys as $hk){
               <h2 class="h1 mb-0 fw-bold tt-display" id="grid-title" style="font-size: 1.8rem;">MENÚ PRINCIPAL</h2>
               <p class="text-muted mb-0">Explora nuestras especialidades y realiza tu pedido</p>
            </div>
-           <!-- Dynamic Search Bar -->
-           <div class="search-container">
-              <div class="search-box">
-                <i class="bi bi-search search-box-icon"></i>
-                <input type="text" id="product_search" class="form-control search-box-input" placeholder="Buscar platillo...">
-              </div>
+           <!-- Dynamic Search Bar + herramientas -->
+           <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2">
+             <div class="search-container">
+                <div class="search-box">
+                  <i class="bi bi-search search-box-icon"></i>
+                  <input type="text" id="product_search" class="form-control search-box-input" placeholder="Buscar platillo...">
+                </div>
+             </div>
+             <?php if($menu_show_favs || $menu_show_listmode): ?>
+             <div class="tt-tool-group">
+               <?php if($menu_show_favs): ?>
+               <button type="button" class="tt-tool-btn" id="tt_fav_filter" title="Ver solo mis favoritos" aria-pressed="false"><i class="bi bi-heart"></i><span class="d-none d-lg-inline ms-1">Favoritos</span></button>
+               <?php endif; ?>
+               <?php if($menu_show_listmode): ?>
+               <button type="button" class="tt-tool-btn" id="tt_view_toggle" title="Cambiar entre cuadrícula y lista" aria-pressed="false"><i class="bi bi-list-ul"></i></button>
+               <?php endif; ?>
+             </div>
+             <?php endif; ?>
            </div>
         </div>
 
@@ -603,6 +621,54 @@ let pendingExtrasName = "";
 let pendingExtras = [];
 let pendingBebidas = [];
 var bcvRate = <?php echo $bcv_rate_js; ?>;
+
+// ===== Fase 4: favoritos / compartir / vista lista =====
+const TT_FAV_KEY = "tt_menu_favs";
+const TT_LIST_KEY = "tt_menu_listmode";
+let ttFavOnly = false;
+let ttListMode = false;
+function ttFavs(){
+  try { const a = JSON.parse(localStorage.getItem(TT_FAV_KEY) || "[]"); return Array.isArray(a) ? a.map(String) : []; } catch(e){ return []; }
+}
+function ttFavHas(pid){ return ttFavs().indexOf(String(pid)) > -1; }
+function ttFavToggle(pid){
+  let a = ttFavs();
+  const s = String(pid);
+  const i = a.indexOf(s);
+  if(i > -1){ a.splice(i,1); } else { a.push(s); }
+  try { localStorage.setItem(TT_FAV_KEY, JSON.stringify(a)); } catch(e){}
+  return i === -1;
+}
+function ttProductUrl(pid){
+  const base = location.href.split("#")[0].split("?")[0];
+  return base + "?view=products&opt=open&id=" + pid;
+}
+function ttToast(msg, title){
+  if(typeof showCartToast === "function"){ showCartToast(msg, title || "LISTO"); return; }
+  if(msg){ /* sin toast disponible */ }
+}
+// Marca favoritos, aplica modo lista y filtro de favoritos al grid recién cargado.
+function ttApplyGridState(){
+  const $grid = $("#product-grid-container");
+  if(!$grid.length){ return; }
+  $grid.find(".pc-fav-btn").each(function(){
+    const on = ttFavHas($(this).data("pid"));
+    $(this).toggleClass("active", on).attr("aria-pressed", on ? "true" : "false");
+    $(this).find("i").attr("class", on ? "bi bi-heart-fill" : "bi bi-heart");
+  });
+  $grid.toggleClass("tt-list-mode", ttListMode);
+  let visibles = 0;
+  $grid.find(".tt-product-card").each(function(){
+    const pid = $(this).data("pid");
+    const show = !ttFavOnly || ttFavHas(pid);
+    $(this).closest('[class*="col-"]').toggleClass("d-none", !show);
+    if(show){ visibles++; }
+  });
+  $grid.find(".tt-fav-empty").remove();
+  if(ttFavOnly && $grid.find(".tt-product-card").length > 0 && visibles === 0){
+    $grid.append('<div class="tt-fav-empty text-center py-5"><i class="bi bi-heart h1 text-muted"></i><p class="h4 mt-2 mb-0">Todavía no tienes favoritos.</p><p class="text-muted small mb-0">Toca el corazón de un platillo para guardarlo aquí.</p></div>');
+  }
+}
 
 function fmt(n){ return COIN + n.toFixed(2); }
 function fmtBs(n){ return BS_SYMBOL + " " + n.toFixed(2); }
@@ -786,6 +852,7 @@ function updateGrid() {
   const sid = getSelectedSede() ? getSelectedSede().id : 0;
   $.post("./?action=cart&opt=search", { q: currentSearch, cat_id: currentCatId, sede_id: sid }, function(data) {
     $("#product-grid-container").html(data);
+    if (typeof ttApplyGridState === "function") { ttApplyGridState(); }
   }).fail(function() {
     $("#product-grid-container").html('<div class="text-center py-5"><i class="bi bi-exclamation-triangle text-warning h1"></i><p class="h4 mt-2">Hubo un error al cargar los productos.</p></div>');
   });
@@ -1325,6 +1392,51 @@ function giantDeliveriesNote(items) {
 }
 
 $(document).ready(function() {
+  // ===== Fase 4: favoritos / compartir / vista lista =====
+  try { ttListMode = (localStorage.getItem(TT_LIST_KEY) === "1"); } catch(e){}
+  if(ttListMode && $("#tt_view_toggle").length){
+    $("#tt_view_toggle").addClass("active").attr("aria-pressed","true").find("i").attr("class", "bi bi-grid-3x3-gap");
+  }
+  // Corazón: guardar/quitar favorito (delegado: sobrevive al re-render del grid)
+  $(document).on("click", ".pc-fav-btn", function(e){
+    e.preventDefault(); e.stopPropagation();
+    const on = ttFavToggle($(this).data("pid"));
+    ttApplyGridState();
+    ttToast(on ? "Guardado en tus favoritos" : "Quitado de favoritos", on ? "FAVORITO ❤" : "FAVORITOS");
+  });
+  // Compartir platillo (Web Share API o copiar enlace)
+  $(document).on("click", ".pc-share-btn", function(e){
+    e.preventDefault(); e.stopPropagation();
+    const pid = $(this).data("pid");
+    const nm = String($(this).data("name") || "este platillo");
+    const url = ttProductUrl(pid);
+    if(navigator.share){
+      navigator.share({ title: nm, text: "Mira " + nm + " en nuestro menú", url: url }).catch(function(){});
+      return;
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(function(){ ttToast("Enlace copiado", "COMPARTIR"); })
+        .catch(function(){ window.prompt("Copia el enlace:", url); });
+      return;
+    }
+    window.prompt("Copia el enlace:", url);
+  });
+  // Filtro: solo favoritos
+  $("#tt_fav_filter").on("click", function(){
+    ttFavOnly = !ttFavOnly;
+    $(this).toggleClass("active", ttFavOnly).attr("aria-pressed", ttFavOnly ? "true" : "false");
+    ttApplyGridState();
+  });
+  // Alternar vista cuadrícula / lista
+  $("#tt_view_toggle").on("click", function(){
+    ttListMode = !ttListMode;
+    try { localStorage.setItem(TT_LIST_KEY, ttListMode ? "1" : "0"); } catch(e){}
+    $(this).toggleClass("active", ttListMode).attr("aria-pressed", ttListMode ? "true" : "false")
+      .find("i").attr("class", ttListMode ? "bi bi-grid-3x3-gap" : "bi bi-list-ul");
+    ttApplyGridState();
+  });
+  ttApplyGridState();
+
   // Hero "PEDIR AHORA" smooth scroll
   $("#btn-go-menu").on("click", function(e) {
     e.preventDefault();

@@ -10,6 +10,16 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="add"){
 		$dec = json_decode($_POST["bebidas"], true);
 		if(is_array($dec)){ $bebidas = $dec; }
 	}
+	// Guard: no se agrega un producto inexistente, agotado ni de otra tienda
+	$tt_pid = isset($_POST["product_id"]) ? intval($_POST["product_id"]) : 0;
+	$tt_prod = ProductData::getById($tt_pid);
+	$tt_blocked = (!$tt_prod || ProductData::isSoldOut($tt_prod));
+	if(!$tt_blocked && Tenant::id()>0 && intval($tt_prod->tienda_id)!==Tenant::id()){ $tt_blocked = true; }
+	if($tt_blocked){
+		if(isset($_GET["ajax"])){ View::load("cart-side"); }
+		else{ Core::redir("./"); }
+		exit;
+	}
 	$key = $_POST["product_id"].":".md5(json_encode($extras)).":".md5(json_encode($bebidas));
 	if(!isset($_SESSION["cart"])){
 		$_SESSION["cart"] = array( array("key"=>$key,"product_id"=>$_POST["product_id"],"q"=>1,"extras"=>$extras,"bebidas"=>$bebidas) );

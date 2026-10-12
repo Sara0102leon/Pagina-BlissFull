@@ -203,9 +203,43 @@ el cliente se registra, paga un plan y se le activa su **menú en un subdominio 
 - La estructura y el flujo (hero → categorías → grid → carrito → WhatsApp) no cambian.
 - **Probar**: cambiar `tema_primary`/`tema_accent` en Apariencia y ver el menú recoloreado.
 
-## Fase 4 — Nuevas funciones de menú (a definir con Sara)
-- Ideas: badges dinámicos, ofertas por franja horaria, "agotado", favoritos,
-  compartir producto, modo listado compacto, etc.
+## Fase 4 — Nuevas funciones de menú ✅ (oct 2026)
+
+Migración **`migracion_fase4.sql`** (aplicada; aditiva/idempotente). **Todo es opt-in**:
+con los toggles en "0" el menú es idéntico al de antes.
+
+**Data-driven (sin toggle) — se activan por producto:**
+- **Etiqueta (badge)**: `product.badge` (texto, máx. 24) + `product.badge_color`
+  (clave cerrada `accent|gold|red|dark|outline`, resuelta por clases CSS
+  `.pc-badge--*`; en `product-grid-view.php` servido por AJAX **no** existen las
+  funciones de `layout.php`, por eso el color va por clase y no por `tt_on_accent()`).
+  Se edita en el producto (input + select); previsualización en vivo (`#pv_badge`).
+- **Agotado**: reutiliza `product.in_existence=0` (sin columna nueva). La tarjeta
+  recibe `.is-soldout`, overlay `.pc-soldout` "AGOTADO", imagen en gris y el botón de
+  agregar pasa a `.pc-add-off` deshabilitado. **Guard server-side** en
+  `core/app/action/cart-action.php` `opt=add`: no agrega si el producto no existe,
+  está agotado o es de otra tienda. La página de detalle público ya respetaba
+  `in_existence` ("No Disponible").
+- **Franja horaria de la oferta**: `product.offer_from` / `offer_to` (TIME, opcionales).
+  `ProductData::offerActive()` maneja el **cruce de medianoche** (ej. 20:00–02:00) y la
+  ausencia de uno de los dos extremos; `getOffers()` ahora filtra con `offerActive()`
+  (antes ignoraba `offer_finish`).
+
+**Opt-in (toggles en `configuration`, **default "0"**; Apariencia → "Funciones del menú"):**
+- **`menu_show_favs`** — Favoritos: corazón por tarjeta, filtro "solo favoritos",
+  persistencia en `localStorage` (`tt_menu_favs`).
+- **`menu_show_share`** — Compartir: Web Share API o copiar el enlace
+  (`?view=products&opt=open&id=N`).
+- **`menu_show_listmode`** — Alternar cuadrícula / lista compacta
+  (`localStorage` `tt_menu_listmode`).
+
+Todo es **solo front-end** (el estado vive en el navegador del cliente) y sobrevive al
+re-render AJAX del grid vía `ttApplyGridState()`. "Restaurar por defecto" (Apariencia)
+también devuelve los 3 toggles a "0".
+
+**Probar**: en `?view=products&opt=edit&id=N` pon una etiqueta y una franja; en
+`?view=settings&opt=apariencia` activa "Funciones del menú" y mira
+`http://localhost/menu/`.
 
 ## Fase 5 — Refactor de admin
 - "Cambiaré cómo funcionan la mayoría de cosas en admin": rehacer experiencias de
