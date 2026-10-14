@@ -6,7 +6,7 @@ $admin_titles = array(
   "slider"=>"Slider","users"=>"Usuarios","settings"=>"Configuración",
   "spends"=>"Gastos","persons"=>"Personas","forms"=>"Formularios",
   "table"=>"Tablas","cocina"=>"Cocina","repartidor"=>"Repartidor","login"=>"Iniciar Sesión",
-  "order"=>"Orden del menú"
+  "order"=>"Orden del menú","platform"=>"Plataforma","renovar"=>"Renovar plan"
 );
 $page_title = isset($admin_titles[$current_view]) ? $admin_titles[$current_view] : "Panel Administrativo";
 $is_auth = isset($_SESSION["user_id"]);
@@ -17,10 +17,12 @@ $user_role_label = "Dueño";
 if($is_auth){
 	$_u = UserData::getById($_SESSION["user_id"]);
 	$user_role = ($_u && $_u->role !== "") ? $_u->role : "dueno";
-	$user_role_label = $user_role=="cocina" ? "Cocina" : ($user_role=="repartidor" ? "Repartidor" : "Dueño");
+	$user_role_label = $user_role=="cocina" ? "Cocina" : ($user_role=="repartidor" ? "Repartidor" : ($user_role=="superadmin" ? "Super admin" : "Dueño"));
 }
-// Scoping por rol: cocina y repartidor solo ven su panel
-$is_dueno = ($user_role === "dueno");
+// Scoping por rol: cocina y repartidor solo ven su panel.
+// El super-admin de plataforma tiene acceso total (como el dueño) + "Plataforma".
+$is_super = ($user_role === "superadmin");
+$is_dueno = ($user_role === "dueno" || $is_super);
 $role_view = ($user_role==="cocina") ? "cocina" : (($user_role==="repartidor") ? "repartidor" : "home");
 if(!$is_dueno && $current_view !== $role_view){
 	header("Location: ./?view=".$role_view);
@@ -42,7 +44,7 @@ $sys_open = $sys_active!="" ? " show" : "";
     <link href="./dist/css/tabler-vendors.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="assets/bootstrap-icons/bootstrap-icons.css">
     <!-- Admin Jobie Style (cargado al final para sobreescribir Tabler) -->
-    <link rel="stylesheet" href="assets/css/admin-custom.css?v=12">
+    <link rel="stylesheet" href="assets/css/admin-custom.css?v=13">
     <!-- Guía interactiva del panel (tour con spotlight) -->
     <link rel="stylesheet" href="assets/css/admin-tour.css?v=3">
     <script src="assets/jquery/jquery.min.js"></script>
@@ -92,6 +94,12 @@ $sys_open = $sys_active!="" ? " show" : "";
         </nav>
         <?php else: ?>
         <nav class="sidebar-nav">
+          <?php if($is_super): ?>
+          <div class="sidebar-section-title">Plataforma</div>
+          <a class="sidebar-item<?php echo $current_view=="platform" ? " active" : ""; ?>" href="./?view=platform">
+            <i class="bi bi-diagram-3"></i><span>Tiendas / Plataforma</span>
+          </a>
+          <?php endif; ?>
           <div class="sidebar-section-title">Menú Principal</div>
 
           <a class="sidebar-item<?php echo ($current_view=="" || $current_view=="home") ? " active" : ""; ?>" href="./">
@@ -223,6 +231,40 @@ $sys_open = $sys_active!="" ? " show" : "";
         </header>
 
         <div class="app-content">
+          <?php
+          // ── Banner de renovación (dueño / super-admin) ─────────────
+          if($is_auth && $is_dueno && $current_view !== "platform"){
+            $_tenant_alert = SuscripcionData::tenantAlert(Tenant::id());
+            if($_tenant_alert){
+              $_al_lvl = $_tenant_alert["level"];
+              $_al_icon = $_al_lvl=="danger" ? "exclamation-triangle" : ($_al_lvl=="warning" ? "clock-history" : "info-circle");
+              $_al_btn  = $_al_lvl=="danger" ? "danger" : ($_al_lvl=="warning" ? "warning" : "primary");
+          ?>
+          <div class="tt-tenant-banner tt-tenant-banner--<?php echo $_al_lvl; ?>">
+            <i class="bi bi-<?php echo $_al_icon; ?>"></i>
+            <div class="tt-tb-text">
+              <b><?php echo htmlspecialchars($_tenant_alert["title"]); ?></b>
+              <span><?php echo htmlspecialchars($_tenant_alert["msg"]); ?></span>
+            </div>
+            <a href="./?view=renovar" class="btn btn-sm btn-<?php echo $_al_btn; ?>"><?php echo htmlspecialchars($_tenant_alert["cta"]); ?></a>
+          </div>
+          <?php } } ?>
+
+          <?php
+          // ── Banner de impersonación ("entrar como") ────────────────
+          if($is_auth && $is_super && Tenant::impersonating() > 0){
+            $_imp_t = Tenant::current();
+          ?>
+          <div class="tt-tenant-banner tt-tenant-banner--imp">
+            <i class="bi bi-person-badge"></i>
+            <div class="tt-tb-text">
+              <b>Estás viendo como <?php echo htmlspecialchars($_imp_t ? $_imp_t->nombre : ("tienda #".Tenant::impersonating())); ?></b>
+              <span>Lo que edites aquí se aplica a esa tienda.</span>
+            </div>
+            <a href="./?action=platform&opt=salir" class="btn btn-sm btn-dark">Salir</a>
+          </div>
+          <?php } ?>
+
           <?php View::load("index"); ?>
 
           <footer class="app-footer">

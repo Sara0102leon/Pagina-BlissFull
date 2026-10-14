@@ -19,6 +19,11 @@ class Tenant {
 		if(isset($_SESSION["user_id"]) && intval($_SESSION["user_id"])>0){
 			$u = UserData::getById($_SESSION["user_id"]);
 			if($u && $u->tienda_id && intval($u->tienda_id)>0){ $id = (int)$u->tienda_id; }
+			// Super-admin "entrando como" otra tienda: la impersonada manda
+			// (sólo si el usuario logueado es realmente superadmin).
+			if($u && $u->role === "superadmin" && self::impersonating() > 0){
+				$id = self::impersonating();
+			}
 		}
 
 		// 2) Host header: subdominio de una tienda (menú público)
@@ -50,6 +55,12 @@ class Tenant {
 
 	public static function current(){
 		return self::resolve();
+	}
+
+	// Id de la tienda que un super-admin está "viendo como" (0 = ninguna).
+	public static function impersonating(){
+		if(empty($_SESSION["impersonate_tienda"])){ return 0; }
+		return (int)$_SESSION["impersonate_tienda"];
 	}
 
 	// id de tienda activa (0 = sin tenant)

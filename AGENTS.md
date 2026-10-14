@@ -299,6 +299,52 @@ Para poner 0 hay que **omitir** el campo. Y un POST parcial necesita `sedes_all=
 agotado, corazón, compartir, modo lista). Lógica de oferta: test CLI `27/27` en
 `%TEMP%\opencode\test-fase4.php`; E2E Playwright en `%TEMP%\opencode\fase4-shot.js`.
 
+## Plataforma: super-admin + renovación (Fase 6 — oct 2026)
+
+Migración **`migracion_plataforma.sql`** (aplicada; aditiva/idempotente):
+`suscripcion.recordatorio_at` · clave `saas_dias_aviso` (base `cfg_id=1`, default 7) ·
+usuario **`superadmin` / `superadmin`** (`role='superadmin'`, **cambiar al desplegar**).
+
+**Rol `superadmin`** (`user.role`): acceso total al panel **de cualquier tienda** +
+sección **Plataforma**. En el layout `$is_super` fuerza `$is_dueno` (mismo alcance),
+etiqueta "Super admin", y solo para él aparece el ítem lateral **"Tiendas / Plataforma"**.
+Los guards de `order-action`/`users-action`/`pedidos-action` aceptan `dueno|superadmin`.
+
+**Panel `?view=platform`** (`platform-view.php` + `PlatformData`): KPIs, listado de
+tiendas (plan/periodo/días), **alta manual** (tienda + usuario dueño opcional) y config
+del aviso. Pestañas `all|movimiento|planes`. `PlatformData` consulta **sin**
+`Tenant::filter()` a propósito (es la vista global) y lee `configuration` siempre en
+`cfg_id=1`.
+
+**Acciones `?action=platform`** (`platform-action.php`, guard superadmin):
+`estatus=activa|pendiente|suspendida` · `extender` (días) · `plan` · `recordar`
+(marca `recordatorio_at` y abre **WhatsApp** `wa.me` con mensaje prellenado; sin
+WhatsApp solo marca) · `entrar`/`salir` (impersonar) · `crear` · `cfg`.
+
+**Impersonación**: `$_SESSION["impersonate_tienda"]`, honrada por `Tenant::resolve()`
+**solo si** el usuario logueado es `superadmin` (`Tenant::impersonating()`). Banner
+global "Estás viendo como X · Salir" en el layout.
+
+**Renovación / recordatorio**
+- `SuscripcionData::tenantAlert($tienda_id)` → nivel del aviso (pago pendiente / por
+  vencer / vencido / suspendido), usado por el **banner del panel** (rol dueño,
+  `.tt-tenant-banner--{info|warning|danger}`) con CTA "Renovar plan".
+- `?view=renovar` (`renovar-view.php`) + `?action=renovar` (`renovar-action.php`):
+  el dueño elige plan y paga. **Demo** (sin `zeno_api_key` o `zeno_mode!=live`) activa
+  al instante; **Live** crea el checkout en **ZenoBank** y redirige; el retorno es
+  `?view=renovar&pago=exito`. Se **reusa la fila `suscripcion`** y
+  `markCompleted()` **extiende** 30 días (base = `periodo_fin` vigente, si no hoy);
+  `extend($dias)` hace lo propio desde el panel.
+- **Tienda no disponible**: subdominio de tienda con `estatus != 'activa'` →
+  **503** "Menú no disponible" (`core/app/init.php`, `X-Robots-Tag: noindex`).
+
+**Probar en local:** login `superadmin/superadmin` → `admin/?view=platform`
+(entrar como / activar / suspender / recordar / extender / plan) → banner de
+vencimiento en el panel del dueño → `admin/?view=renovar` (demo activa al instante).
+
+**Pendiente (fuera de la fase):** límites de plan, gate automático por vencimiento,
+emails y recobro automático.
+
 ## Despliegue en producción (VPS alianza)
 
 **Sitio público:** https://prueba.alianzablissful.com

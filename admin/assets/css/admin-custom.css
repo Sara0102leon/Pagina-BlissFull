@@ -943,3 +943,35 @@ input[type="time"].form-control {
 .order-saved.is-saving { color: #e0a96d; }
 .order-saved.is-error { color: #ff8a8a; }
 .is-sorting { cursor: grabbing; }
+
+/* =============================================================
+   Fase 6 — Banners del panel (renovación / impersonación)
+   ============================================================= */
+.tt-tenant-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--j-border, #241d17);
+  background: var(--bl-red-mid, #161110);
+  color: var(--j-text, #f5eee2);
+}
+.tt-tenant-banner > .bi { font-size: 1.35rem; line-height: 1; }
+.tt-tenant-banner .tt-tb-text { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; }
+.tt-tenant-banner .tt-tb-text b { color: var(--bl-gold-light, #f5eee2); }
+.tt-tenant-banner .tt-tb-text span { color: var(--j-text-dim, rgba(179,167,149,.8)); font-size: 0.88rem; }
+.tt-tenant-banner .btn { flex-shrink: 0; }
+.tt-tenant-banner--info { border-left: 4px solid var(--bl-gold, #e9b94a); }
+.tt-tenant-banner--info > .bi { color: var(--bl-gold, #e9b94a); }
+.tt-tenant-banner--warning { border-left: 4px solid #e0a96d; background: linear-gradient(90deg, rgba(224,169,109,.12), var(--bl-red-mid, #161110)); }
+.tt-tenant-banner--warning > .bi { color: #e0a96d; }
+.tt-tenant-banner--danger { border-left: 4px solid #dc2626; background: linear-gradient(90deg, rgba(220,38,38,.14), var(--bl-red-mid, #161110)); }
+.tt-tenant-banner--danger > .bi { color: #f87171; }
+.tt-tenant-banner--imp { border-left: 4px solid #6366f1; background: linear-gradient(90deg, rgba(99,102,241,.16), var(--bl-red-mid, #161110)); }
+.tt-tenant-banner--imp > .bi { color: #a5b4fc; }
+@media (max-width: 575.98px) {
+  .tt-tenant-banner { flex-wrap: wrap; }
+  .tt-tenant-banner .btn { width: 100%; }
+}

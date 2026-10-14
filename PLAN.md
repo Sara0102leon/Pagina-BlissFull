@@ -46,6 +46,8 @@ el cliente se registra, paga un plan y se le activa su **menú en un subdominio 
 - **A3** Panel con roles: cocina (pedidos) y repartidor (delivery) → ✅ (oct 2026)
 - **A4** Drag & drop del orden de menú (categorías y productos) → ✅ (oct 2026)
   (se conservan también las flechas ↑/↓ en Categorías).
+- **A5** Renovación + recordatorio + **super-admin de plataforma** (`?view=platform`) → ✅ (oct 2026)
+  (ver **Fase 6**).
 - Las **Fases 1-5** (abajo) siguen siendo el motor del menú por cliente.
 
 ### A0/A2 — Multi-tenant implementado (oct 2026)
@@ -244,6 +246,49 @@ también devuelve los 3 toggles a "0".
 ## Fase 5 — Refactor de admin
 - "Cambiaré cómo funcionan la mayoría de cosas en admin": rehacer experiencias de
   productos, categorías, sedes y pedidos según los nuevos requisitos.
+
+## Fase 6 — Renovación + super-admin de plataforma ✅ (oct 2026)
+
+Migración **`migracion_plataforma.sql`** (aplicada; aditiva/idempotente):
+`suscripcion.recordatorio_at` + clave `saas_dias_aviso` (base `cfg_id=1`) +
+usuario **`superadmin` / `superadmin`** (`role='superadmin'`).
+
+**Rol `superadmin`** — acceso total al panel de cualquier tienda + gestión de la
+plataforma. Es el único rol fuera del alcance de `Tenant::filter()` en las consultas
+de plataforma (a propósito).
+- **Panel `?view=platform`** (`platform-view.php`, guard superadmin): KPIs
+  (tiendas activas, ingresos del mes, por vencer / vencidas, pedidos del mes),
+  listado de tiendas con plan/periodo/días restantes, **alta manual** de tienda
+  (+ usuario dueño opcional), y config del aviso. Pestañas
+  `all` · `movimiento` (suscripciones/pagos + pedidos recientes de todas las tiendas)
+  · `planes` (límites informativos).
+- **Acciones** `?action=platform` (`platform-action.php`): `estatus`
+  (activa/pendiente/suspendida), `extender` (días), `plan`, `recordar` (marca el aviso
+  y **abre WhatsApp** con mensaje prellenado), `entrar`/`salir` (impersonar),
+  `crear` (alta manual), `cfg` (días de aviso).
+- **Impersonación ("Entrar como")**: `$_SESSION["impersonate_tienda"]`, honrada por
+  `Tenant::resolve()` **solo si** el usuario logueado es super-admin. Banner global
+  "Estás viendo como X · Salir" en el layout.
+
+**Recordatorio de renovación**
+- `SuscripcionData::tenantAlert($tienda_id)` calcula el nivel del aviso
+  (pagado/pendiente/por vencer/vencido/suspendido) y alimenta el **banner del panel**
+  del dueño (`.tt-tenant-banner--{info|warning|danger}`) con CTA "Renovar plan".
+- **`?view=renovar`** (`renovar-view.php`) + **`?action=renovar`**
+  (`renovar-action.php`): el dueño (o super-admin) elige plan y paga. **Demo**: activa
+  al instante; **Live**: crea el checkout en **ZenoBank** y redirige; al volver
+  (`?pago=exito`) el webhook ya extendió el periodo. Se **reusa la fila `suscripcion`**
+  y `markCompleted()` **extiende** 30 días (base = `periodo_fin` vigente, si no hoy).
+- **Tienda no disponible**: si el estatus de una tienda no es `activa` y el Host es un
+  subdominio de tienda, el front público responde **503** con una página "Menú no
+  disponible" (`core/app/init.php`, `X-Robots-Tag: noindex`).
+
+**Probar (local):** login `superadmin/superadmin` → `admin/?view=platform`
+(entrar como / activar / suspender / recordar / extender / plan) → banner de
+vencimiento en el panel del dueño → `?view=renovar` (demo activa al instante).
+
+**Pendiente (no en esta fase):** límites de plan por tienda, gate automático por
+suscripción vencida, emails y recobro automático.
 
 ---
 

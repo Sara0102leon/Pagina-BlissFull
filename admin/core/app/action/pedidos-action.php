@@ -8,7 +8,7 @@ if(!isset($_SESSION["user_id"])){ Core::redir("../login.php"); exit; }
 $me = UserData::getById($_SESSION["user_id"]);
 if(!$me){ Core::redir("../login.php"); exit; }
 $my_role = ($me->role !== "") ? $me->role : "dueno";
-$is_dueno      = ($my_role === "dueno");
+$is_dueno      = ($my_role === "dueno" || $my_role === "superadmin");
 $is_cocina     = ($is_dueno || $my_role === "cocina");
 $is_repartidor = ($is_dueno || $my_role === "repartidor");
 

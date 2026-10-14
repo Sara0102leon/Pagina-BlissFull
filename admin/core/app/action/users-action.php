@@ -1,6 +1,6 @@
 <?php
 $__me_raw = isset($_SESSION["user_id"]) ? UserData::getById($_SESSION["user_id"]) : null;
-$__is_dueno = ($__me_raw && $__me_raw->role === "dueno");
+$__is_dueno = ($__me_raw && ($__me_raw->role === "dueno" || $__me_raw->role === "superadmin"));
 $__roles_ok = array("dueno","cocina","repartidor");
 
 if(isset($_GET["opt"]) && $_GET["opt"]=="register"){

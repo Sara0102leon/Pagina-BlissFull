@@ -22,7 +22,7 @@ if(!isset($_SESSION["user_id"])){ order_out(array("ok"=>false,"error"=>"no-sessi
 $me = UserData::getById($_SESSION["user_id"]);
 if(!$me){ order_out(array("ok"=>false,"error"=>"no-user"), 401); }
 $my_role = ($me->role !== "") ? $me->role : "dueno";
-if($my_role !== "dueno"){ order_out(array("ok"=>false,"error"=>"forbidden"), 403); }
+if($my_role !== "dueno" && $my_role !== "superadmin"){ order_out(array("ok"=>false,"error"=>"forbidden"), 403); }
 
 // ── Entrada: JSON (fetch) o form-encoded (fallback) ───────────────
 $raw = file_get_contents("php://input");

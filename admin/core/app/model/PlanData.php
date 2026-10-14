@@ -17,6 +17,12 @@ class PlanData {
 		return Model::one($query[0], new PlanData());
 	}
 
+	public static function getById($id){
+		$sql = "select * from ".self::$tablename." where id=".(int)$id." limit 1";
+		$query = Executor::doit($sql);
+		return Model::one($query[0], new PlanData());
+	}
+
 	public static function getAllActives(){
 		$sql = "select * from ".self::$tablename." where is_active=1 order by position asc";
 		$query = Executor::doit($sql);

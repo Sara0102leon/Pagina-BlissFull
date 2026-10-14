@@ -33,6 +33,12 @@ class TiendaData {
 		return Model::one($query[0], new TiendaData());
 	}
 
+	public static function getAll(){
+		$sql = "select * from ".self::$tablename." order by id asc";
+		$query = Executor::doit($sql);
+		return Model::many($query[0], new TiendaData());
+	}
+
 	public static function subdomainFree($subdomain){
 		$sql = "select id from ".self::$tablename." where subdomain=\"$subdomain\" limit 1";
 		$query = Executor::doit($sql);
@@ -41,6 +47,14 @@ class TiendaData {
 
 	public function setEstatus($estatus){
 		$sql = "update ".self::$tablename." set estatus=\"$estatus\" where id=".(int)$this->id;
+		Executor::doit($sql);
+		$this->estatus = $estatus;
+	}
+
+	// Datos editables de la ficha de la tienda (nombre de contacto, etc.)
+	public function update(){
+		$sql = "update ".self::$tablename." set nombre=\"$this->nombre\", descripcion=\"$this->descripcion\", ";
+		$sql .= "email=\"$this->email\", whatsapp=\"$this->whatsapp\" where id=".(int)$this->id;
 		Executor::doit($sql);
 	}
 }
