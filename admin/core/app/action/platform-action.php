@@ -160,7 +160,9 @@ if($opt === "crear"){
 	$t->subdomain = pf_esc($sub);
 	$t->nombre    = pf_esc($nombre);
 	$t->estatus   = "activa";
-	$t->zeno_mode = "demo";
+	// En modo live la tienda recién creada queda como "demo" hasta que haya
+	// un checkout real; el estatus lo decide el alta manual (activa, N días).
+	$t->zeno_mode = (PlatformData::cfg("zeno_mode", "demo") === "live") ? "live" : "demo";
 	$r = $t->add();
 	if(!$r[0]){ pf_back("all", "No se pudo crear la tienda.", 0); }
 	$tiendaId = (int)$r[1];

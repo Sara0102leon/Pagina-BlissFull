@@ -118,7 +118,7 @@ class PlatformData {
 		if($q[0]){
 			while($r = $q[0]->fetch_assoc()){
 				$tid = (int)$r["tienda_id"];
-				if(!isset($rows[$tid]) || $rows[$tid]["sus_id"]){ continue; } // ya tiene la más reciente
+				if(!isset($rows[$tid]) || !empty($rows[$tid]["sus_id"])){ continue; } // ya tiene la más reciente
 				$rows[$tid]["sus_id"] = (int)$r["id"];
 				$rows[$tid]["sus_status"] = strtoupper(trim($r["zeno_status"]));
 				$rows[$tid]["plan_id"] = (int)$r["plan_id"];
@@ -131,12 +131,16 @@ class PlatformData {
 				$rows[$tid]["dias"] = SuscripcionData::diasRestantes($r["periodo_fin"]);
 			}
 		}
-		// Rellena los que no tienen suscripción
+		// Rellena los que no tienen suscripción (evita Undefined array key en la vista)
 		foreach($rows as $id=>$t){
 			if(!isset($t["sus_id"])){
 				$rows[$id]["sus_id"] = 0;
 				$rows[$id]["sus_status"] = "";
+				$rows[$id]["plan_id"] = 0;
 				$rows[$id]["plan_name"] = "—";
+				$rows[$id]["plan_code"] = "";
+				$rows[$id]["plan_price"] = null;
+				$rows[$id]["paid_amount"] = null;
 				$rows[$id]["periodo_fin"] = "";
 				$rows[$id]["dias"] = null;
 				$rows[$id]["recordatorio_at"] = "";
