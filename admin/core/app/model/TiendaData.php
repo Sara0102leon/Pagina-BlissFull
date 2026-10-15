@@ -50,11 +50,4 @@ class TiendaData {
 		Executor::doit($sql);
 		$this->estatus = $estatus;
 	}
-
-	// Datos editables de la ficha de la tienda (nombre de contacto, etc.)
-	public function update(){
-		$sql = "update ".self::$tablename." set nombre=\"$this->nombre\", descripcion=\"$this->descripcion\", ";
-		$sql .= "email=\"$this->email\", whatsapp=\"$this->whatsapp\" where id=".(int)$this->id;
-		Executor::doit($sql);
-	}
 }

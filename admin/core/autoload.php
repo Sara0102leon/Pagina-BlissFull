@@ -1,4 +1,8 @@
 <?php
+// Zona horaria del negocio, en el punto de entrada (antes que cualquier
+// include): sin esto el panel hereda date.timezone del php.ini (Europe/Berlin)
+// y las fechas de corte —ofertas por franja, avisos de vencimiento— bailan un día.
+date_default_timezone_set("America/Caracas");
 
 include "controller/Core.php";
 include "controller/View.php";

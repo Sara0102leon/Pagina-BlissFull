@@ -342,6 +342,33 @@ global "Estás viendo como X · Salir" en el layout.
 (entrar como / activar / suspender / recordar / extender / plan) → banner de
 vencimiento en el panel del dueño → `admin/?view=renovar` (demo activa al instante).
 
+**Endurecimiento por auditoría (oct 2026).** Revisión de código del diff de la fase →
+1 bloqueante + 2 medios, todos arreglados y verificados (detalle y pruebas en
+`REVISION.md §6`):
+- **ALTA — escalada al super-admin**: un dueño podía editar/borrar (y cambiar rol o
+  contraseña de) **cualquier** usuario, incluido el super-admin, desde `?view=users`.
+  Nuevos `UserData::puedeTocar($me,$obj)` / `getAllVisibles($me)`: al super-admin sólo lo
+  toca otro super-admin; cada dueño ve/edita sólo su tienda. El form de edición **no**
+  ofrece el rol si el objetivo es super-admin (no se puede degradar) y el action conserva
+  el rol si el campo no viene. Los ids entran casteados a `(int)` (id vacío = "sin
+  permiso", antes Fatal error).
+- **MEDIA — doble checkout en live**: reutiliza el checkout pendiente del mismo plan
+  (`renovar-action.php`); y el webhook, si el `checkout_id` no matchea, localiza la fila
+  por el **`orderId`** del payload (`saz-<tienda>-<sus>` / `renov-<tienda>-<sus>-<ts>`).
+- **MEDIA — fuga sin tiendas activas**: `core/app/init.php` responde **404** ("Sin tiendas
+  activas" en la raíz) cuando `Tenant::current()` es null (antes el fallback `1=1`
+  publicaba los datos de todas las tiendas); y `?action=platform&opt=estatus` **no deja
+  suspender la última tienda activa**.
+- Bajas: alta manual valida dueño **antes** de crear (`FILTER_VALIDATE_EMAIL` + mín. 6) y
+  el password va en `type="password"`; KPI del panel relabelado ("Pagos con periodo que
+  inicia este mes"); `TiendaData::update()` muerto eliminado.
+- **Pre-existente arreglado**: `UserData::add()` descartaba `username` en silencio (el
+  login acepta email **o** username).
+- **Falso positivo**: los husos horarios. Se medía `Europe/Berlin` del `php.ini`, pero cada
+  entry point fija `America/Caracas` antes de correr (probe en vivo en el pipeline real).
+  Igual se **endureció**: la zona del negocio ahora se fija también en `core/autoload.php`
+  y `admin/core/autoload.php`.
+
 **Pendiente (fuera de la fase):** límites de plan, gate automático por vencimiento,
 emails y recobro automático.
 

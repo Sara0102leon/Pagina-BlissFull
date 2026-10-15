@@ -64,9 +64,35 @@ require_once dirname(__DIR__, 2) . "/controller/ZenoBank.php";
 
 $currency  = PlatformData::cfg("zeno_price_currency", "USD");
 $successUrl = rv_admin_url() . "/?view=renovar&pago=exito";
-$orderId    = "renov-" . $tienda_id . "-" . (int)$sus->id . "-" . time();
 
 $zeno = new ZenoBank($apiKey);
+
+/* Seguro anti "doble clic": si ya hay un checkout pendiente del MISMO plan se
+   reutiliza. Crear otro pisaría zeno_checkout_id y el webhook del cobro
+   anterior ya no encontraría la fila (pago cobrado sin renovar). */
+if($sus->zeno_status === "OPEN" && $sus->zeno_checkout_id !== ""
+   && (int)$sus->plan_id === (int)$plan->id
+   && strpos($sus->zeno_checkout_id, "demo_") !== 0){
+	$prev  = $zeno->getCheckout($sus->zeno_checkout_id);
+	$pst   = (is_array($prev) && isset($prev["status"])) ? strtoupper((string)$prev["status"]) : "";
+	$pok   = (is_array($prev) && !empty($prev["ok"]));
+	if($pok && $pst === "COMPLETED"){
+		// Pagado, pero el webhook nunca llegó: se acredita aquí mismo.
+		$sus->markCompleted((float)$plan->price);
+		$tienda->setEstatus("activa");
+		Core::redir("./?view=renovar&pago=exito");
+		exit;
+	}
+	if($pok && !empty($prev["checkoutUrl"])
+	   && !in_array($pst, array("EXPIRED","CANCELED","CANCELLED","FAILED","VOID"))){
+		header("Location: " . $prev["checkoutUrl"]);
+		exit;
+	}
+	// expirado/fallido -> se crea uno nuevo más abajo
+}
+
+$orderId    = "renov-" . $tienda_id . "-" . (int)$sus->id . "-" . time();
+
 $checkout = $zeno->createCheckout($orderId, $plan->price, $currency, $successUrl);
 if(!$checkout || empty($checkout["ok"]) || empty($checkout["id"]) || empty($checkout["checkoutUrl"])){
 	error_log("[saz] renovar: zenobank create falló: " . json_encode($checkout));

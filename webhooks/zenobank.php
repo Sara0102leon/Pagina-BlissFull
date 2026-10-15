@@ -69,6 +69,14 @@ if($checkoutId === ""){
 
 $sus = SuscripcionData::getByCheckout($checkoutId);
 if(!$sus){
+	// Fallback: si el dueño generó un segundo checkout, el primero quedó
+	// huérfano en `zeno_checkout_id`. El orderId viaja en el payload y lleva
+	// el id de la fila ("saz-<tienda>-<sus>" / "renov-<tienda>-<sus>-<ts>").
+	if(preg_match('/\b(?:saz|renov)-\d+-(\d+)(?:-\d+)?\b/', $rawBody, $m)){
+		$sus = SuscripcionData::getById((int)$m[1]);
+	}
+}
+if(!$sus){
 	echo json_encode(array("ok" => true, "ignored" => "no subscription for checkout"));
 	exit;
 }

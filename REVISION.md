@@ -55,6 +55,14 @@ Start-Process C:\xampp\apache\bin\httpd.exe
 7. **Tienda no disponible** — `Suspender` una tienda y abrir su menú por subdominio
    (p. ej. `http://localhost/menu/` con `Host: don-pepe.localhost`) → página **503
    "Menú no disponible"**.
+8. **Permisos de usuarios** (arreglo de auditoría, ver §6) — entra como **dueño**
+   (`admin/admin`) en `?view=users&opt=all`: **no** debe aparecer el super-admin ni
+   usuarios de otras tiendas; intentar editar/borrar al super-admin rebota con
+   *"No tienes permiso"*. Como **super-admin** sí se ven todos (y su propio rol no se
+   puede degradar desde el formulario).
+9. **Sin tiendas activas** (arreglo de auditoría, ver §6) — suspender la **última**
+   tienda activa se rechaza con aviso; si se fuerza por SQL, la raíz responde **404
+   "Sin tiendas activas"** (antes publicaba los datos de todas las tiendas mezclados).
 
 ---
 
@@ -206,9 +214,63 @@ mariadb -u root tacomenu < migracion_plataforma.sql
 tienda **#9 "Don Pepe"** (`don-pepe`, activa, plan Emprendedor, vence 17/10/2026) y su
 suscripción. Se borra desde `?view=platform` o con SQL cuando ya no haga falta.
 
+> Las pruebas que tocaron configuración o pagos **restauraron el estado**: `zeno_mode=demo`,
+> `zeno_api_key` y `zeno_webhook_secret` vacíos, y las suscripciones tal como estaban
+> (#5 tienda 1: plan Restaurante, 14/10 → 13/11, 19.00 · #6 tienda 9: 14/10 → 17/10).
+
 ---
 
-## 6. Contrato invisible respetado
+## 6. Auditoría de la Fase 6 y arreglos aplicados
+
+Se pasó una **revisión de código** sobre el diff de la Fase 6. Resultado: **1 bloqueante**
+y 2 medios — todos **arreglados y verificados**; el resto quedó como deuda documentada.
+
+### 6.1 Arreglados
+
+| # | Sev. | Hallazgo | Arreglo |
+|---|---|---|---|
+| 1 | **ALTA** | Un **dueño cualquiera** podía editar o borrar al **super-admin** desde `?view=users` (le cambiaba la contraseña, lo degradaba o lo eliminaba) → escalada total a la plataforma. Además la tabla listaba usuarios de **otras tiendas**. | Nuevos `UserData::puedeTocar()` / `getAllVisibles()`: al super-admin sólo lo toca otro super-admin y cada dueño ve/edita sólo su tienda. El formulario ya no ofrece el rol cuando el objetivo es super-admin (no se puede degradar) y el action **conserva el rol** si el campo no viene. |
+| 2 | MEDIA | **Doble checkout en live**: el segundo clic en "Renovar" pisaba `zeno_checkout_id`; si el cliente pagaba el primero, el webhook no hallaba la fila → **cobro sin renovar**. | `renovar-action`: si hay checkout pendiente del mismo plan se **reutiliza** (o se acredita si la API lo da por COMPLETED). `webhooks/zenobank.php`: si el id no coincide, se localiza la fila por el **`orderId`** del payload (`saz-<tienda>-<sus>` / `renov-<tienda>-<sus>-<ts>`). |
+| 3 | MEDIA | Sin ninguna tienda activa, el fallback multi-tenant caía en `1=1` y la **raíz publicaba los datos de todas las tiendas mezclados**. | `core/app/init.php`: sin tienda resuelta → **404** ("Sin tiendas activas" en la raíz, "Tienda no encontrada" en un subdominio ajeno). Además `?action=platform&opt=estatus` **no permite suspender la última tienda activa**. |
+| 4 | BAJA | El alta manual con datos de dueño inválidos creaba la tienda **sin dueño y sin avisar**; la contraseña se veía en claro. | Validación (`FILTER_VALIDATE_EMAIL` + mín. 6) **antes** de crear nada; input `type="password"`. |
+| 5 | BAJA | El KPI "Suscripciones este mes" sumaba por `periodo_inicio` (no por fecha de cobro) → engañoso. | Etiqueta honesta: "Pagos con periodo que inicia este mes". |
+| 6 | BAJA | `TiendaData::update()` sin llamadores (riesgo de drift). | Eliminado. |
+| 7 | — | **Pre-existente**: `UserData::add()` descartaba `username` en silencio (el login acepta email **o** username y el formulario lo pide); un `user_id`/`id` vacío provocaba **Fatal error 500** en el CRUD. | Se guarda `username`; los ids se castean a `(int)` (id 0 → "sin permiso", ya no rompe). |
+
+### 6.2 Falso positivo (y endurecimiento)
+
+**Husos horarios.** El informe decía que el panel corría en `Europe/Berlin` porque
+`php.ini` tiene `date.timezone=Europe/Berlin`. **Verificado en vivo: no es así** — cada
+entry point fija `America/Caracas` antes de ejecutar nada (probe temporal en el pipeline
+real: `TZ=America/Caracas | NOW=12:34 | UTC=16:34`, idéntico al `NOW()` de MySQL).
+Aun así se **endureció**: la zona del negocio ahora se fija también en `core/autoload.php`
+y `admin/core/autoload.php`, de modo que cualquier entry nuevo (cron, endpoint,
+`login.php`) la hereda sin depender del `php.ini`.
+
+### 6.3 Verificación de los arreglos
+
+| Prueba | Resultado |
+|---|---|
+| Dueño → POST `?action=users&opt=upd` con `user_id=7` (super-admin) | ✅ "No tienes permiso"; hash, rol y nombre intactos |
+| Dueño → `?action=users&opt=del&id=7` | ✅ bloqueado; el usuario sigue existiendo |
+| Dueño → `?view=users&opt=edit&id=7` | ✅ rebota con aviso |
+| Dueño → `?view=users&opt=all` | ✅ no lista al super-admin |
+| Dueño edita un usuario de **otra tienda** (creado en la #9) | ✅ bloqueado y no listado; el super-admin sí lo ve |
+| Super-admin → `?view=users&opt=edit&id=7` | ✅ sin selector de rol (no se puede degradar) |
+| Ciclo normal alta → edición → baja como dueño | ✅ funciona; `username` ahora se guarda |
+| `user_id` vacío en `upd` | ✅ "sin permiso" (antes: Fatal error) |
+| Webhook **firmado** (Svix) con checkout **huérfano** + `orderId` | ✅ acredita por `orderId`: COMPLETED, 17/10 → 16/11 |
+| Webhook sin `orderId` / con `orderId` inexistente | ✅ `ignored`, sin errores |
+| Firma inválida | ✅ 403 |
+| Reenvío del mismo `checkout.completed` | ✅ idempotente (no vuelve a extender) |
+| Modo live con API key inválida | ✅ degrada a `err=zeno` sin tocar la suscripción |
+| Suspender la **última** tienda activa | ✅ rechazado con aviso |
+| Todas las tiendas suspendidas (por SQL) → raíz / subdominio | ✅ 404 "Sin tiendas activas" / 503 |
+| Barrido de 22 páginas (público, landing, admin, plataforma, usuarios, carta…) | ✅ 200 y **sin warnings/notices/fatales** |
+
+---
+
+## 7. Contrato invisible respetado
 
 No se renombró ni eliminó ninguno de los identificadores del menú público:
 `#btn_confirm_order`, `#product_search`, `#grid-title`, `.btn-category-ajax`,
@@ -217,7 +279,7 @@ El menú público se sirve íntegro (smoke 200) y la Fase 4 sigue siendo **opt-i
 
 ---
 
-## 7. Pendientes / limitaciones conocidas
+## 8. Pendientes / limitaciones conocidas
 
 - **Límites de plan** (`max_products`, `max_sedes`, `kds`, `drag_drop`, `theme`,
   `reports`) están en la tabla `plan` pero **no se aplican** automáticamente (hoy son
@@ -228,13 +290,18 @@ El menú público se sirve íntegro (smoke 200) y la Fase 4 sigue siendo **opt-i
 - **Sin emails ni recobro automático**: el recordatorio es **manual** (WhatsApp desde el
   panel). No hay envío programado.
 - **Sin historial de cambios** de plataforma (ni auditoría de impersonación).
+- **Semántica del KPI de dinero**: `ingresos_mes` suma `paid_amount` por *inicio* del
+  periodo (no hay columna de fecha de cobro) y `extend()` manual no aporta monto; la
+  etiqueta ya lo aclara, pero no es contabilidad.
+- **Impugnación de pagos**: cubierto el doble checkout y el webhook que no encuentra la
+  fila; no hay conciliación/reembolsos (fuera de alcance).
 - **Demo → Live** de Zenobank está listo en código pero **apagado**: `zeno_api_key` y
   `zeno_webhook_secret` están vacíos y `zeno_mode=demo`.
 - **Fase 5** (refactor de admin) sin tocar, como se acordó.
 
 ---
 
-## 8. Pasar de demo a live (Zenobank)
+## 9. Pasar de demo a live (Zenobank)
 
 En la tabla `configuration` (claves base `cfg_id=1`), o por SQL:
 
@@ -253,7 +320,7 @@ Registrar el webhook en Zenobank → `https://<host>/webhooks/zenobank.php`
 
 ---
 
-## 9. Notas y rarezas a tener presentes
+## 10. Notas y rarezas a tener presentes
 
 - **`View::load()` duplica la vista** si se usa `?view=X` con una vista que declara
   funciones → las páginas standalone van por **action** (la carta ya lo hace).

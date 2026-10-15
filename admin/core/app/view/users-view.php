@@ -3,6 +3,8 @@ if(!isset($_SESSION["user_id"])){ Core::redir("./");}
 $user= UserData::getById($_SESSION["user_id"]);
 // si el id del usuario no existe.
 if($user==null){ Core::redir("./");}
+// Yo (la variable $user se reutiliza en el foreach de la tabla de abajo)
+$__yo = $user;
 
 if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
 <div class="page-header d-print-none">
@@ -30,7 +32,9 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
       </div>
       <div class="card-body">
     <?php
-    $users = UserData::getAll();
+    // Sólo los usuarios con permiso de edición (misma regla que el action):
+    // el super-admin no se lista para los demás y cada dueño ve su tienda.
+    $users = UserData::getAllVisibles($__yo);
     if(count($users)>0){
     ?>
       <div class="table-responsive">
@@ -52,7 +56,7 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
               <td class="text-muted"><?php echo $user->email; ?></td>
               <td>
                 <?php
-                $role_map = array("dueno"=>"Dueño","cocina"=>"Cocina","repartidor"=>"Repartidor");
+                $role_map = array("dueno"=>"Dueño","cocina"=>"Cocina","repartidor"=>"Repartidor","superadmin"=>"Super admin");
                 $rl = isset($role_map[$user->role]) ? $role_map[$user->role] : "Dueño";
                 $rb = $user->role==="cocina" ? "warning" : ($user->role==="repartidor" ? "info" : "primary");
                 ?>
@@ -136,7 +140,16 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
 </div>
 
 <?php elseif(isset($_GET["opt"]) && $_GET["opt"]=="edit"):?>
-<?php $user = UserData::getById($_GET["id"]);?>
+<?php
+$user = UserData::getById($_GET["id"]);
+// Misma regla que el action: sin permiso -> no se edita (evita degradar
+// al super-admin o tocar usuarios de otra tienda).
+if(!$user || !UserData::puedeTocar($__yo, $user)){
+  Core::alert("No tienes permiso para modificar ese usuario.");
+  Core::redir("./?view=users&opt=all");
+  exit;
+}
+?>
 <div class="page-header d-print-none">
   <div class="container-xl">
     <div class="row g-2 align-items-center">
@@ -178,11 +191,18 @@ if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
           </div>
           <div class="mb-3">
             <label class="form-label">Rol en la tienda</label>
+            <?php if($user->role === "superadmin"): ?>
+            <!-- Sin name: el action conserva el rol actual y nadie puede
+                 degradar al super-admin desde este formulario. -->
+            <input type="text" class="form-control" value="Super admin" disabled>
+            <small class="form-hint">El rol de super-admin no se modifica desde aquí.</small>
+            <?php else: ?>
             <select name="role" class="form-control" required>
               <option value="dueno" <?php if($user->role==="dueno" || $user->role===""){ echo "selected"; } ?>>Dueño</option>
               <option value="cocina" <?php if($user->role==="cocina"){ echo "selected"; } ?>>Cocina</option>
               <option value="repartidor" <?php if($user->role==="repartidor"){ echo "selected"; } ?>>Repartidor</option>
             </select>
+            <?php endif; ?>
           </div>
           <div class="form-footer mt-4">
             <input type="hidden" name="user_id" value="<?php echo $user->id;?>">

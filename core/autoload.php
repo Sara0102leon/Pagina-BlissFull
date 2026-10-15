@@ -1,4 +1,7 @@
 <?php
+// Zona horaria del negocio, en el punto de entrada (antes que cualquier
+// include): sin esto el sitio hereda date.timezone del php.ini (Europe/Berlin).
+date_default_timezone_set("America/Caracas");
 
 include "controller/Core.php";
 include "controller/View.php";

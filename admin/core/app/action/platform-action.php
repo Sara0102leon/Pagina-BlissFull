@@ -49,7 +49,19 @@ if($opt === "estatus"){
 	$to = isset($_GET["to"]) ? $_GET["to"] : "";
 	if($id > 0 && in_array($to, array("activa","pendiente","suspendida"))){
 		$t = TiendaData::getById($id);
-		if($t){ $t->setEstatus($to); pf_back("all", "Tienda \"".$t->nombre."\" marcada como $to.", 1); }
+		if($t){
+			// Nunca dejar la plataforma sin ninguna tienda activa: sin fallback
+			// el menú público queda en 404 global (auditoría Fase 6 #3).
+			if($to !== "activa" && strtolower(trim($t->estatus)) === "activa"){
+				$q = Executor::doit("select count(*) c from tienda where estatus='activa'");
+				$activas = ($q[0] && ($row = $q[0]->fetch_assoc())) ? (int)$row["c"] : 0;
+				if($activas <= 1){
+					pf_back("all", "No se puede suspender: es la última tienda activa. Activa otra primero.", 0);
+				}
+			}
+			$t->setEstatus($to);
+			pf_back("all", "Tienda \"".$t->nombre."\" marcada como $to.", 1);
+		}
 	}
 	pf_back("all", "No se pudo actualizar el estatus.", 0);
 }
@@ -148,6 +160,16 @@ if($opt === "crear"){
 	$plan = $plan_id > 0 ? PlanData::getById($plan_id) : null;
 	if(!$plan){ pf_back("all", "Selecciona un plan válido.", 0); }
 
+	// Dueño opcional: se valida ANTES de crear nada (si no, el alta quedaría
+	// a medias y sin usuario, en silencio) — auditoría Fase 6 #6.
+	$con_dueno = isset($_POST["con_dueno"]);
+	$email     = isset($_POST["email"]) ? trim($_POST["email"]) : "";
+	$password  = isset($_POST["password"]) ? (string)$_POST["password"] : "";
+	if($con_dueno){
+		if(!filter_var($email, FILTER_VALIDATE_EMAIL)){ pf_back("all", "El email del dueño no es válido.", 0); }
+		if(strlen($password) < 6){ pf_back("all", "La contraseña del dueño debe tener al menos 6 caracteres.", 0); }
+	}
+
 	// Subdominio único
 	$base = $sub; $i = 1;
 	while(!TiendaData::subdomainFree($sub)){
@@ -174,11 +196,8 @@ if($opt === "crear"){
 	$sus->id = (int)$r2[1];
 	$sus->extend($dias);
 
-	// Usuario dueño (opcional)
-	$con_dueno = isset($_POST["con_dueno"]);
-	$email    = isset($_POST["email"]) ? trim($_POST["email"]) : "";
-	$password = isset($_POST["password"]) ? (string)$_POST["password"] : "";
-	if($con_dueno && $email !== "" && strlen($password) >= 6){
+	// Usuario dueño (opcional; datos ya validados arriba)
+	if($con_dueno){
 		$pass = sha1(md5($password)); // mismo hash que el login del panel
 		$sql  = "insert into user (name,username,email,password,is_active,is_admin,tienda_id,role,created_at) ";
 		$sql .= "value (\"".pf_esc($nombre)."\",\"".pf_esc($email)."\",\"".pf_esc($email)."\",\"$pass\",1,0,$tiendaId,'dueno',NOW())";

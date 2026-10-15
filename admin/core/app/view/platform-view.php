@@ -76,7 +76,7 @@ $pf_ok  = isset($_GET["ok"]) ? $_GET["ok"] : "";
               <div class="col-auto"><span class="bg-green text-white avatar"><i class="bi bi-cash-coin"></i></span></div>
               <div class="col">
                 <div class="h2 mb-0">$<?php echo number_format($st["ingresos_mes"],2); ?></div>
-                <div class="text-secondary">Suscripciones este mes</div>
+                <div class="text-secondary">Pagos con periodo que inicia este mes</div>
               </div>
             </div>
           </div>
@@ -149,8 +149,8 @@ $pf_ok  = isset($_GET["ok"]) ? $_GET["ok"] : "";
                 <span class="form-check-label">Crear usuario dueño</span>
               </label>
               <div class="row mt-2">
-                <div class="col-6 mb-2"><input type="email" name="email" class="form-control" placeholder="email@local.com"></div>
-                <div class="col-6 mb-2"><input type="text" name="password" class="form-control" placeholder="contraseña (mín 6)"></div>
+                <div class="col-6 mb-2"><input type="email" name="email" class="form-control" placeholder="email@local.com" autocomplete="off"></div>
+                <div class="col-6 mb-2"><input type="password" name="password" class="form-control" placeholder="contraseña (mín 6)" autocomplete="new-password"></div>
               </div>
             </div>
             <div class="card-footer text-end">
