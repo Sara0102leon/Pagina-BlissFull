@@ -330,3 +330,43 @@ Registrar el webhook en Zenobank → `https://<host>/webhooks/zenobank.php`
   `master-*`/`mysql-relay-bin-*`/`*.dmp` en `C:\xampp\mysql\data\`.
 - El **password del admin** es `admin` (`sha1(md5("admin"))`); el del super-admin es
   `superadmin`. Ambos deben cambiarse en producción.
+
+---
+
+## 11. Acceso al panel (login) — mejoras y bugs corregidos (oct 2026)
+
+**Síntoma reportado:** "no puedo entrar al admin". Diagnóstico: el **access log** no
+mostraba ningún `POST` desde el navegador y **Apache (80) y MariaDB (3306) estaban
+caídos**. Con los servicios arriba, el login funciona de punta a punta (verificado con
+Chromium real: `POST login.php → 302 → /admin/?view=home → 200`).
+
+**Credenciales:** dueño `admin` / `admin` (el usuario `admin` **no tiene email**: se entra
+por *usuario*); super-admin `superadmin` / `superadmin`. La página de acceso ahora muestra
+esta pista **solo en localhost** (nunca en producción).
+
+### `login.php` (reescrito)
+- Cookie de sesión **HttpOnly + SameSite=Lax**; `Cache-Control: no-store` y
+  `X-Robots-Tag: noindex`.
+- Casilla **"Mantener la sesión iniciada"** → cookie de sesión persistente **30 días**
+  (`session.gc_maxlifetime` + `Set-Cookie` con `lifetime`).
+- **`?next=`**: si el admin te manda al login, al entrar vuelves a la página que pedías
+  (el guard del `layout.php` ahora propaga `?next=<ruta>`; validado contra *open redirect*).
+- **Mensajes diferenciados**: campos vacíos / credenciales incorrectas / **cuenta
+  desactivada** (antes todo era el mismo mensaje).
+- Aviso de **Bloq Mayús**, autofoco, mostrar/ocultar contraseña, y una **espera corta**
+  ante fallos (frena fuerza bruta).
+
+### `admin/core/app/action/access-action.php` (login legacy del panel)
+- Antes: `htmlentities()` en vez de escapar, sin `exit` (imprimía "Cargando ...") y
+  redirección fija. Ahora: `real_escape_string`, `header()+exit`, **redirección por rol**
+  y `../login.php?err=1` si falla.
+
+### Bugs preexistentes encontrados en el barrido y corregidos
+- **`?view=forms` → Fatal error** *"Class 'Form' not found"*: la clase se renombró a
+  `FormTool` y la vista seguía usando `Form::` (en `admin/` **y** en `core/`).
+- **`?view=cocina` → Deprecated** `htmlspecialchars(null)` (PHP 8.1+): el nombre de
+  cliente se normaliza antes de imprimirlo.
+
+**Verificación:** 18/18 vistas admin y las páginas públicas quedan **sin warnings ni
+fatales**; pruebas E2E del login (clave mala, `next`, recordarme, logout, sesión ya
+iniciada) **15/15 OK**.
