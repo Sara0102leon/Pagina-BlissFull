@@ -385,7 +385,35 @@
               PLANS_FALLBACK[code];
       if (!p) return "—";
       var s = (cfg && cfg.symbol) || p.symbol || "$";
-      return s + parseFloat(p.price).toFixed(0);
+      var val = (p.offerActive && p.priceOffer) ? p.priceOffer : p.price;
+      return s + parseFloat(val).toFixed(0);
+    }
+
+    // Pinta en las tarjetas de la landing la oferta vigente que venga del panel
+    // (precio rebajado + tachado + etiqueta y fecha de vencimiento).
+    function paintPlanOffers() {
+      if (!cfg || !cfg.plans || !cfg.plans.length) return;
+      var map = {};
+      cfg.plans.forEach(function (p) { map[p.code] = p; });
+      var sym = cfg.symbol || "$";
+      Array.prototype.forEach.call(document.querySelectorAll(".plan[data-plan]"), function (card) {
+        var p = map[card.getAttribute("data-plan")];
+        if (!p || !p.offerActive || !p.priceOffer) return;
+        var price = card.querySelector(".plan__price");
+        if (!price || price.dataset.painted) return;
+        var nuevo = parseFloat(p.priceOffer).toFixed(0);
+        var viejo = (p.price !== null && p.price !== undefined) ? parseFloat(p.price).toFixed(0) : "";
+        price.innerHTML = '<span class="plan__cur">' + sym + '</span>' + nuevo +
+                          (viejo ? '<s class="plan__old">' + sym + viejo + '</s>' : '') +
+                          '<span class="plan__per">/mes</span>';
+        price.classList.add("plan__price--offer");
+        price.dataset.painted = "1";
+
+        var chip = document.createElement("span");
+        chip.className = "plan__offer";
+        chip.textContent = (p.offerLabel || "Oferta") + (p.offerToFmt ? " · hasta " + p.offerToFmt : "");
+        price.parentNode.insertBefore(chip, price.nextSibling);
+      });
     }
 
     function baseDomain() { return (cfg && cfg.baseDomain) || "sazon.app"; }
@@ -579,6 +607,7 @@
         (d.plans || []).forEach(function (p) { plansMap[p.code] = p; });
         document.getElementById("payBadge").textContent = d.mode === "live" ? "Pago seguro con Zenobank" : "Modo demo · se activa al instante";
         updateUrlPreview();
+        paintPlanOffers();
       })
       .catch(function () {});
 

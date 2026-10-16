@@ -39,8 +39,13 @@ class PlatformData {
 			"tiendas_total"=>0, "tiendas_activas"=>0, "tiendas_pendientes"=>0, "tiendas_suspendidas"=>0,
 			"susc_completed"=>0, "susc_open"=>0, "susc_otras"=>0,
 			"por_vencer"=>0, "vencidas"=>0, "sin_suscripcion"=>0,
-			"ingresos_total"=>0.0, "ingresos_mes"=>0.0,
+			"ingresos_total"=>0.0, "ingresos_mes"=>0.0, "ticket_promedio"=>0.0, "mrr"=>0.0,
 			"pedidos_total"=>0, "pedidos_mes"=>0, "productos_total"=>0,
+			// ── Contable / audiencia (lo que mira el super-admin) ────────
+			"clientes_total"=>0, "clientes_compradores"=>0, "clientes_nuevos_mes"=>0,
+			"usuarios_total"=>0, "usuarios_activos"=>0, "usuarios_duenos"=>0,
+			"visitas_total"=>0, "visitas_mes"=>0, "visitas_hoy"=>0,
+			"planes_total"=>0, "planes_activos"=>0, "planes_en_oferta"=>0,
 			"dias_aviso"=>(int)self::cfg("saas_dias_aviso", 7),
 			"aviso_cfg"=>self::cfg("saas_dias_aviso", "7"),
 		);
@@ -82,6 +87,57 @@ class PlatformData {
 		$q = Executor::doit("select count(*) c from product");
 		if($q[0] && ($r = $q[0]->fetch_assoc())){ $out["productos_total"] = (int)$r["c"]; }
 
+		// Ticket promedio de los pagos
+		if($out["susc_completed"] > 0){
+			$out["ticket_promedio"] = $out["ingresos_total"] / $out["susc_completed"];
+		}
+
+		// ── Usuarios ───────────────────────────────────────────────────
+		$q = Executor::doit("select count(*) total,
+			coalesce(sum(case when is_active=1 then 1 else 0 end),0) activos,
+			coalesce(sum(case when role='dueno' then 1 else 0 end),0) duenos
+			from user");
+		if($q[0] && ($r = $q[0]->fetch_assoc())){
+			$out["usuarios_total"]   = (int)$r["total"];
+			$out["usuarios_activos"] = (int)$r["activos"];
+			$out["usuarios_duenos"]  = (int)$r["duenos"];
+		}
+
+		// ── Clientes (del menú) ────────────────────────────────────────
+		$q = Executor::doit("select count(*) c from client where is_active is null or is_active=1");
+		if($q[0] && ($r = $q[0]->fetch_assoc())){ $out["clientes_total"] = (int)$r["c"]; }
+		$q = Executor::doit("select count(distinct client_id) c from buy where client_id is not null");
+		if($q[0] && ($r = $q[0]->fetch_assoc())){ $out["clientes_compradores"] = (int)$r["c"]; }
+		$q = Executor::doit("select count(*) c from client where created_at >= date_format(curdate(),'%Y-%m-01')");
+		if($q[0] && ($r = $q[0]->fetch_assoc())){ $out["clientes_nuevos_mes"] = (int)$r["c"]; }
+
+		// ── Visitas al menú de cada tienda ─────────────────────────────
+		// (la tabla la crea migracion_planes_ofertas.sql; si aún no existe
+		//  el panel sigue funcionando en ceros)
+		$out = array_merge($out, self::visitasGlobal());
+
+		// ── Planes ─────────────────────────────────────────────────────
+		$q = Executor::doit("select count(*) total,
+			coalesce(sum(case when is_active=1 then 1 else 0 end),0) activos
+			from plan");
+		if($q[0] && ($r = $q[0]->fetch_assoc())){
+			$out["planes_total"]    = (int)$r["total"];
+			$out["planes_activos"]  = (int)$r["activos"];
+		}
+		foreach(PlanData::getAll() as $pl){
+			if(PlanData::offerState($pl) === PlanData::OFF_ACT){ $out["planes_en_oferta"]++; }
+		}
+
+		// ── Ingresos recurrentes (MRR): plan de las tiendas activas ────
+		// con su pago aprobado y periodo vigente (usa la tarifa normal).
+		$q = Executor::doit("select coalesce(sum(p.price),0) s
+			from tienda t
+			join suscripcion s on s.id=(select max(s2.id) from suscripcion s2 where s2.tienda_id=t.id)
+			join plan p on p.id=s.plan_id
+			where t.estatus='activa' and s.zeno_status='COMPLETED'
+			  and (s.periodo_fin is null or s.periodo_fin >= curdate())");
+		if($q[0] && ($r = $q[0]->fetch_assoc())){ $out["mrr"] = (float)$r["s"]; }
+
 		// Vencimientos (sobre la suscripción más reciente de cada tienda)
 		foreach(self::tiendas() as $t){
 			if(!$t["sus_id"]){ $out["sin_suscripcion"]++; continue; }
@@ -92,6 +148,93 @@ class PlatformData {
 		}
 
 		return $out;
+	}
+
+	// ── Visitas al menú (tiendas más visitadas) ──────────────────────
+	// Ojo: estas consultas tocan `tienda_visita`, que crea
+	// migracion_planes_ofertas.sql. Si aún no se aplicó, la consulta falla y
+	// (por los mysqli de PHP 8.1+) lanzaría excepción — por eso se pasan por
+	// tryDoit(): el panel tiene que seguir mostrándose en ceros.
+	private static function tryDoit($sql){
+		try { return Executor::doit($sql); }
+		catch(Throwable $e){ return array(null, 0); }
+	}
+
+	// ¿Existe ya la tabla de visitas? (para avisar en el panel si falta migrar)
+	public static function visitasDisponibles(){
+		$q = self::tryDoit("select 1 from tienda_visita limit 1");
+		return ($q[0] !== false && $q[0] !== null);
+	}
+
+	public static function visitasGlobal(){
+		$out = array("visitas_total"=>0, "visitas_mes"=>0, "visitas_hoy"=>0);		$q = self::tryDoit("select
+			coalesce(sum(visitas),0) total,
+			coalesce(sum(case when fecha >= date_format(curdate(),'%Y-%m-01') then visitas else 0 end),0) mes,
+			coalesce(sum(case when fecha = curdate() then visitas else 0 end),0) hoy
+			from tienda_visita");
+		if($q[0] && ($r = $q[0]->fetch_assoc())){
+			$out["visitas_total"] = (int)$r["total"];
+			$out["visitas_mes"]   = (int)$r["mes"];
+			$out["visitas_hoy"]   = (int)$r["hoy"];
+		}
+		return $out;
+	}
+
+	// Ranking: visitas (ventana + total), pedidos y cobrado por tienda.
+	public static function tiendasMasVisitadas($dias = 30, $limit = 10){
+		$dias  = max(1, (int)$dias);
+		$limit = max(1, (int)$limit);
+		$desde = date("Y-m-d", strtotime("-".($dias - 1)." days"));
+		$rows = array();
+		$q = self::tryDoit("select t.id, t.nombre, t.subdomain, t.estatus,
+			(select coalesce(sum(v.visitas),0) from tienda_visita v
+			  where v.tienda_id=t.id and v.fecha>='$desde') visitas_dias,
+			(select coalesce(sum(v.visitas),0) from tienda_visita v
+			  where v.tienda_id=t.id) visitas_total,
+			(select count(*) from buy b where b.tienda_id=t.id) pedidos,
+			(select coalesce(sum(s.paid_amount),0) from suscripcion s
+			  where s.tienda_id=t.id and s.zeno_status='COMPLETED') cobrado,
+			(select count(*) from user u where u.tienda_id=t.id) usuarios
+			from tienda t
+			order by visitas_total desc, visitas_dias desc, t.id asc
+			limit $limit");
+		if($q[0]){
+			while($r = $q[0]->fetch_assoc()){
+				$rows[] = array(
+					"id"           => (int)$r["id"],
+					"nombre"       => $r["nombre"],
+					"subdomain"    => $r["subdomain"],
+					"estatus"      => $r["estatus"],
+					"visitas_dias" => (int)$r["visitas_dias"],
+					"visitas_total"=> (int)$r["visitas_total"],
+					"pedidos"      => (int)$r["pedidos"],
+					"cobrado"      => (float)$r["cobrado"],
+					"usuarios"     => (int)$r["usuarios"],
+				);
+			}
+		}
+		return $rows;
+	}
+
+	// Serie de visitas por día (para la barrita del panel). Devuelve los $dias
+	// últimos días, rellenando en 0 los que no tuvieron visitas.
+	public static function visitasSerie($dias = 14){
+		$dias = max(2, (int)$dias);
+		$serie = array();
+		for($i = $dias - 1; $i >= 0; $i--){
+			$fecha = date("Y-m-d", strtotime("-".$i." days"));
+			$serie[$fecha] = 0;
+		}
+		$desde = key($serie);
+		$q = self::tryDoit("select fecha, sum(visitas) v from tienda_visita
+			where fecha >= '$desde' group by fecha");
+		if($q[0]){
+			while($r = $q[0]->fetch_assoc()){
+				$f = substr((string)$r["fecha"], 0, 10);
+				if(array_key_exists($f, $serie)){ $serie[$f] = (int)$r["v"]; }
+			}
+		}
+		return $serie; // [fecha => visitas]
 	}
 
 	// ── Listado de tiendas con su suscripción/plan vigente ─────────────

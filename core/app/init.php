@@ -48,6 +48,13 @@ if(isset($_SESSION["cart"])){
 }
 $_SESSION["cart_tienda"] = $curTenant;
 
+/* 3) Contabiliza la visita al menú (para "tiendas más visitadas" en el panel
+      de plataforma). Sólo páginas completas (sin ?action=, que son AJAX), una
+      visita por sesión/día. Nunca rompe el menú si falta la migración.      */
+if(!isset($_GET["action"])){
+	TiendaData::registrarVisita($curTenant);
+}
+
 if(!isset($_GET["action"])){
 //	Bootload::load("default");
 	Module::loadLayout("index");

@@ -107,7 +107,7 @@ $err = isset($_GET["err"]) ? $_GET["err"] : "";
                 <div class="alert alert-warning mb-0">No hay planes activos.</div>
               <?php else: ?>
               <div class="row g-3">
-                <?php foreach($plans as $pl): ?>
+                <?php foreach($plans as $pl): $of = PlanData::offerInfo($pl); $prec = $of ? $of["price"] : (float)$pl->price; ?>
                 <div class="col-md-6">
                   <label class="form-selectgroup-item d-block">
                     <input type="radio" name="plan_id" value="<?php echo (int)$pl->id; ?>" class="form-selectgroup-input"
@@ -115,9 +115,16 @@ $err = isset($_GET["err"]) ? $_GET["err"] : "";
                     <span class="form-selectgroup-label d-block p-3">
                       <span class="d-flex align-items-center mb-1">
                         <span class="h3 mb-0 me-2"><?php echo htmlspecialchars($pl->name); ?></span>
-                        <span class="ms-auto h3 mb-0">$<?php echo number_format((float)$pl->price,2); ?></span>
+                        <span class="ms-auto text-end">
+                          <?php if($of): ?><s class="text-secondary me-1">$<?php echo number_format($of["regular"],2); ?></s><?php endif; ?>
+                          <span class="h3 mb-0">$<?php echo number_format($prec,2); ?></span>
+                        </span>
                       </span>
-                      <span class="text-secondary small">
+                      <?php if($of): ?>
+                      <span class="badge bg-green mb-1"><?php echo htmlspecialchars($of["label"]); ?><?php if($of["to"] !== ""): ?> · hasta <?php echo htmlspecialchars(PlatformData::fechaFmt($of["to"])); ?><?php endif; ?></span>
+                      <?php endif; ?>
+                      <span class="text-secondary small d-block">
+                        <?php if($pl->description){ echo htmlspecialchars($pl->description)." · "; } ?>
                         <?php if($pl->max_products===null || $pl->max_products===""){ echo "Productos ilimitados"; } else { echo (int)$pl->max_products." productos"; } ?>
                         · <?php if($pl->max_sedes===null || $pl->max_sedes===""){ echo "sedes ilimitadas"; } else { echo (int)$pl->max_sedes." sede(s)"; } ?>
                       </span>

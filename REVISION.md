@@ -370,3 +370,79 @@ esta pista **solo en localhost** (nunca en producción).
 **Verificación:** 18/18 vistas admin y las páginas públicas quedan **sin warnings ni
 fatales**; pruebas E2E del login (clave mala, `next`, recordarme, logout, sesión ya
 iniciada) **15/15 OK**.
+
+
+---
+
+## 12. Panel contable + planes editables con ofertas (oct 2026)
+
+**Pedido:** el super-admin sólo debería ver cosas **contables** (cuántos clientes
+compraron, cuántos usuarios hay, qué tiendas se visitan más), poder **crear planes**
+del menú y **ponerles ofertas con tiempo límite**.
+
+### Migración `migracion_planes_ofertas.sql` (aditiva/idempotente)
+- `plan`: + `description`, `offer_price`, `offer_from`, `offer_to`, `offer_label`.
+- Tabla **`tienda_visita`** (`tienda_id`, `fecha`, `visitas`, `UNIQUE(tienda_id,fecha)`).
+- Descripciones por defecto de los 3 planes (sólo si están vacías).
+- **Oferta de ejemplo** en `restaurante` (19 → 15, 30 días) sembrada **una sola vez**
+  (marcador `saas_promo_planes`, así una re-ejecución no pisa una oferta ya editada).
+
+### `PlanData` (catálogo ahora editable)
+- CRUD: `getAll()`, `add()`, `update()`, `save($id)`, `setActive()`, `del()`,
+  `codeFree()`, `nextPosition()`, `tieneSuscripciones()`.
+- Ofertas: `offerState()` (`OFF_NONE|OFF_PROG|OFF_ACT|OFF_END`), `offerInfo()`
+  (precio rebajado, %, etiqueta, fechas, días restantes — **sólo si está vigente**),
+  `effectivePrice()` (oferta si aplica, si no la tarifa), `offerStateLabel()`.
+- La clase **escapa sus propios campos**; el action le pasa los valores **crudos**
+  (pre-escapar los duplicaría).
+
+### `PlatformData` (métricas contables)
+- `stats()` suma: `clientes_total/compradores/nuevos_mes`, `usuarios_total/activos/duenos`,
+  `visitas_total/mes/hoy`, `ticket_promedio`, `mrr`, `planes_total/activos/en_oferta`.
+- `tiendasMasVisitadas($dias,$limit)` — ranking con visitas (ventana + total), pedidos
+  y cobrado por tienda.
+- `visitasSerie($dias)` — visitas por día (rellena en 0).
+- `visitasDisponibles()` — avisa si falta aplicar la migración. Todas las consultas a
+  `tienda_visita` pasan por `tryDoit()` (nunca rompen el panel si falta la tabla).
+
+### Visitas al menú (`TiendaData::registrarVisita`)
+- Se llama en `core/app/init.php` **sólo en la carga del menú público** (sin `?action=`).
+- Una visita por **sesión y día** (menos ruido de refreshs); descarta bots por *User-Agent*.
+- Envuelto en `try/catch`: si la tabla no existe o la BD falla, **el menú no se rompe**.
+
+### Panel `?view=platform` reestructurado en 4 pestañas
+- **`resumen`** (nuevo, por defecto): 8 KPIs contables + *Tiendas más visitadas* +
+  *Visitas (14 días)* + *Ofertas vigentes*.
+- **`tiendas`**: lo que antes era `opt=all` (se conserva `all` como alias).
+- **`planes`** (nuevo): tabla de todos los planes + formulario crear/editar con la
+  oferta (precio, etiqueta, desde/hasta) + activar/desactivar + borrar (con guard).
+- **`movimiento`**: suscripciones y pedidos.
+
+### Acciones nuevas (`platform-action.php`) + validaciones
+- `plan_save` (crear/editar), `plan_toggle`, `plan_del`.
+- Valida: código `^[a-z0-9][a-z0-9_-]{1,39}$` y único, nombre 2-120, moneda `^[A-Z]{3}$`,
+  precio ≥ 0, **oferta < tarifa**, fechas `Y-m-d` válidas y con inicio ≤ fin, máximos
+  numéricos. `plan_del` se niega si el plan tiene suscripciones.
+
+### Precio de oferta aplicado en todo el flujo
+- `renovar-action.php` cobra `PlanData::effectivePrice($plan)` (demo y live).
+- `renovar-view.php` muestra precio rebajado + tachado + etiqueta + "hasta …".
+- `landing/api/config.php` expone `offerActive/priceOffer/offerLabel/offerToFmt/offerPct`.
+- `landing/api/checkout.php` cobra el precio efectivo (demo y `createCheckout`).
+- Landing: `landing.js` pinta el precio rebajado + `<s>` + chip en la tarjeta
+  (`paintPlanOffers()`), y el modal usa el precio con oferta.
+
+### Verificación
+- **CLI** `%TEMP%\opencode\test-planes.php`: **60/60 OK** (ofertas programada/vigente/
+  vencida, CRUD, métricas, visitas 1×sesión/día, bot no cuenta).
+- **HTTP**: 4 pestañas sin warnings/fatales; CRUD de planes (crear/editar/validar/
+  activar/borrar + guard de rol y de plan en uso) OK; renovación demo cobró **15.00**
+  con la oferta; `config.php` expone la oferta; menú público + AJAX + subdominios OK.
+- **E2E Playwright**: tarjeta Restaurante `$15 ~~$19~~/mes` + chip "Oferta de lanzamiento
+  · hasta 15/11/2026", Emprendedor sin chip, modal `payTotal = $15`, formulario de
+  edición pre-carga `offer_price = 15.00`.
+
+**Notas:** los límites del plan (productos, sedes, funciones) siguen siendo
+**informativos** (no hay *gate*). El *MRR* usa la tarifa normal del plan de las tiendas
+activas con pago aprobado y periodo vigente. La suscripción demo de la tienda 1 se
+restauró tras la prueba de renovación.

@@ -533,6 +533,18 @@ a:hover .ar{transform:translate(2px,-2px)}
 .plan__cur{position:relative;top:-20px;font-size:26px;color:var(--muted)}
 .plan__per{font-family:var(--font-body);font-size:14px;font-weight:600;color:var(--muted)}
 .plan__desc{margin-top:10px;color:var(--muted);font-size:14px;min-height:2.6em}
+/* Oferta vigente (la pinta landing.js desde la config del panel) */
+.plan__price--offer{color:var(--gold)}
+.plan__old{
+  margin-left:10px;font-family:var(--font-body);font-size:18px;font-weight:600;
+  color:var(--muted);text-decoration:line-through;vertical-align:middle;
+}
+.plan__offer{
+  display:inline-block;margin-top:8px;
+  background:rgba(233,185,74,.14);color:var(--gold);border:1px solid rgba(233,185,74,.4);
+  font-family:var(--font-body);font-size:12px;font-weight:700;letter-spacing:.02em;
+  padding:4px 10px;border-radius:999px;
+}
 .plan__list{margin:24px 0 28px;display:flex;flex-direction:column;gap:11px;flex:1}
 .plan__list li{display:flex;gap:10px;font-size:14px;color:var(--text);align-items:flex-start}
 .plan__list li.off{color:var(--muted)}

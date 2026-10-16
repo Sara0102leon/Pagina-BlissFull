@@ -9,11 +9,19 @@ if($mode !== "live" || $apiKey === ""){ $mode = "demo"; }
 $plans = PlanData::getAllActives();
 $out = array();
 foreach($plans as $p){
+	$of = PlanData::offerInfo($p); // sólo si la oferta está vigente
 	$out[] = array(
-		"code"     => $p->code,
-		"name"     => $p->name,
-		"price"    => $p->price,
-		"currency" => $p->currency,
+		"code"       => $p->code,
+		"name"       => $p->name,
+		"price"      => $p->price,
+		"currency"   => $p->currency,
+		// Oferta vigente (si la hay): precio rebajado + etiqueta + vencimiento.
+		"offerActive" => $of ? true : false,
+		"priceOffer"  => $of ? $of["price"] : null,
+		"offerLabel"  => $of ? $of["label"] : "",
+		"offerTo"     => ($of && $of["to"] !== "") ? $of["to"] : "",
+		"offerToFmt"  => ($of && $of["to"] !== "") ? date("d/m/Y", strtotime($of["to"])) : "",
+		"offerPct"    => $of ? $of["pct"] : 0,
 	);
 }
 

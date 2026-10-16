@@ -95,11 +95,12 @@ $baseDomain     = saz_config("saas_base_domain", "sazon.app");
 $subdominioText = $subdomain . "." . $baseDomain;
 
 // ---------- DEMO: activación inmediata ----------
+$precio = PlanData::effectivePrice($plan); // oferta vigente si la hay
 if($mode === "demo"){
 	$checkoutId = "demo_" . bin2hex(random_bytes(6));
 	$sus->id = $susId;
 	$sus->setCheckoutId($checkoutId);
-	$sus->markCompleted($plan->price);
+	$sus->markCompleted($precio);
 	saz_json(array(
 		"ok"         => true,
 		"demo"       => true,
@@ -121,7 +122,7 @@ $successUrl = $landing . "/?pago=exito&tienda=" . rawurlencode($subdomain);
 
 $orderId = "saz-" . $tiendaId . "-" . $susId;
 $zeno = new ZenoBank($apiKey);
-$checkout = $zeno->createCheckout($orderId, $plan->price, $currency, $successUrl);
+$checkout = $zeno->createCheckout($orderId, $precio, $currency, $successUrl);
 
 if(!$checkout || empty($checkout["ok"]) || empty($checkout["id"]) || empty($checkout["checkoutUrl"])){
 	error_log("[saz] zenobank create falló: " . json_encode($checkout));

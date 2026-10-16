@@ -34,6 +34,9 @@ $plan_id = isset($_POST["plan_id"]) ? (int)$_POST["plan_id"] : 0;
 $plan = $plan_id > 0 ? PlanData::getById($plan_id) : null;
 if(!$plan || !$plan->is_active){ Core::redir("./?view=renovar&err=sin-plan"); exit; }
 
+// Precio a cobrar: la oferta vigente si la hay (si no, la tarifa normal).
+$precio = PlanData::effectivePrice($plan);
+
 // Modo de cobro (config de plataforma cfg_id=1)
 $modo = PlatformData::cfg("zeno_mode", "demo");
 $apiKey = trim(PlatformData::cfg("zeno_api_key", ""));
@@ -53,7 +56,7 @@ if(!$sus){
 // ── DEMO: activación inmediata ─────────────────────────────────────
 if($modo === "demo"){
 	$sus->openRenewal((int)$plan->id, "demo_" . bin2hex(random_bytes(6)));
-	$sus->markCompleted($plan->price);
+	$sus->markCompleted($precio);
 	$tienda->setEstatus("activa");
 	Core::redir("./?view=renovar&pago=exito");
 	exit;
@@ -78,7 +81,7 @@ if($sus->zeno_status === "OPEN" && $sus->zeno_checkout_id !== ""
 	$pok   = (is_array($prev) && !empty($prev["ok"]));
 	if($pok && $pst === "COMPLETED"){
 		// Pagado, pero el webhook nunca llegó: se acredita aquí mismo.
-		$sus->markCompleted((float)$plan->price);
+		$sus->markCompleted($precio);
 		$tienda->setEstatus("activa");
 		Core::redir("./?view=renovar&pago=exito");
 		exit;
@@ -93,7 +96,7 @@ if($sus->zeno_status === "OPEN" && $sus->zeno_checkout_id !== ""
 
 $orderId    = "renov-" . $tienda_id . "-" . (int)$sus->id . "-" . time();
 
-$checkout = $zeno->createCheckout($orderId, $plan->price, $currency, $successUrl);
+$checkout = $zeno->createCheckout($orderId, $precio, $currency, $successUrl);
 if(!$checkout || empty($checkout["ok"]) || empty($checkout["id"]) || empty($checkout["checkoutUrl"])){
 	error_log("[saz] renovar: zenobank create falló: " . json_encode($checkout));
 	Core::redir("./?view=renovar&err=zeno");
