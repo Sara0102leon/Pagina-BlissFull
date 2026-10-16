@@ -11,7 +11,12 @@ $admin_titles = array(
 $page_title = isset($admin_titles[$current_view]) ? $admin_titles[$current_view] : "Panel Administrativo";
 $is_auth = isset($_SESSION["user_id"]);
 if($is_auth && $current_view=="login"){ header("Location: ./"); exit; }
-if(!$is_auth){ header("Location: ../login.php"); exit; }
+if(!$is_auth){
+	// Recordamos a dónde quería ir para volver ahí tras iniciar sesión
+	$__next = isset($_SERVER["REQUEST_URI"]) ? $_SERVER["REQUEST_URI"] : "";
+	header("Location: ../login.php".($__next !== "" ? "?next=".urlencode($__next) : ""));
+	exit;
+}
 $user_role = "dueno";
 $user_role_label = "Dueño";
 if($is_auth){

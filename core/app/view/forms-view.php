@@ -21,15 +21,15 @@
             <form>
               <div class="mb-3">
                 <label class="form-label">Email address</label>
-                <?php echo Form::input("email","","","Email");?>
+                <?php echo FormTool::input("email","","","Email");?>
               </div>
               <div class="mb-3">
                 <label class="form-label">Password</label>
-                <?php echo Form::input("text","","","Password");?>
+                <?php echo FormTool::input("text","","","Password");?>
               </div>
               <div class="mb-3">
                 <label class="form-label">File input</label>
-                <?php echo Form::input2("file");?>
+                <?php echo FormTool::input2("file");?>
                 <small class="form-hint">Example block-level help text here.</small>
               </div>
               <div class="mb-3">
@@ -55,13 +55,13 @@
               <div class="mb-3 row">
                 <label class="col-3 col-form-label required">Email</label>
                 <div class="col">
-                  <?php echo Form::input("email","","","Email");?>
+                  <?php echo FormTool::input("email","","","Email");?>
                 </div>
               </div>
               <div class="mb-3 row">
                 <label class="col-3 col-form-label required">Password</label>
                 <div class="col">
-                  <?php echo Form::input("text","","","Password");?>
+                  <?php echo FormTool::input("text","","","Password");?>
                 </div>
               </div>
               <div class="mb-3 row">
@@ -93,7 +93,7 @@
               array("value"=>"usd","name"=>"Dólar estadounidense"),
               array("value"=>"jpy","name"=>"Yen Japonés")
               );
-            echo Form::select("myselect",$data,"","required");
+            echo FormTool::select("myselect",$data,"","required");
             ?>
           </div>
         </div>

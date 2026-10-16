@@ -7,54 +7,102 @@
    ══════════════════════════════════════════════════════════ */
 
 include "core/autoload.php";
+
+/* ── Sesión: parámetros ANTES de session_start (habilita "Recordarme") ─────── */
+$REMEMBER_DAYS = 30;
+$remember_prev = (isset($_COOKIE["sazon_remember"]) && $_COOKIE["sazon_remember"] === "1");
+
+ini_set("session.gc_maxlifetime", 60 * 60 * 24 * $REMEMBER_DAYS);
+session_set_cookie_params(array(
+	"lifetime" => $remember_prev ? 60 * 60 * 24 * $REMEMBER_DAYS : 0,
+	"path"     => "/",
+	"httponly" => true,
+	"samesite" => "Lax",
+));
+
 ob_start();
 session_start();
 
-$error     = "";
-$email     = isset($_POST["email"]) ? trim((string)$_POST["email"]) : "";
-$password  = isset($_POST["password"]) ? (string)$_POST["password"] : "";
-$isPost    = ($_SERVER["REQUEST_METHOD"] === "POST");
+/* La página de acceso nunca debe quedar en caché ni indexarse */
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("X-Robots-Tag: noindex, nofollow");
+
+/* Destino tras entrar. Solo rutas internas del panel (evita "open redirect"). */
+function saz_next_ok($n){
+	if($n === "" || strpos($n, "..") !== false) return false;
+	if(strpos($n, "//") !== false) return false;
+	if(strpos($n, "\\") !== false) return false;
+	return (bool)preg_match('#^/?(menu/)?admin/(\?[^\s]*)?$#', $n);
+}
+function saz_destino_rol($role, $next){
+	if(saz_next_ok($next)) return $next;
+	if($role === "cocina")     return "admin/?view=cocina";
+	if($role === "repartidor") return "admin/?view=repartidor";
+	return "admin/";
+}
+function saz_role_of($con, $id){
+	$role = "";
+	$rr = $con->query("select role from user where id=".intval($id)." limit 1");
+	if($rr && $r = $rr->fetch_assoc()){ $role = (string)$r["role"]; }
+	return $role;
+}
+
+$error    = "";
+$email    = isset($_POST["email"]) ? trim((string)$_POST["email"]) : "";
+$password = isset($_POST["password"]) ? (string)$_POST["password"] : "";
+$isPost   = (isset($_SERVER["REQUEST_METHOD"]) && $_SERVER["REQUEST_METHOD"] === "POST");
+$next     = isset($_REQUEST["next"]) ? trim((string)$_REQUEST["next"]) : "";
+
+// Mensaje heredado del login del panel (?action=access&opt=login → ?err=1)
+if($error === "" && isset($_GET["err"])){ $error = "Usuario o contraseña incorrectos."; }
+
+$base = new Database();
+$con  = $base->connect();
 
 // Ya hay sesión → directo al panel del rol correspondiente
 if(isset($_SESSION["user_id"])){
-	$role_dest = "admin/";
-	$base = new Database();
-	$con  = $base->connect();
-	$rr = $con->query("select role from user where id=".intval($_SESSION["user_id"])." limit 1");
-	if($rr && $r = $rr->fetch_assoc()){
-		if($r["role"]==="cocina"){ $role_dest = "admin/?view=cocina"; }
-		elseif($r["role"]==="repartidor"){ $role_dest = "admin/?view=repartidor"; }
-	}
-	header("Location: ".$role_dest);
+	header("Location: ".saz_destino_rol(saz_role_of($con, $_SESSION["user_id"]), $next));
 	exit;
 }
 
 if($isPost){
 	if($email === "" || $password === ""){
-		$error = "Escribe tu correo y tu contraseña.";
+		$error = "Escribe tu usuario y tu contraseña.";
 	}else{
-		$base = new Database();
-		$con  = $base->connect();
-		$u    = $con->real_escape_string($email);
-		$p    = sha1(md5($password)); // mismo hash que `admin/?action=access&opt=login`
-		$sql  = "select id from user where (email='$u' or username='$u') and password='$p' and is_active=1 limit 1";
-		$res  = $con->query($sql);
-		if($res && $row = $res->fetch_assoc()){
+		$u   = $con->real_escape_string($email);
+		$p   = sha1(md5($password)); // mismo hash que el resto del sistema
+		$sql = "select id, is_active from user where (email='$u' or username='$u') and password='$p' limit 1";
+		$res = $con->query($sql);
+		$row = ($res) ? $res->fetch_assoc() : null;
+
+		if(!$row){
+			usleep(350000); // frena la fuerza bruta
+			$error = "Usuario o contraseña incorrectos.";
+		}elseif(intval($row["is_active"]) !== 1){
+			$error = "Tu cuenta está desactivada. Escríbenos para reactivarla.";
+		}else{
 			session_regenerate_id(true);
 			$_SESSION["user_id"] = intval($row["id"]);
-			$role_dest = "admin/";
-			$rr = $con->query("select role from user where id=".intval($row["id"])." limit 1");
-			if($rr && $r = $rr->fetch_assoc()){
-				if($r["role"]==="cocina"){ $role_dest = "admin/?view=cocina"; }
-				elseif($r["role"]==="repartidor"){ $role_dest = "admin/?view=repartidor"; }
+
+			// "Recordarme": cookie marca + cookie de sesión persistente
+			if(!empty($_POST["remember"])){
+				setcookie("sazon_remember", "1", time() + 60 * 60 * 24 * $REMEMBER_DAYS, "/");
+				setcookie(session_name(), session_id(), time() + 60 * 60 * 24 * $REMEMBER_DAYS, "/", "", false, true);
+			}else{
+				setcookie("sazon_remember", "", time() - 3600, "/");
 			}
-			header("Location: ".$role_dest);
+
+			header("Location: ".saz_destino_rol(saz_role_of($con, $row["id"]), $next));
 			exit;
-		}else{
-			$error = "Correo o contraseña incorrectos.";
 		}
 	}
 }
+
+/* Pista de credenciales SOLO en entorno local (jamás en producción) */
+$__host = strtolower((string)(isset($_SERVER["HTTP_HOST"]) ? $_SERVER["HTTP_HOST"] : ""));
+if(($__pos = strpos($__host, ":")) !== false){ $__host = substr($__host, 0, $__pos); }
+$show_demo_hint = in_array($__host, array("localhost", "127.0.0.1", "[::1]"), true);
 ?>
 <!doctype html>
 <html lang="es">
@@ -63,6 +111,7 @@ if($isPost){
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>Iniciar sesión — sazón</title>
   <meta name="robots" content="noindex, nofollow"/>
+  <meta name="theme-color" content="#0f0c09"/>
   <link rel="icon" type="image/svg+xml" href="landing/assets/img/favicon.svg"/>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -165,6 +214,14 @@ if($isPost){
     }
     .pw-toggle:hover{color:#e9b94a}
 
+    .caps{margin-top:5px;font-size:12px;color:#ff8f5e}
+    .remember{
+      display:flex;align-items:center;gap:9px;
+      font-size:13.5px;color:#b3a795;cursor:pointer;user-select:none;
+      margin-top:-2px;
+    }
+    .remember input{width:16px;height:16px;accent-color:#e9b94a;cursor:pointer}
+
     .btn{
       margin-top:6px;
       background:#e9b94a;color:#1a130a;
@@ -182,6 +239,18 @@ if($isPost){
       color:#ff8f5e;border-radius:12px;
       padding:11px 14px;font-size:13.5px;
       display:flex;gap:9px;align-items:flex-start;
+    }
+
+    .demo{
+      margin-top:20px;padding:13px 15px;border-radius:12px;
+      background:rgba(233,185,74,.07);border:1px solid rgba(233,185,74,.28);
+      color:#e8d9b6;font-size:13px;line-height:1.8;
+    }
+    .demo b{color:#e9b94a}
+    .demo code{
+      background:rgba(0,0,0,.38);border:1px solid rgba(245,238,226,.14);
+      border-radius:6px;padding:1px 6px;
+      font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;color:#f5eee2;
     }
 
     .links{
@@ -220,23 +289,40 @@ if($isPost){
         </div>
       <?php endif; ?>
 
-      <form method="post" action="login.php" autocomplete="on">
+      <form method="post" action="login.php<?php echo $next !== "" ? "?next=".htmlspecialchars(urlencode($next), ENT_QUOTES, "UTF-8") : ""; ?>" autocomplete="on">
         <div class="field">
-          <label class="label" for="f-email">Correo o usuario</label>
-          <input class="input" type="text" id="f-email" name="email" required
+          <label class="label" for="f-email">Usuario o correo</label>
+          <input class="input" type="text" id="f-email" name="email" required autofocus
                  value="<?php echo htmlspecialchars($email, ENT_QUOTES, "UTF-8"); ?>"
-                 placeholder="tu@correo.com" autocomplete="username" spellcheck="false"/>
+                 placeholder="tu usuario o correo" autocomplete="username" spellcheck="false"/>
         </div>
         <div class="field">
           <label class="label" for="f-pass">Contraseña</label>
           <div class="input-wrap">
             <input class="input input--pw" type="password" id="f-pass" name="password" required
-                   placeholder="••••••••" autocomplete="current-password"/>
+                   placeholder="••••••••" autocomplete="current-password"
+                   aria-describedby="capsHint"/>
             <button type="button" class="pw-toggle" id="pwToggle" aria-pressed="false" data-show="Mostrar" data-hide="Ocultar">Mostrar</button>
           </div>
+          <span class="caps" id="capsHint" hidden>Bloq Mayús está activado</span>
         </div>
+        <label class="remember">
+          <input type="checkbox" name="remember" value="1" <?php echo $remember_prev ? "checked" : ""; ?>/>
+          <span>Mantener la sesión iniciada</span>
+        </label>
         <button type="submit" class="btn">Entrar</button>
       </form>
+
+      <?php if($show_demo_hint): ?>
+        <div class="demo" role="note">
+          <span aria-hidden="true">🔑</span>
+          <div>
+            <b>Acceso de prueba (solo en local)</b><br>
+            Dueño: <code>admin</code> / <code>admin</code><br>
+            Super-admin: <code>superadmin</code> / <code>superadmin</code>
+          </div>
+        </div>
+      <?php endif; ?>
 
       <div class="links">
         <a href="landing/">← Volver a la landing</a>
@@ -258,6 +344,16 @@ if($isPost){
           toggle.setAttribute("aria-pressed", show ? "true" : "false");
           toggle.textContent = show ? toggle.dataset.hide : toggle.dataset.show;
         });
+      }
+
+      // Aviso de Bloq Mayús en el campo de contraseña
+      var caps = document.getElementById("capsHint");
+      if(input && caps){
+        var check = function(e){
+          if(e.getModifierState){ caps.hidden = !e.getModifierState("CapsLock"); }
+        };
+        input.addEventListener("keyup", check);
+        input.addEventListener("keydown", check);
       }
     })();
   </script>

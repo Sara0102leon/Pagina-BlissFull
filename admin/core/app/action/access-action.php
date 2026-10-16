@@ -4,39 +4,43 @@
 
 if(isset($_GET["opt"]) && $_GET["opt"]=="login"){
 
-if(!isset($_SESSION["user_id"])) {
+if(isset($_SESSION["user_id"])) {
+	// Ya hay sesión → al panel
+	header("Location: ./?view=home");
+	exit;
+}
 
-$user_var = htmlentities($_POST["email"]);
-$password_var = htmlentities($_POST['password']);
+$user_var     = isset($_POST["email"])    ? trim((string)$_POST["email"]) : "";
+$password_var = isset($_POST["password"]) ? (string)$_POST["password"]   : "";
 
+if($user_var === "" || $password_var === ""){
+	header("Location: ../login.php?err=1");
+	exit;
+}
 
-$user = $user_var;
-$pass = sha1(md5($password_var));
 $base = new Database();
-$con = $base->connect();
+$con  = $base->connect();
 
-$sql = "select * from user where (email= \"".$user."\" or username= \"".$user."\" ) and password= \"".$pass."\" and is_active=1";
-//print $sql;
+$user = $con->real_escape_string($user_var);
+$pass = sha1(md5($password_var)); // sha1(md5(...)) — mismo hash que login.php
+
+$sql = "select id, role from user where (email= '$user' or username= '$user') and password= '$pass' and is_active=1 limit 1";
 $query = $con->query($sql);
-$found = false;
-$userid = null;
-while($r = $query->fetch_array()){
-	$found = true ;
-	$userid = $r['id'];
-}
+$row = ($query) ? $query->fetch_assoc() : null;
 
-if($found==true) {
-	$_SESSION['user_id']=$userid ;
-	// Si todo sale bien
-	print "Cargando ... $user";
-	Core::redir("./?view=home");
+if($row) {
+	$_SESSION['user_id'] = intval($row['id']);
+	$dest = "./?view=home";
+	if(isset($row['role'])){
+		if($row['role']==="cocina"){ $dest = "./?view=cocina"; }
+		elseif($row['role']==="repartidor"){ $dest = "./?view=repartidor"; }
+	}
+	header("Location: ".$dest);
+	exit;
 }else {
-	// Si la contrase~a es incorrecta
-	Core::redir("../login.php");
-}
-}else{
-	// si ya esta logeado
-	Core::redir("./?view=home");	
+	// Credenciales incorrectas → de vuelta al login de la plataforma
+	header("Location: ../login.php?err=1");
+	exit;
 }
 
 }

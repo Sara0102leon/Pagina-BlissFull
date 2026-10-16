@@ -18,7 +18,8 @@ $count = count($queue);
   <div class="row g-3">
   <?php foreach($queue as $b):
     $st_items = BuyProductData::getAllByBuyId($b->id);
-    $cl = ($b->client_name !== "") ? $b->client_name : ($b->getClient() ? $b->getClient()->name : "—");
+    $cl = $b->client_name;
+    if($cl === null || $cl === ""){ $_bc = $b->getClient(); $cl = ($_bc && $_bc->name !== null) ? $_bc->name : "—"; }
     $ph = ($b->client_phone !== "") ? $b->client_phone : "";
     $zone = $b->getDeliveryZone();
     $sede = $b->getSede();
@@ -44,7 +45,7 @@ $count = count($queue);
         <div class="card-body">
           <div class="d-flex align-items-center mb-2">
             <i class="bi bi-person-circle text-secondary me-2"></i>
-            <span class="fw-semibold"><?php echo htmlspecialchars($cl, ENT_QUOTES, "UTF-8"); ?></span>
+            <span class="fw-semibold"><?php echo htmlspecialchars((string)$cl, ENT_QUOTES, "UTF-8"); ?></span>
             <?php if($ph): ?><a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $ph); ?>" target="_blank" class="ms-auto small text-primary" title="Escribir por WhatsApp"><i class="bi bi-whatsapp"></i></a><?php endif; ?>
           </div>
           <div class="d-flex align-items-center mb-2 small text-secondary">
